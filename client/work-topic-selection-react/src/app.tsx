@@ -3,8 +3,16 @@ import { getLoginUserUsingGet } from '@/services/bsxt/userController';
 import { LinkOutlined } from '@ant-design/icons';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
-import { Link, history } from '@umijs/max';
+import { history, Link } from '@umijs/max';
 import { errorConfig } from './requestErrorConfig';
+
+const env = {
+  develop: 'http://127.0.0.1:8000',
+  release: 'http://10.10.174.232:80/work_topic_selection_api',
+  production: 'https://wts.edtechhub.com.cn/work_topic_selection_api',
+};
+
+const host = env['develop'];
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
@@ -124,7 +132,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const request = {
-  baseURL: 'http://127.0.0.1:8000',
+  baseURL: host,
   withCredentials: true,
   ...errorConfig,
 };

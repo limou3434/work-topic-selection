@@ -13,10 +13,12 @@ import lombok.Data;
 @TableName(value ="user")
 @Data
 public class User implements Serializable {
+
     /**
      * id
      */
     @TableId(type = IdType.ASSIGN_ID)
+
     private Long id;
 
     /**
@@ -64,4 +66,5 @@ public class User implements Serializable {
     private Integer topicAmount;
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
 }

@@ -33,6 +33,7 @@ server:
   port: 8000
   # 配置前缀
   servlet:
+    context-path: /
     session:
       cookie:
         max-age: 2592000
