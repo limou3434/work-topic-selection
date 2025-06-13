@@ -1,13 +1,5 @@
-# Docker 镜像构建
-FROM maven:3.8.1-jdk-8-slim as builder
-
-# Copy local code to the container image.
-WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-
-# Build a release artifact.
-RUN mvn package -DskipTests
-
-# Run the web service on container startup.
-CMD ["java","-jar","/app/target/Lzh-answer-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]
+# 编译代码(请在本地直接使用 ./mvnw clean package -DskipTests 进行编译避免容器过大, 可以提前使用 mvn wrapper:wrapper 安装包装器来跨环境编译)
+FROM openjdk:8-jdk-slim
+COPY ./target/*.jar ./app.jar
+EXPOSE 8000
+CMD ["java", "-jar", "app.jar"]

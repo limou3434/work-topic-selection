@@ -2,23 +2,23 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
-/** getSelectTopicStudentListCsv POST /api/file/getSelectTopicStudentList */
+/** getSelectTopicStudentListCsv POST /file/getSelectTopicStudentList */
 export async function getSelectTopicStudentListCsvUsingPost(options?: { [key: string]: any }) {
-  return request<any>('/api/file/getSelectTopicStudentList', {
+  return request<any>('/file/getSelectTopicStudentList', {
     method: 'POST',
     ...(options || {}),
   });
 }
 
-/** getUnSelectTopicStudentListCsv POST /api/file/getUnSelectTopicStudentList */
+/** getUnSelectTopicStudentListCsv POST /file/getUnSelectTopicStudentList */
 export async function getUnSelectTopicStudentListCsvUsingPost(options?: { [key: string]: any }) {
-  return request<any>('/api/file/getUnSelectTopicStudentList', {
+  return request<any>('/file/getUnSelectTopicStudentList', {
     method: 'POST',
     ...(options || {}),
   });
 }
 
-/** uploadFile POST /api/file/upload */
+/** uploadFile POST /file/upload */
 export async function uploadFileUsingPost(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.uploadFileUsingPOSTParams,
@@ -48,7 +48,7 @@ export async function uploadFileUsingPost(
     }
   });
 
-  return request<API.BaseResponseString_>('/api/file/upload', {
+  return request<API.BaseResponseString_>('/file/upload', {
     method: 'POST',
     params: {
       ...params,
@@ -59,7 +59,7 @@ export async function uploadFileUsingPost(
   });
 }
 
-/** uploadFileTopic POST /api/file/uploadTopic */
+/** uploadFileTopic POST /file/uploadTopic */
 export async function uploadFileTopicUsingPost(
   body: {},
   file?: File,
@@ -87,7 +87,7 @@ export async function uploadFileTopicUsingPost(
     }
   });
 
-  return request<API.BaseResponseString_>('/api/file/uploadTopic', {
+  return request<API.BaseResponseString_>('/file/uploadTopic', {
     method: 'POST',
     data: formData,
     requestType: 'form',

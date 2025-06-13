@@ -1,25 +1,38 @@
-# 公共配置文件
+# 配置框架(使用 java -jar app.jar --spring.profiles.active=develop | release | production 来启动项目, 其中 release 有时间就拿来测试, 而 production 存储在 Github 上, 每次修改 Github 配置就需要刷新(这个有时间可以优化为无需重启))
 spring:
+  ## 配置环境
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:develop} # 默认启动开发环境
+  ## 配置名称
   application:
     name: work-topic-selection
+  ## 配置重载
+  devtools:
+    restart:
+      enabled: false
+  ## 资源限制
+  servlet:
+    multipart:
+      max-file-size: 10MB
+  ## 配置数源
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/work_topic_selection
+    username: wts
+    password: Qwe54188_
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
   session:
     timeout: 2592000
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/work_topic_selection
-    username: wts
-    password: Qwe54188_
-  servlet:
-    multipart:
-      max-file-size: 10MB
+
+# 配置服务
 server:
-  address: 0.0.0.0
+  ## 配置地址
+  address: 127.0.0.1
+  ## 配置端口
   port: 8000
+  # 配置前缀
   servlet:
-    context-path: /api
     session:
       cookie:
         max-age: 2592000
@@ -33,20 +46,13 @@ mybatis-plus:
       logic-delete-value: 1 # 逻辑已删除值（默认为 1）
       logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
 
+# 配置日志
 logging:
   level:
     # root: DEBUG # 如果需要仔细调试可以打开这个选项
     com.Lzh.answer: DEBUG # 控制本项目包内的日志输出等级 TRACE | DEBUG | INFO | WARN | ERROR | FATAL
 
-cos:
-  client:
-    accessKey: ""
-    host: ${COS_CLIENT_HOST} # 访问域名
-    secretId: ${COS_CLIENT_SECRET_ID} # 密钥标识(SECRETID 和 SECRETKEY 请登录访问管理控制台 https://console.cloud.tencent.com/cam/capi 进行查看和管理)
-    secretKey: ${COS_CLIENT_SECRET_KEY} # 密钥的值
-    region: ${COS_CLIENT_REGION} # 地域简称(COS 地域的简称请参见 https://cloud.tencent.com/document/product/436/6224)
-    bucket: ${COS_CLIENT_BUCKET} # 存储桶名
-
+# 配置文档
 knife4j:
   enable: true
   openapi:
@@ -57,3 +63,13 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.Lzh.answer.controller
+
+# 配置 COS
+cos:
+  client:
+    accessKey: ""
+    host: ${COS_CLIENT_HOST} # 访问域名
+    secretId: ${COS_CLIENT_SECRET_ID} # 密钥标识(SECRETID 和 SECRETKEY 请登录访问管理控制台 https://console.cloud.tencent.com/cam/capi 进行查看和管理)
+    secretKey: ${COS_CLIENT_SECRET_KEY} # 密钥的值
+    region: ${COS_CLIENT_REGION} # 地域简称(COS 地域的简称请参见 https://cloud.tencent.com/document/product/436/6224)
+    bucket: ${COS_CLIENT_BUCKET} # 存储桶名

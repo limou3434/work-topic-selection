@@ -2,9 +2,9 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
-/** addUser POST /api/user/add */
+/** addUser POST /user/add */
 export async function addUserUsingPost(body: API.UserAddRequest, options?: { [key: string]: any }) {
-  return request<API.BaseResponseLong_>('/api/user/add', {
+  return request<API.BaseResponseLong_>('/user/add', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -14,12 +14,12 @@ export async function addUserUsingPost(body: API.UserAddRequest, options?: { [ke
   });
 }
 
-/** addCount POST /api/user/addCount */
+/** addCount POST /user/addCount */
 export async function addCountUsingPost(
   body: API.AddCountRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseString_>('/api/user/addCount', {
+  return request<API.BaseResponseString_>('/user/addCount', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -29,9 +29,9 @@ export async function addCountUsingPost(
   });
 }
 
-/** addDept POST /api/user/addDept */
+/** addDept POST /user/addDept */
 export async function addDeptUsingPost(body: API.DeptAddRequest, options?: { [key: string]: any }) {
-  return request<API.BaseResponseLong_>('/api/user/addDept', {
+  return request<API.BaseResponseLong_>('/user/addDept', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -41,12 +41,12 @@ export async function addDeptUsingPost(body: API.DeptAddRequest, options?: { [ke
   });
 }
 
-/** addProject POST /api/user/addProject */
+/** addProject POST /user/addProject */
 export async function addProjectUsingPost(
   body: API.ProjectAddRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseLong_>('/api/user/addProject', {
+  return request<API.BaseResponseLong_>('/user/addProject', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -56,12 +56,12 @@ export async function addProjectUsingPost(
   });
 }
 
-/** addTopic POST /api/user/addTopic */
+/** addTopic POST /user/addTopic */
 export async function addTopicUsingPost(
   body: API.AddTopicRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseLong_>('/api/user/addTopic', {
+  return request<API.BaseResponseLong_>('/user/addTopic', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -71,12 +71,12 @@ export async function addTopicUsingPost(
   });
 }
 
-/** checkTopic POST /api/user/CheckTopic */
+/** checkTopic POST /user/CheckTopic */
 export async function checkTopicUsingPost(
   body: API.CheckTopicRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseBoolean_>('/api/user/CheckTopic', {
+  return request<API.BaseResponseBoolean_>('/user/CheckTopic', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -86,12 +86,12 @@ export async function checkTopicUsingPost(
   });
 }
 
-/** deleteUser POST /api/user/delete */
+/** deleteUser POST /user/delete */
 export async function deleteUserUsingPost(
   body: API.DeleteRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseBoolean_>('/api/user/delete', {
+  return request<API.BaseResponseBoolean_>('/user/delete', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -101,12 +101,12 @@ export async function deleteUserUsingPost(
   });
 }
 
-/** deleteDept POST /api/user/deleteDept */
+/** deleteDept POST /user/deleteDept */
 export async function deleteDeptUsingPost(
   body: API.DeleteDeptRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseBoolean_>('/api/user/deleteDept', {
+  return request<API.BaseResponseBoolean_>('/user/deleteDept', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -116,12 +116,12 @@ export async function deleteDeptUsingPost(
   });
 }
 
-/** deleteProject POST /api/user/deleteProject */
+/** deleteProject POST /user/deleteProject */
 export async function deleteProjectUsingPost(
   body: API.DeleteProjectRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseBoolean_>('/api/user/deleteProject', {
+  return request<API.BaseResponseBoolean_>('/user/deleteProject', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -131,12 +131,12 @@ export async function deleteProjectUsingPost(
   });
 }
 
-/** deleteTopic POST /api/user/deleteTopic */
+/** deleteTopic POST /user/deleteTopic */
 export async function deleteTopicUsingPost(
   body: API.DeleteTopicRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseBoolean_>('/api/user/deleteTopic', {
+  return request<API.BaseResponseBoolean_>('/user/deleteTopic', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -146,13 +146,13 @@ export async function deleteTopicUsingPost(
   });
 }
 
-/** getUserById GET /api/user/get */
+/** getUserById GET /user/get */
 export async function getUserByIdUsingGet(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getUserByIdUsingGETParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseUser_>('/api/user/get', {
+  return request<API.BaseResponseUser_>('/user/get', {
     method: 'GET',
     params: {
       ...params,
@@ -161,21 +161,21 @@ export async function getUserByIdUsingGet(
   });
 }
 
-/** getLoginUser GET /api/user/get/login */
+/** getLoginUser GET /user/get/login */
 export async function getLoginUserUsingGet(options?: { [key: string]: any }) {
-  return request<API.BaseResponseLoginUserVO_>('/api/user/get/login', {
+  return request<API.BaseResponseLoginUserVO_>('/user/get/login', {
     method: 'GET',
     ...(options || {}),
   });
 }
 
-/** getUserVOById GET /api/user/get/vo */
+/** getUserVOById GET /user/get/vo */
 export async function getUserVoByIdUsingGet(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getUserVOByIdUsingGETParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseUserVO_>('/api/user/get/vo', {
+  return request<API.BaseResponseUserVO_>('/user/get/vo', {
     method: 'GET',
     params: {
       ...params,
@@ -184,12 +184,12 @@ export async function getUserVoByIdUsingGet(
   });
 }
 
-/** getDept POST /api/user/getDept */
+/** getDept POST /user/getDept */
 export async function getDeptUsingPost(
   body: API.DeptQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponsePageDept_>('/api/user/getDept', {
+  return request<API.BaseResponsePageDept_>('/user/getDept', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -199,12 +199,12 @@ export async function getDeptUsingPost(
   });
 }
 
-/** getDeptList POST /api/user/getDeptList */
+/** getDeptList POST /user/getDeptList */
 export async function getDeptListUsingPost(
   body: API.DeptQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseListDeptVO_>('/api/user/getDeptList', {
+  return request<API.BaseResponseListDeptVO_>('/user/getDeptList', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -214,12 +214,12 @@ export async function getDeptListUsingPost(
   });
 }
 
-/** getTeacher POST /api/user/getDeptTeacher */
+/** getTeacher POST /user/getDeptTeacher */
 export async function getTeacherUsingPost(
   body: API.DeptTeacherQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponsePageDeptTeacherVO_>('/api/user/getDeptTeacher', {
+  return request<API.BaseResponsePageDeptTeacherVO_>('/user/getDeptTeacher', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -229,12 +229,12 @@ export async function getTeacherUsingPost(
   });
 }
 
-/** getTeacherByAdmin POST /api/user/getDeptTeacherByAdmin */
+/** getTeacherByAdmin POST /user/getDeptTeacherByAdmin */
 export async function getTeacherByAdminUsingPost(
   body: API.DeptTeacherQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponsePageDeptTeacherVO_>('/api/user/getDeptTeacherByAdmin', {
+  return request<API.BaseResponsePageDeptTeacherVO_>('/user/getDeptTeacherByAdmin', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -244,20 +244,20 @@ export async function getTeacherByAdminUsingPost(
   });
 }
 
-/** getPreTopic POST /api/user/getPreTopic */
+/** getPreTopic POST /user/getPreTopic */
 export async function getPreTopicUsingPost(options?: { [key: string]: any }) {
-  return request<API.BaseResponseListTopic_>('/api/user/getPreTopic', {
+  return request<API.BaseResponseListTopic_>('/user/getPreTopic', {
     method: 'POST',
     ...(options || {}),
   });
 }
 
-/** getProject POST /api/user/getProject */
+/** getProject POST /user/getProject */
 export async function getProjectUsingPost(
   body: API.ProjectQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponsePageProject_>('/api/user/getProject', {
+  return request<API.BaseResponsePageProject_>('/user/getProject', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -267,12 +267,12 @@ export async function getProjectUsingPost(
   });
 }
 
-/** getProjectList POST /api/user/getProjectList */
+/** getProjectList POST /user/getProjectList */
 export async function getProjectListUsingPost(
   body: API.ProjectQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseListProjectVO_>('/api/user/getProjectList', {
+  return request<API.BaseResponseListProjectVO_>('/user/getProjectList', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -282,20 +282,20 @@ export async function getProjectListUsingPost(
   });
 }
 
-/** getSelectTopic POST /api/user/getSelectTopic */
+/** getSelectTopic POST /user/getSelectTopic */
 export async function getSelectTopicUsingPost(options?: { [key: string]: any }) {
-  return request<API.BaseResponseListTopic_>('/api/user/getSelectTopic', {
+  return request<API.BaseResponseListTopic_>('/user/getSelectTopic', {
     method: 'POST',
     ...(options || {}),
   });
 }
 
-/** getSelectTopicById POST /api/user/getSelectTopicById */
+/** getSelectTopicById POST /user/getSelectTopicById */
 export async function getSelectTopicByIdUsingPost(
   body: API.GetSelectTopicById,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseListUser_>('/api/user/getSelectTopicById', {
+  return request<API.BaseResponseListUser_>('/user/getSelectTopicById', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -305,20 +305,20 @@ export async function getSelectTopicByIdUsingPost(
   });
 }
 
-/** getSelectTopicSituation POST /api/user/getSelectTopicSituation */
+/** getSelectTopicSituation POST /user/getSelectTopicSituation */
 export async function getSelectTopicSituationUsingPost(options?: { [key: string]: any }) {
-  return request<API.BaseResponseSituationVO_>('/api/user/getSelectTopicSituation', {
+  return request<API.BaseResponseSituationVO_>('/user/getSelectTopicSituation', {
     method: 'POST',
     ...(options || {}),
   });
 }
 
-/** getStudentByTopicId POST /api/user/getStudentByTopicId */
+/** getStudentByTopicId POST /user/getStudentByTopicId */
 export async function getStudentByTopicIdUsingPost(
   body: API.GetStudentByTopicId,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseListUser_>('/api/user/getStudentByTopicId', {
+  return request<API.BaseResponseListUser_>('/user/getStudentByTopicId', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -328,12 +328,12 @@ export async function getStudentByTopicIdUsingPost(
   });
 }
 
-/** getTeacher POST /api/user/getTeacher */
+/** getTeacher POST /user/getTeacher */
 export async function getTeacherUsingPost1(
   body: API.TeacherQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseListTeacherVO_>('/api/user/getTeacher', {
+  return request<API.BaseResponseListTeacherVO_>('/user/getTeacher', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -343,12 +343,12 @@ export async function getTeacherUsingPost1(
   });
 }
 
-/** getTopicList POST /api/user/getTopicList */
+/** getTopicList POST /user/getTopicList */
 export async function getTopicListUsingPost(
   body: API.TopicQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponsePageTopic_>('/api/user/getTopicList', {
+  return request<API.BaseResponsePageTopic_>('/user/getTopicList', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -358,12 +358,12 @@ export async function getTopicListUsingPost(
   });
 }
 
-/** getTopicListByAdmin POST /api/user/getTopicListByAdmin */
+/** getTopicListByAdmin POST /user/getTopicListByAdmin */
 export async function getTopicListByAdminUsingPost(
   body: API.TopicQueryByAdminRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponsePageTopic_>('/api/user/getTopicListByAdmin', {
+  return request<API.BaseResponsePageTopic_>('/user/getTopicListByAdmin', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -373,20 +373,20 @@ export async function getTopicListByAdminUsingPost(
   });
 }
 
-/** getUnSelectTopicStudentList POST /api/user/getUnSelectTopicStudentList */
+/** getUnSelectTopicStudentList POST /user/getUnSelectTopicStudentList */
 export async function getUnSelectTopicStudentListUsingPost(options?: { [key: string]: any }) {
-  return request<API.BaseResponseListUser_>('/api/user/getUnSelectTopicStudentList', {
+  return request<API.BaseResponseListUser_>('/user/getUnSelectTopicStudentList', {
     method: 'POST',
     ...(options || {}),
   });
 }
 
-/** getUserList POST /api/user/getUserList */
+/** getUserList POST /user/getUserList */
 export async function getUserListUsingPost(
   body: API.GetUserListRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseListUserNameVO_>('/api/user/getUserList', {
+  return request<API.BaseResponseListUserNameVO_>('/user/getUserList', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -396,12 +396,12 @@ export async function getUserListUsingPost(
   });
 }
 
-/** listUserByPage POST /api/user/list/page */
+/** listUserByPage POST /user/list/page */
 export async function listUserByPageUsingPost(
   body: API.UserQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponsePageUser_>('/api/user/list/page', {
+  return request<API.BaseResponsePageUser_>('/user/list/page', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -411,12 +411,12 @@ export async function listUserByPageUsingPost(
   });
 }
 
-/** listUserVOByPage POST /api/user/list/page/vo */
+/** listUserVOByPage POST /user/list/page/vo */
 export async function listUserVoByPageUsingPost(
   body: API.UserQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponsePageUserVO_>('/api/user/list/page/vo', {
+  return request<API.BaseResponsePageUserVO_>('/user/list/page/vo', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -426,12 +426,12 @@ export async function listUserVoByPageUsingPost(
   });
 }
 
-/** userLogin POST /api/user/login */
+/** userLogin POST /user/login */
 export async function userLoginUsingPost(
   body: API.UserLoginRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseLoginUserVO_>('/api/user/login', {
+  return request<API.BaseResponseLoginUserVO_>('/user/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -441,20 +441,20 @@ export async function userLoginUsingPost(
   });
 }
 
-/** userLogout POST /api/user/logout */
+/** userLogout POST /user/logout */
 export async function userLogoutUsingPost(options?: { [key: string]: any }) {
-  return request<API.BaseResponseBoolean_>('/api/user/logout', {
+  return request<API.BaseResponseBoolean_>('/user/logout', {
     method: 'POST',
     ...(options || {}),
   });
 }
 
-/** preSelectTopicById POST /api/user/preSelectTopicById */
+/** preSelectTopicById POST /user/preSelectTopicById */
 export async function preSelectTopicByIdUsingPost(
   body: API.SelectTopicByIdRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseLong_>('/api/user/preSelectTopicById', {
+  return request<API.BaseResponseLong_>('/user/preSelectTopicById', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -464,12 +464,12 @@ export async function preSelectTopicByIdUsingPost(
   });
 }
 
-/** userUpdatePassword POST /api/user/register */
+/** userUpdatePassword POST /user/register */
 export async function userUpdatePasswordUsingPost(
   body: API.UserUpdatePassword,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseLong_>('/api/user/register', {
+  return request<API.BaseResponseLong_>('/user/register', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -479,12 +479,12 @@ export async function userUpdatePasswordUsingPost(
   });
 }
 
-/** resetPassword POST /api/user/resetPassword */
+/** resetPassword POST /user/resetPassword */
 export async function resetPasswordUsingPost(
   body: API.ResetPasswordRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseString_>('/api/user/resetPassword', {
+  return request<API.BaseResponseString_>('/user/resetPassword', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -494,12 +494,12 @@ export async function resetPasswordUsingPost(
   });
 }
 
-/** selectStudent POST /api/user/selectStudent */
+/** selectStudent POST /user/selectStudent */
 export async function selectStudentUsingPost(
   body: API.SelectStudentRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseString_>('/api/user/selectStudent', {
+  return request<API.BaseResponseString_>('/user/selectStudent', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -509,12 +509,12 @@ export async function selectStudentUsingPost(
   });
 }
 
-/** selectTopicById POST /api/user/selectTopicById */
+/** selectTopicById POST /user/selectTopicById */
 export async function selectTopicByIdUsingPost(
   body: API.SelectTopicByIdRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseLong_>('/api/user/selectTopicById', {
+  return request<API.BaseResponseLong_>('/user/selectTopicById', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -524,12 +524,12 @@ export async function selectTopicByIdUsingPost(
   });
 }
 
-/** setTimeById POST /api/user/setTimeById */
+/** setTimeById POST /user/setTimeById */
 export async function setTimeByIdUsingPost(
   body: API.SetTimeRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseString_>('/api/user/setTimeById', {
+  return request<API.BaseResponseString_>('/user/setTimeById', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -539,12 +539,12 @@ export async function setTimeByIdUsingPost(
   });
 }
 
-/** updateUser POST /api/user/update */
+/** updateUser POST /user/update */
 export async function updateUserUsingPost(
   body: API.UserUpdateRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseBoolean_>('/api/user/update', {
+  return request<API.BaseResponseBoolean_>('/user/update', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -554,12 +554,12 @@ export async function updateUserUsingPost(
   });
 }
 
-/** updateMyUser POST /api/user/update/my */
+/** updateMyUser POST /user/update/my */
 export async function updateMyUserUsingPost(
   body: API.UserUpdateMyRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseBoolean_>('/api/user/update/my', {
+  return request<API.BaseResponseBoolean_>('/user/update/my', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -569,12 +569,12 @@ export async function updateMyUserUsingPost(
   });
 }
 
-/** updateTopic POST /api/user/updateTopic */
+/** updateTopic POST /user/updateTopic */
 export async function updateTopicUsingPost(
   body: API.UpdateTopicRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseString_>('/api/user/updateTopic', {
+  return request<API.BaseResponseString_>('/user/updateTopic', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -584,12 +584,12 @@ export async function updateTopicUsingPost(
   });
 }
 
-/** Withdraw POST /api/user/Withdraw */
+/** Withdraw POST /user/Withdraw */
 export async function withdrawUsingPost(
   body: API.DeleteTopicRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseBoolean_>('/api/user/Withdraw', {
+  return request<API.BaseResponseBoolean_>('/user/Withdraw', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
