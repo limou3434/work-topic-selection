@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.Lzh.answer.mapper.ProjectMapper">
+
+    <resultMap id="BaseResultMap" type="com.Lzh.answer.model.entity.Project">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="projectName" column="projectName" jdbcType="VARCHAR"/>
+            <result property="deptName" column="deptName" jdbcType="VARCHAR"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,projectName,deptId,deptName
+        createTime,updateTime,isDelete
+    </sql>
+</mapper>

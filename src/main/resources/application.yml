@@ -1,0 +1,59 @@
+# 公共配置文件
+spring:
+  application:
+    name: work-topic-selection
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  session:
+    timeout: 2592000
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/work_topic_selection
+    username: wts
+    password: Qwe54188_
+  servlet:
+    multipart:
+      max-file-size: 10MB
+server:
+  address: 0.0.0.0
+  port: 8000
+  servlet:
+    context-path: /api
+    session:
+      cookie:
+        max-age: 2592000
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-field: isDelete # 全局逻辑删除的实体字段名
+      logic-delete-value: 1 # 逻辑已删除值（默认为 1）
+      logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
+
+logging:
+  level:
+    # root: DEBUG # 如果需要仔细调试可以打开这个选项
+    com.Lzh.answer: DEBUG # 控制本项目包内的日志输出等级 TRACE | DEBUG | INFO | WARN | ERROR | FATAL
+
+cos:
+  client:
+    accessKey: ""
+    host: ${COS_CLIENT_HOST} # 访问域名
+    secretId: ${COS_CLIENT_SECRET_ID} # 密钥标识(SECRETID 和 SECRETKEY 请登录访问管理控制台 https://console.cloud.tencent.com/cam/capi 进行查看和管理)
+    secretKey: ${COS_CLIENT_SECRET_KEY} # 密钥的值
+    region: ${COS_CLIENT_REGION} # 地域简称(COS 地域的简称请参见 https://cloud.tencent.com/document/product/436/6224)
+    bucket: ${COS_CLIENT_BUCKET} # 存储桶名
+
+knife4j:
+  enable: true
+  openapi:
+    title: "接口文档"
+    version: 1.0
+    group:
+      default:
+        api-rule: package
+        api-rule-resources:
+          - com.Lzh.answer.controller
