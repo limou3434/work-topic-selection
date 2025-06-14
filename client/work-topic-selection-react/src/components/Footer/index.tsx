@@ -3,7 +3,7 @@ import { DefaultFooter } from '@ant-design/pro-components';
 import React from 'react';
 
 const Footer: React.FC = () => {
-  const defaultMessage = '大航海时代帕鲁出品';
+  const defaultMessage = '智能大数据工作室出品';
   const currentYear = new Date().getFullYear();
   return (
     <DefaultFooter
@@ -13,21 +13,15 @@ const Footer: React.FC = () => {
       copyright={`${currentYear} ${defaultMessage}`}
       links={[
         {
-          key: '毕业设计选题系统',
-          title: '毕业设计选题系统',
-          href: 'https://pro.ant.design',
-          blankTarget: true,
-        },
-        {
           key: 'github',
           title: <GithubOutlined />,
-          href: 'https://github.com/ant-design/ant-design-pro',
+          href: '',
           blankTarget: true,
         },
         {
           key: '毕业设计选题系统',
           title: '毕业设计选题系统',
-          href: 'https://ant.design',
+          href: 'https://wts.edtechhub.com.cn/',
           blankTarget: true,
         },
       ]}
