@@ -114,7 +114,7 @@ const TopicReviewTable: React.FC = () => {
           pageSize: 30,
         }}
         rowKey="id"
-        headerTitle="审核题目"
+        headerTitle="审核"
       />
       <ModalForm
         title="打回原因"

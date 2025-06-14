@@ -93,7 +93,7 @@
     access: 'canAccessNotStudentAndTeacher',
   },
   {
-    name: '审核题目',
+    name: '审核',
     path: '/check',
     icon: 'CheckSquareOutlined',
     component: './CheckTopic/index',
