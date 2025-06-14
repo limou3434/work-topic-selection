@@ -109,7 +109,7 @@ const Login: React.FC = () => {
             minWidth: 280,
             maxWidth: '75vw',
           }}
-          logo={<img alt="logo" src="/logo.svg" />}
+          logo={<img alt="logo" src="/logo_256.png" />}
           title="毕业设计选题系统"
           subTitle={'智能大数据工作室'}
           onFinish={async (values) => {

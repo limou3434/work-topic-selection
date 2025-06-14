@@ -7,7 +7,7 @@ import type { MenuInfo } from 'rc-menu/lib/interface';
 import React, { useCallback } from 'react';
 import { flushSync } from 'react-dom';
 import HeaderDropdown from '../HeaderDropdown';
-
+import { USER_ROLE_MAP } from '@/constants/user';
 
 export type GlobalHeaderRightProps = {
   menu?: boolean;
@@ -17,7 +17,7 @@ export type GlobalHeaderRightProps = {
 export const AvatarName = () => {
   const { initialState } = useModel('@@initialState');
   const { currentUser } = initialState || {};
-  return <span className="anticon">{currentUser?.userName}</span>;
+  return <span className="anticon">{USER_ROLE_MAP[currentUser?.userRole as 0 | 1 | 2 | 3]} - {currentUser?.userName}</span>;
 };
 
 const useStyles = createStyles(({ token }) => {

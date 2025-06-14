@@ -94,7 +94,7 @@ const Welcome: React.FC = () => {
         }}
         bodyStyle={{
           backgroundImage:
-          //@ts-ignore
+            //@ts-ignore
             initialState?.settings?.navTheme === 'realDark'
               ? 'background-image: linear-gradient(75deg, #1A1B1F 0%, #191C1F 100%)'
               : 'background-image: linear-gradient(75deg, #FBFDFF 0%, #F5F7FF 100%)',
@@ -115,7 +115,7 @@ const Welcome: React.FC = () => {
               color: token.colorTextHeading,
             }}
           >
-            欢迎使用 毕业设计选题系统
+            欢迎使用 - 广州南方学院 - 毕业设计选题系统
           </div>
           <p
             style={{
@@ -126,8 +126,7 @@ const Welcome: React.FC = () => {
               marginBottom: 32,
               width: '65%',
             }}
-          >
-          </p>
+          ></p>
           <div
             style={{
               display: 'flex',
@@ -139,19 +138,19 @@ const Welcome: React.FC = () => {
               index={1}
               href="https://www.nfu.edu.cn/"
               title="了解 广州南方学院"
-              desc="学生综测管理系统是学校评价和管理学生综合素质的工具。该系统通过数据收集和分析，为学校提供学生发展状况的全面了解，帮助学生个性化成长。"
+              desc="广州南方学院（原中山大学南方学院）是 2006 年经教育部批准设立的综合性应用型普通本科高等学校，一直致力于建设国内特色鲜明的一流应用型大学，并逐步成为广东省高等教育多样化发展的旗帜。"
             />
             <InfoCard
               index={2}
               title="了解 电气与计算机工程学院"
               href="https://sece.nfu.edu.cn/"
-              desc="学生综测管理系统是现代教育管理的利器，通过科学评估学生学业、品德和特长，为学校提供决策支持，推动教学工作的深入开展。"
+              desc="电气与计算机工程学院，其前身为电子通信与软件工程系，始建于2006年，是广州南方学院（原中山大学南方学院）唯一的理工学院..."
             />
             <InfoCard
               index={3}
               title="了解 智能大数据工作室"
-              href="https://www.scholat.com/"
-              desc="毕业设计选题系统系统是学校管理的科学手段，实现对学生全面评价，为学校发现潜力、提高教学质量提供重要支持。"
+              href="https://limou3434.github.io/work-blog-website/"
+              desc="本毕业设计选题系统由广州南方学院智能大数据平台工作室提供，是学校管理毕设选题的科学手段，为学校提高教学质量提供重要支持。"
             />
           </div>
         </div>
