@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.Lzh.answer.mapper.ProjectMapper">
+<mapper namespace="cn.com.edtechhub.worktopicselection.mapper.ProjectMapper">
 
-    <resultMap id="BaseResultMap" type="com.Lzh.answer.model.entity.Project">
+    <resultMap id="BaseResultMap" type="cn.com.edtechhub.worktopicselection.model.entity.Project">
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="projectName" column="projectName" jdbcType="VARCHAR"/>
             <result property="deptName" column="deptName" jdbcType="VARCHAR"/>

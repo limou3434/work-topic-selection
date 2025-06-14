@@ -51,7 +51,7 @@ mybatis-plus:
 logging:
   level:
     # root: DEBUG # 如果需要仔细调试可以打开这个选项
-    com.Lzh.answer: DEBUG # 控制本项目包内的日志输出等级 TRACE | DEBUG | INFO | WARN | ERROR | FATAL
+    cn.com.edtechhub.worktopicselection: DEBUG # 控制本项目包内的日志输出等级 TRACE | DEBUG | INFO | WARN | ERROR | FATAL
 
 # 配置文档
 knife4j:
@@ -63,7 +63,7 @@ knife4j:
       default:
         api-rule: package
         api-rule-resources:
-          - com.Lzh.answer.controller
+          - cn.com.edtechhub.worktopicselection.controller
 
 # 配置 COS
 cos:
