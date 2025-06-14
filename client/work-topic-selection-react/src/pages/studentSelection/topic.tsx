@@ -27,37 +27,10 @@ const columns: ProColumns<TableListItem>[] = [
     width: 48,
   },
   {
-    title: '题目',
-    dataIndex: 'topic',
-  },
-  {
-    title: '题目类型',
-    dataIndex: 'type',
-  },
-  {
-    title: '题目描述',
-    dataIndex: 'description',
-    valueType: 'textarea',
-  },
-  {
-    title: '对学生要求',
-    dataIndex: 'requirement',
-    valueType: 'textarea',
-  },
-  {
-    title: '剩余数量',
-    dataIndex: 'surplusQuantity',
-    search: false,
-  },
-  {
-    title: '预选数量',
-    dataIndex: 'selectAmount',
-    search: false,
-  },
-  {
     title: '操作',
     valueType: 'option',
     key: 'option',
+    width: 70,
     render: (text, record, _, action) => [
       <a
         key="select"
@@ -74,6 +47,37 @@ const columns: ProColumns<TableListItem>[] = [
         预选题
       </a>,
     ],
+  },
+  {
+    title: '剩余数量',
+    dataIndex: 'surplusQuantity',
+    search: false,
+    width: 80,
+  },
+  {
+    title: '预选数量',
+    dataIndex: 'selectAmount',
+    search: false,
+    width: 80,
+  },
+  {
+    title: '题目',
+    dataIndex: 'topic',
+  },
+  {
+    title: '题目类型',
+    dataIndex: 'type',
+    width: 100,
+  },
+  {
+    title: '题目描述',
+    dataIndex: 'description',
+    valueType: 'textarea',
+  },
+  {
+    title: '要求学生',
+    dataIndex: 'requirement',
+    valueType: 'textarea',
   },
 ];
 
