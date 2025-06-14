@@ -3,6 +3,8 @@
 **node_modules/
 **target/
 **dist/
+**.umi/
+**.umi-production/
 **.env
 **access.log
 
