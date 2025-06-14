@@ -18,13 +18,13 @@ import cn.com.edtechhub.worktopicselection.model.dto.studentTopicSelection.Selec
 import cn.com.edtechhub.worktopicselection.model.dto.studentTopicSelection.SelectTopicByIdRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.topic.*;
 import cn.com.edtechhub.worktopicselection.model.dto.user.*;
-import cn.com.edtechhub.worktopicselection.model.vo.*;
-import cn.com.edtechhub.worktopicselection.service.*;
 import cn.com.edtechhub.worktopicselection.model.entity.Project;
 import cn.com.edtechhub.worktopicselection.model.entity.StudentTopicSelection;
 import cn.com.edtechhub.worktopicselection.model.entity.Topic;
 import cn.com.edtechhub.worktopicselection.model.entity.User;
 import cn.com.edtechhub.worktopicselection.model.enums.Dept;
+import cn.com.edtechhub.worktopicselection.model.vo.*;
+import cn.com.edtechhub.worktopicselection.service.*;
 import cn.com.edtechhub.worktopicselection.utils.SqlUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -44,10 +44,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static cn.com.edtechhub.worktopicselection.service.impl.UserServiceImpl.SALT;
-
 /**
- * 用户接口
+ * 用户网络接口
+ *
+ * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 @Transactional
 @RestController
@@ -55,26 +55,42 @@ import static cn.com.edtechhub.worktopicselection.service.impl.UserServiceImpl.S
 @Slf4j
 public class UserController {
 
+    /**
+     * 引入用户服务依赖
+     */
     @Resource
     private UserService userService;
 
+    /**
+     * 引入系部服务依赖
+     */
     @Resource
     private DeptService deptService;
 
-    @Resource
-    private TopicService topicService;
-
-    @Resource
-    private StudentTopicSelectionService studentTopicSelectionService;
-
+    /**
+     * 引入专业服务依赖
+     */
     @Resource
     private ProjectService projectService;
 
+    /**
+     * 引入选题服务依赖
+     */
+    @Resource
+    private TopicService topicService;
+
+    /**
+     * 引入学生选题关联服务依赖
+     */
+    @Resource
+    private StudentTopicSelectionService studentTopicSelectionService;
+
+    // TODO: 等待去除
     @Resource
     private UserMapper userMapper;
 
     /**
-     * 用户注册(实际上本项目不存在注册新用户, 只能管理员)
+     * 用户注册, 实际上本项目不存在注册新用户, 只能管理员由管理员手动导入系统, 这是因为学院系统的特殊性
      */
     @PostMapping("/register")
     public BaseResponse<Long> userUpdatePassword(@RequestBody UserUpdatePassword userUpdatePassword) {
@@ -112,7 +128,6 @@ public class UserController {
         return ResultUtils.success(loginUserVO, "登录成功");
     }
 
-
     /**
      * 用户注销
      *
@@ -129,176 +144,6 @@ public class UserController {
     }
 
     /**
-     * 获取当前登录用户
-     *
-     * @param request
-     * @return
-     */
-    @GetMapping("/get/login")
-    public BaseResponse<LoginUserVO> getLoginUser(HttpServletRequest request) {
-        User user = userService.getLoginUser(request);
-        return ResultUtils.success(userService.getLoginUserVO(user), "获取成功");
-    }
-
-    // endregion
-
-    // region 增删改查
-
-    /**
-     * 创建用户
-     *
-     * @param userAddRequest
-     * @param request
-     * @return
-     */
-    @PostMapping("/add")
-    public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest, HttpServletRequest request) {
-
-        final User loginUser = userService.getLoginUser(request);
-        if (loginUser == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        final Integer userRole = loginUser.getUserRole();
-        if (userRole != 1 && userRole != 2 && userRole != 3) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
-        }
-
-        final String userAccount = userAddRequest.getUserAccount();
-        final User oldUser = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
-        if (oldUser != null) {
-            return ResultUtils.error(400, "该用户已存在");
-        }
-        User user = new User();
-        BeanUtils.copyProperties(userAddRequest, user);
-        user.setDept(userAddRequest.getDeptName());
-        user.setProject(userAddRequest.getProject());
-        user.setUserRole(userAddRequest.getUserRole());
-
-        // 默认密码 12345678
-        String defaultPassword = "12345678";
-        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + defaultPassword).getBytes());
-        user.setUserPassword(encryptPassword);
-        boolean result = userService.save(user);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
-        return ResultUtils.success(user.getId(), "添加成功");
-    }
-
-    /**
-     * 删除用户
-     *
-     * @param deleteRequest
-     * @param request
-     * @return
-     */
-    @PostMapping("/delete")
-    public BaseResponse<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
-        if (deleteRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        final String userAccount = deleteRequest.getUserAccount();
-        boolean b = userService.remove(new QueryWrapper<User>().eq("userAccount", userAccount));
-        if (!b) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
-        }
-        return ResultUtils.success(b, "删除成功");
-    }
-
-    /**
-     * 更新用户
-     *
-     * @param userUpdateRequest
-     * @param request
-     * @return
-     */
-    @PostMapping("/update")
-    public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest,
-                                            HttpServletRequest request) {
-        if (userUpdateRequest == null || userUpdateRequest.getId() == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        User user = new User();
-        BeanUtils.copyProperties(userUpdateRequest, user);
-        boolean result = userService.updateById(user);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
-        return ResultUtils.success(true, "修改成功");
-    }
-
-    /**
-     * 根据 id 获取用户（仅管理员）
-     *
-     * @param id
-     * @param request
-     * @return
-     */
-    @GetMapping("/get")
-    public BaseResponse<User> getUserById(long id, HttpServletRequest request) {
-        if (id <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        User user = userService.getById(id);
-        ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR);
-        return ResultUtils.success(user, "获取成功");
-    }
-
-    /**
-     * 根据 id 获取包装类
-     *
-     * @param id
-     * @param request
-     * @return
-     */
-    @GetMapping("/get/vo")
-    public BaseResponse<UserVO> getUserVOById(long id, HttpServletRequest request) {
-        BaseResponse<User> response = getUserById(id, request);
-        User user = response.getData();
-        return ResultUtils.success(userService.getUserVO(user), "获取成功");
-    }
-
-    /**
-     * 分页获取用户列表（仅管理员）
-     *
-     * @param userQueryRequest
-     * @param request
-     * @return
-     */
-    @PostMapping("/list/page")
-    public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest,
-                                                   HttpServletRequest request) {
-        long current = userQueryRequest.getCurrent();
-        long size = userQueryRequest.getPageSize();
-        Page<User> userPage = userService.page(new Page<>(current, size),
-                userService.getQueryWrapper(userQueryRequest, request));
-        return ResultUtils.success(userPage, "获取成功");
-    }
-
-    /**
-     * 分页获取用户封装列表
-     *
-     * @param userQueryRequest
-     * @param request
-     * @return
-     */
-    @PostMapping("/list/page/vo")
-    public BaseResponse<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryRequest userQueryRequest,
-                                                       HttpServletRequest request) {
-        if (userQueryRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        long current = userQueryRequest.getCurrent();
-        long size = userQueryRequest.getPageSize();
-        // 限制爬虫
-        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
-        Page<User> userPage = userService.page(new Page<>(current, size),
-                userService.getQueryWrapper(userQueryRequest, request));
-        Page<UserVO> userVOPage = new Page<>(current, size, userPage.getTotal());
-        List<UserVO> userVO = userService.getUserVO(userPage.getRecords());
-        userVOPage.setRecords(userVO);
-        return ResultUtils.success(userVOPage, "获取成功");
-    }
-
-    // endregion
-
-    /**
      * 更新个人信息
      *
      * @param userUpdateMyRequest
@@ -306,8 +151,7 @@ public class UserController {
      * @return
      */
     @PostMapping("/update/my")
-    public BaseResponse<Boolean> updateMyUser(@RequestBody UserUpdateMyRequest userUpdateMyRequest,
-                                              HttpServletRequest request) {
+    public BaseResponse<Boolean> updateMyUser(@RequestBody UserUpdateMyRequest userUpdateMyRequest, HttpServletRequest request) {
         if (userUpdateMyRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -321,15 +165,22 @@ public class UserController {
     }
 
     /**
-     * 获取用户数据
+     * 获取当前登录用户
      *
-     * @param getUserListRequest
      * @param request
      * @return
      */
-    @PostMapping("/getUserList")
-    public BaseResponse<List<UserNameVO>> getUserList(@RequestBody GetUserListRequest getUserListRequest,
-                                                      HttpServletRequest request) {
+    @GetMapping("/get/login")
+    public BaseResponse<LoginUserVO> getLoginUser(HttpServletRequest request) {
+        User user = userService.getLoginUser(request);
+        return ResultUtils.success(userService.getLoginUserVO(user), "获取成功");
+    }
+
+    /**
+     * 获取用户列表数据
+     */
+    @PostMapping("/get/user/list")
+    public BaseResponse<List<UserNameVO>> getUserList(@RequestBody GetUserListRequest getUserListRequest, HttpServletRequest request) {
         if (getUserListRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -354,9 +205,8 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("getDeptList")
-    public BaseResponse<List<DeptVO>> getDeptList(@RequestBody DeptQueryRequest deptQueryRequest,
-                                                  HttpServletRequest request) {
+    @PostMapping("get/dept/list")
+    public BaseResponse<List<DeptVO>> getDeptList(@RequestBody DeptQueryRequest deptQueryRequest, HttpServletRequest request) {
         long current = deptQueryRequest.getCurrent();
         long size = deptQueryRequest.getPageSize();
         Page<Dept> deptPage = deptService.page(new Page<>(current, size),
@@ -378,9 +228,8 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("getProject")
-    public BaseResponse<Page<Project>> getProject(@RequestBody ProjectQueryRequest projectQueryRequest,
-                                                  HttpServletRequest request) {
+    @PostMapping("get/project")
+    public BaseResponse<Page<Project>> getProject(@RequestBody ProjectQueryRequest projectQueryRequest, HttpServletRequest request) {
         long current = projectQueryRequest.getCurrent();
         long size = projectQueryRequest.getPageSize();
         Page<Project> projectPage = projectService.page(new Page<>(current, size),
@@ -394,9 +243,8 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("getProjectList")
-    public BaseResponse<List<ProjectVO>> getProjectList(@RequestBody ProjectQueryRequest projectQueryRequest,
-                                                        HttpServletRequest request) {
+    @PostMapping("get/project/list")
+    public BaseResponse<List<ProjectVO>> getProjectList(@RequestBody ProjectQueryRequest projectQueryRequest, HttpServletRequest request) {
         long current = projectQueryRequest.getCurrent();
         long size = projectQueryRequest.getPageSize();
         Page<Project> projectPage = projectService.page(new Page<>(current, size),
@@ -418,9 +266,8 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("getDept")
-    public BaseResponse<Page<Dept>> getDept(@RequestBody DeptQueryRequest deptQueryRequest,
-                                            HttpServletRequest request) {
+    @PostMapping("get/dept")
+    public BaseResponse<Page<Dept>> getDept(@RequestBody DeptQueryRequest deptQueryRequest, HttpServletRequest request) {
         long current = deptQueryRequest.getCurrent();
         long size = deptQueryRequest.getPageSize();
         Page<Dept> deptPage = deptService.page(new Page<>(current, size),
@@ -435,7 +282,7 @@ public class UserController {
      * @param request                 HTTP请求
      * @return 包含教师数据的分页响应
      */
-    @PostMapping("getDeptTeacher")
+    @PostMapping("get/dept/teacher")
     public BaseResponse<Page<DeptTeacherVO>> getTeacher(@RequestBody DeptTeacherQueryRequest deptTeacherQueryRequest, HttpServletRequest request) {
         if (deptTeacherQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
@@ -507,7 +354,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("/deleteDept")
+    @PostMapping("/delete/dept")
     public BaseResponse<Boolean> deleteDept(@RequestBody DeleteDeptRequest deleteDeptRequest, HttpServletRequest request) {
         if (deleteDeptRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -527,7 +374,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("/deleteProject")
+    @PostMapping("/delete/project")
     public BaseResponse<Boolean> deleteProject(@RequestBody DeleteProjectRequest deleteProjectRequest, HttpServletRequest request) {
         if (deleteProjectRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -547,7 +394,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("/addDept")
+    @PostMapping("/add/dept")
     public BaseResponse<Long> addDept(@RequestBody DeptAddRequest deptAddRequest, HttpServletRequest request) {
         if (deptAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -576,7 +423,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("/addProject")
+    @PostMapping("/add/project")
     public BaseResponse<Long> addProject(@RequestBody ProjectAddRequest projectAddRequest, HttpServletRequest request) {
         if (projectAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -609,7 +456,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("/addTopic")
+    @PostMapping("/add/topic")
     public BaseResponse<Long> addTopic(@RequestBody AddTopicRequest addTopicRequest, HttpServletRequest request) {
         if (addTopicRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -641,7 +488,7 @@ public class UserController {
      * @param request              HTTP请求对象
      * @return 基础响应对象，包含操作结果信息
      */
-    @PostMapping("/selectStudent")
+    @PostMapping("/select/student")
     public BaseResponse<String> selectStudent(@RequestBody SelectStudentRequest selectStudentRequest, HttpServletRequest request) {
         // 检查请求参数是否为空
         if (selectStudentRequest == null) {
@@ -706,7 +553,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("/deleteTopic")
+    @PostMapping("/delete/topic")
     public BaseResponse<Boolean> deleteTopic(@RequestBody DeleteTopicRequest deleteTopicRequest, HttpServletRequest request) {
         if (deleteTopicRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -732,7 +579,7 @@ public class UserController {
      * @param request            HTTP请求对象
      * @return 基础响应对象，包含操作结果信息
      */
-    @PostMapping("/Withdraw")
+    @PostMapping("/withdraw")
     public BaseResponse<Boolean> Withdraw(@RequestBody DeleteTopicRequest deleteTopicRequest, HttpServletRequest request) {
         // 检查请求参数是否为空
         if (deleteTopicRequest == null) {
@@ -771,7 +618,6 @@ public class UserController {
         }
     }
 
-
     /**
      * 更新选题
      *
@@ -779,7 +625,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("/updateTopic")
+    @PostMapping("/update/topic")
     public BaseResponse<String> updateTopic(@RequestBody UpdateTopicRequest updateTopicRequest, HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
         final Integer userRole = loginUser.getUserRole();
@@ -832,16 +678,14 @@ public class UserController {
         return ResultUtils.success("更新成功", "更新成功");
     }
 
-
     /**
      * 重置密码
      *
      * @param request
      * @return
      */
-    @PostMapping("resetPassword")
-    public BaseResponse<String> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest,
-                                              HttpServletRequest request) {
+    @PostMapping("reset/password")
+    public BaseResponse<String> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest, HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
         if (resetPasswordRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求数据为空");
@@ -869,9 +713,8 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("getTopicList")
-    public BaseResponse<Page<Topic>> getTopicList(@RequestBody TopicQueryRequest topicQueryRequest,
-                                                  HttpServletRequest request) {
+    @PostMapping("get/topic/list")
+    public BaseResponse<Page<Topic>> getTopicList(@RequestBody TopicQueryRequest topicQueryRequest, HttpServletRequest request) {
         long current = topicQueryRequest.getCurrent();
         long size = topicQueryRequest.getPageSize();
         Page<Topic> topicPage = topicService.page(new Page<>(current, size),
@@ -885,7 +728,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("addCount")
+    @PostMapping("add/count")
     public BaseResponse<String> addCount(@RequestBody AddCountRequest addCountRequest, HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
         final Integer userRole = loginUser.getUserRole();
@@ -912,7 +755,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("getStudentByTopicId")
+    @PostMapping("get/student/by/topicId")
     public BaseResponse<List<User>> getStudentByTopicId(@RequestBody GetStudentByTopicId getStudentByTopicId, HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
         final Integer userRole = loginUser.getUserRole();
@@ -944,7 +787,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("setTimeById")
+    @PostMapping("set/time/by/id")
     public BaseResponse<String> setTimeById(@RequestBody SetTimeRequest setTimeRequest, HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
         final Integer userRole = loginUser.getUserRole();
@@ -979,7 +822,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("preSelectTopicById")
+    @PostMapping("pre/select/topic/by/id")
     public BaseResponse<Long> preSelectTopicById(@RequestBody SelectTopicByIdRequest selectTopicByIdRequest, HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {
@@ -1028,7 +871,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("selectTopicById")
+    @PostMapping("select/topic/by/id")
     public BaseResponse<Long> selectTopicById(@RequestBody SelectTopicByIdRequest selectTopicByIdRequest, HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
         if (request == null) {
@@ -1075,7 +918,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("getTeacher")
+    @PostMapping("get/teacher")
     public BaseResponse<List<TeacherVO>> getTeacher(@RequestBody TeacherQueryRequest teacherQueryRequest, HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {
@@ -1099,7 +942,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("getPreTopic")
+    @PostMapping("get/pre/topic")
     public BaseResponse<List<Topic>> getPreTopic(HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {
@@ -1123,7 +966,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("getSelectTopic")
+    @PostMapping("get/select/topic")
     public BaseResponse<List<Topic>> getSelectTopic(HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {
@@ -1150,7 +993,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("getSelectTopicById")
+    @PostMapping("get/select/topic/by/id")
     public BaseResponse<List<User>> getSelectTopicById(@RequestBody GetSelectTopicById getSelectTopicById, HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {
@@ -1178,7 +1021,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("getSelectTopicSituation")
+    @PostMapping("get/select/topic/situation")
     public BaseResponse<SituationVO> getSelectTopicSituation(HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {
@@ -1212,7 +1055,7 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("getUnSelectTopicStudentList")
+    @PostMapping("get/un/select/topic/student/list")
     public BaseResponse<List<User>> getUnSelectTopicStudentList(HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {
@@ -1244,9 +1087,8 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("getTopicListByAdmin")
-    public BaseResponse<Page<Topic>> getTopicListByAdmin(@RequestBody TopicQueryByAdminRequest topicQueryByAdminRequest,
-                                                         HttpServletRequest request) {
+    @PostMapping("get/topic/list/by/admin")
+    public BaseResponse<Page<Topic>> getTopicListByAdmin(@RequestBody TopicQueryByAdminRequest topicQueryByAdminRequest, HttpServletRequest request) {
         long current = topicQueryByAdminRequest.getCurrent();
         long size = topicQueryByAdminRequest.getPageSize();
         Page<Topic> topicPage = topicService.page(new Page<>(current, size),
@@ -1260,9 +1102,8 @@ public class UserController {
      * @param request
      * @return
      */
-    @PostMapping("CheckTopic")
-    public BaseResponse<Boolean> checkTopic(@RequestBody CheckTopicRequest checkTopicRequest,
-                                            HttpServletRequest request) {
+    @PostMapping("check/topic")
+    public BaseResponse<Boolean> checkTopic(@RequestBody CheckTopicRequest checkTopicRequest, HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
         if (checkTopicRequest == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "请求参数为空");
@@ -1301,9 +1142,8 @@ public class UserController {
      * @param request                 HTTP请求
      * @return 包含教师数据的分页响应
      */
-    @PostMapping("getDeptTeacherByAdmin")
-    public BaseResponse<Page<DeptTeacherVO>> getTeacherByAdmin(@RequestBody DeptTeacherQueryRequest deptTeacherQueryRequest,
-                                                               HttpServletRequest request) {
+    @PostMapping("get/dept/teacher/by/admin")
+    public BaseResponse<Page<DeptTeacherVO>> getTeacherByAdmin(@RequestBody DeptTeacherQueryRequest deptTeacherQueryRequest, HttpServletRequest request) {
         if (deptTeacherQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
@@ -1359,5 +1199,5 @@ public class UserController {
         teacherPage.setRecords(teacherVOList);
         return ResultUtils.success(teacherPage, "获取成功");
     }
-}
 
+}
