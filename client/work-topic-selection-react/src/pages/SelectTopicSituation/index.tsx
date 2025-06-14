@@ -1,8 +1,6 @@
 import { getSelectTopicStudentListCsvUsingPost } from '@/services/bsxt/fileController';
 import { getSelectTopicSituationUsingPost } from '@/services/bsxt/userController';
-import { PlusOutlined } from '@ant-design/icons';
-import { ModalForm, ProFormText, StatisticCard } from '@ant-design/pro-components';
-import { ProFormUploadButton } from '@ant-design/pro-form';
+import { StatisticCard } from '@ant-design/pro-components';
 import { Button, message } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import ReactECharts from 'echarts-for-react';
@@ -98,32 +96,15 @@ const YourComponent = () => {
 
   return (
     <div style={{ padding: 24, maxWidth: 1600, margin: '0 auto' }}>
-      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-        <ModalForm
-          title="上传文件"
-          trigger={
-            <Button type="primary">
-              <PlusOutlined />
-              上传文件
-            </Button>
-          }
-          form={form}
-          autoFocusFirstInput
-          modalProps={{ destroyOnClose: true }}
-          submitTimeout={2000}
-          onFinish={async () => {
-            message.success('提交成功');
-            return true;
-          }}
-        >
-          <ProFormUploadButton>
-            <ProFormText name="name" label="压缩包" />
-          </ProFormUploadButton>
-          <ProFormUploadButton>
-            <ProFormText name="name" label="表格" />
-          </ProFormUploadButton>
-        </ModalForm>
-
+      <div
+        style={{
+          marginBottom: 24,
+          display: 'flex',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 12,
+        }}
+      >
         <Button type="primary" onClick={exportSelectedStudents}>
           导出已选题学生名单
         </Button>
@@ -152,7 +133,9 @@ const YourComponent = () => {
               description: (
                 <Statistic
                   title="占比"
-                  value={`${data.amount ? ((data.selectAmount / data.amount) * 100).toFixed(1) : 0}%`}
+                  value={`${
+                    data.amount ? ((data.selectAmount / data.amount) * 100).toFixed(1) : 0
+                  }%`}
                 />
               ),
             },
