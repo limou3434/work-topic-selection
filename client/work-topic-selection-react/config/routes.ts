@@ -26,19 +26,25 @@
     icon: 'FormOutlined',
     routes: [
       {
-        name: '管理员账号管理',
+        name: '系统账号管理',
         path: '/admin/admins',
         component: './AdminList',
         access: 'canAccessAdmin',
       },
       {
-        name: '系部管理',
+        name: '院系系部管理',
         path: '/admin/dept',
         component: './DeptList',
         access: 'canAccessAdmin',
       },
       {
-        name: '系部账号管理',
+        name: '系部专业管理',
+        path: '/admin/project',
+        component: './ProjectList',
+        access: 'canAccessAdmin',
+      },
+      {
+        name: '主任账号管理',
         path: '/admin/deptTeacher',
         component: './DeptTeacherList',
         access: 'canAccessAdmin',
@@ -53,12 +59,6 @@
         name: '学生账号管理',
         path: '/admin/student',
         component: './StudentList',
-        access: 'canAccessAdmin',
-      },
-      {
-        name: '专业管理',
-        path: '/admin/project',
-        component: './ProjectList',
         access: 'canAccessAdmin',
       },
     ],

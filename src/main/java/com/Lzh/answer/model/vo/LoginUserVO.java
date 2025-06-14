@@ -7,8 +7,6 @@ import lombok.Data;
 /**
  * 已登录用户视图（脱敏）
  *
- *  
- *
  * @author Lzh*/
 @Data
 public class LoginUserVO implements Serializable {
@@ -37,6 +35,7 @@ public class LoginUserVO implements Serializable {
      * 更新时间
      */
     private Date updateTime;
+
     /**
      * 用户头像
      */

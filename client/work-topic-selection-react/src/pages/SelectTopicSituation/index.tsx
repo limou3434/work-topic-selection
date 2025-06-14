@@ -1,29 +1,26 @@
-import {ModalForm, ProFormText, StatisticCard} from '@ant-design/pro-components';
-import RcResizeObserver from 'rc-resize-observer';
-import ReactECharts from 'echarts-for-react';
-import React, { useState, useEffect } from 'react';
+import { getSelectTopicStudentListCsvUsingPost } from '@/services/bsxt/fileController';
 import { getSelectTopicSituationUsingPost } from '@/services/bsxt/userController';
-import { useNavigate } from 'react-router-dom';
+import { PlusOutlined } from '@ant-design/icons';
+import { ModalForm, ProFormText, StatisticCard } from '@ant-design/pro-components';
+import { ProFormUploadButton } from '@ant-design/pro-form';
 import { Button, message } from 'antd';
-import {
-  getSelectTopicStudentListCsvUsingPost,
-} from "@/services/bsxt/fileController";
-import {PlusOutlined} from "@ant-design/icons";
-import {ProFormUploadButton} from "@ant-design/pro-form";
+import { useForm } from 'antd/es/form/Form';
+import ReactECharts from 'echarts-for-react';
+import RcResizeObserver from 'rc-resize-observer';
+import { useEffect, useState } from 'react';
 
-const { Statistic, Divider } = StatisticCard;
+const { Statistic } = StatisticCard;
 
 const YourComponent = () => {
-  const [responsive, setResponsive] = useState(false);
+  const [form] = useForm();
   const [data, setData] = useState({ amount: 0, selectAmount: 0, unselectAmount: 0 });
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchData = async () => {
+    (async () => {
       try {
         const response = await getSelectTopicSituationUsingPost();
         if (response.code === 0) {
-          //@ts-ignore
+          // @ts-ignore
           setData(response.data);
         } else {
           console.error('数据获取失败:', response.message);
@@ -31,24 +28,10 @@ const YourComponent = () => {
       } catch (error) {
         console.error('数据获取失败:', error);
       }
-    };
-
-    fetchData();
+    })();
   }, []);
 
   const totalChartOption = {
-    legend: {
-      top: 'bottom',
-    },
-    toolbox: {
-      show: true,
-      feature: {
-        mark: { show: true },
-        dataView: { show: true, readOnly: false },
-        restore: { show: true },
-        saveAsImage: { show: true },
-      },
-    },
     series: [
       {
         name: '总人数',
@@ -56,9 +39,7 @@ const YourComponent = () => {
         radius: [40, 140],
         center: ['50%', '50%'],
         roseType: 'area',
-        itemStyle: {
-          borderRadius: 8,
-        },
+        itemStyle: { borderRadius: 8 },
         data: [
           { value: data.amount, name: '总人数', itemStyle: { color: '#5ee7e7' } },
           { value: data.selectAmount, name: '已经选题人数', itemStyle: { color: '#eee86e' } },
@@ -69,13 +50,6 @@ const YourComponent = () => {
   };
 
   const selectedChartOption = {
-    tooltip: {
-      trigger: 'item',
-    },
-    legend: {
-      top: '5%',
-      left: 'center',
-    },
     series: [
       {
         name: '人数',
@@ -87,20 +61,15 @@ const YourComponent = () => {
           borderColor: '#fff',
           borderWidth: 2,
         },
-        label: {
-          show: false,
-          position: 'center',
-        },
+        label: { show: false, position: 'center' },
         emphasis: {
           label: {
             show: true,
-            fontSize: 40,
+            fontSize: 32,
             fontWeight: 'bold',
           },
         },
-        labelLine: {
-          show: false,
-        },
+        labelLine: { show: false },
         data: [
           { value: data.selectAmount, name: '已经选题人数', itemStyle: { color: '#5d9fea' } },
           { value: data.unselectAmount, name: '没有选题人数', itemStyle: { color: '#aeee62' } },
@@ -116,7 +85,7 @@ const YourComponent = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = '已选题学生列表.csv'; // 修改文件名和后缀
+      a.download = '已选题学生列表.csv';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -127,141 +96,97 @@ const YourComponent = () => {
     }
   };
 
-  const unselectedChartOption = {
-    tooltip: {
-      trigger: 'item',
-    },
-    legend: {
-      top: '5%',
-      left: 'center',
-    },
-    series: [
-      {
-        name: '人数',
-        type: 'pie',
-        radius: ['40%', '70%'],
-        avoidLabelOverlap: false,
-        itemStyle: {
-          borderRadius: 10,
-          borderColor: '#fff',
-          borderWidth: 2,
-        },
-        label: {
-          show: false,
-          position: 'center',
-        },
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: 40,
-            fontWeight: 'bold',
-          },
-        },
-        labelLine: {
-          show: false,
-        },
-        data: [
-          { value: data.selectAmount, name: '已经选题人数', itemStyle: { color: '#f3c734' } },
-          { value: data.unselectAmount, name: '没有选题人数', itemStyle: { color: '#ec5c60' } },
-        ],
-      },
-    ],
-  };
-
   return (
-    <div
-      style={{
-        position: 'relative', // 确保子元素使用绝对定位时相对于该元素定位
-        height: '80vh',
-        width: '80vw',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '20px',
-        boxSizing: 'border-box',
-      }}
-    >
-      <ModalForm<{
-        name: string;
-        company: string;
-      }>
-        title="新建表单"
-        trigger={
-          <Button type="primary">
+    <div style={{ padding: 24, maxWidth: 1600, margin: '0 auto' }}>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+        <ModalForm
+          title="上传文件"
+          trigger={
+            <Button type="primary">
+              <PlusOutlined />
+              上传文件
+            </Button>
+          }
+          form={form}
+          autoFocusFirstInput
+          modalProps={{ destroyOnClose: true }}
+          submitTimeout={2000}
+          onFinish={async () => {
+            message.success('提交成功');
+            return true;
+          }}
+        >
+          <ProFormUploadButton>
+            <ProFormText name="name" label="压缩包" />
+          </ProFormUploadButton>
+          <ProFormUploadButton>
+            <ProFormText name="name" label="表格" />
+          </ProFormUploadButton>
+        </ModalForm>
 
-            <PlusOutlined />
-            上传文件
-          </Button>
-        }
-        form={form}
-        autoFocusFirstInput
-        modalProps={{
-          destroyOnClose: true,
-          onCancel: () => console.log('run'),
-        }}
-        submitTimeout={2000}
-        onFinish={async (values) => {
-          console.log(values.name);
-          message.success('提交成功');
-          return true;
-        }}
+        <Button type="primary" onClick={exportSelectedStudents}>
+          导出已选题学生名单
+        </Button>
+      </div>
 
-      >
-      <ProFormUploadButton>
-        <ProFormText name="name" label="压缩包" />
-      </ProFormUploadButton>
-        <ProFormUploadButton>
-          <ProFormText name="name" label="表格" />
-        </ProFormUploadButton>
-      </ModalForm>
-      <Button
-        type="primary"
-        size="large"
-        onClick={exportSelectedStudents}
-        style={{
-          position: 'absolute',
-          top: 20,
-          right: 20,
-          zIndex: 1, // 确保按钮在其他内容之上
-        }}
-      >
-        导出已选题学生名单
-      </Button>
-      <RcResizeObserver
-        key="resize-observer"
-        onResize={(offset) => {
-          setResponsive(offset.width < 599);
-        }}
-      >
-        <StatisticCard.Group direction={responsive ? 'column' : 'row'}>
-          <StatisticCard
-            statistic={{
-              title: '总人数',
+      <RcResizeObserver onResize={() => {}}>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            gap: 24,
+          }}
+        >
+          {[
+            {
+              title: '本次选题情况',
               value: data.amount,
-            }}
-            chart={<ReactECharts option={totalChartOption} style={{ height: '500px', width: '100%' }} />}
-          />
-          <Divider type={responsive ? 'horizontal' : 'vertical'} />
-          <StatisticCard
-            statistic={{
-              title: '已经选题人数',
+              chartOption: totalChartOption,
+              description: null,
+            },
+            {
+              title: '选题人数分析',
               value: data.selectAmount,
-              description: <Statistic title="占比" value={`${((data.selectAmount / data.amount) * 100).toFixed(1)}%`} />,
-            }}
-            chart={<ReactECharts option={selectedChartOption} style={{ height: '500px', width: '100%' }} />}
-          />
-          <Divider type={responsive ? 'horizontal' : 'vertical'} />
-          <StatisticCard
-            statistic={{
-              title: '没有选题人数',
-              value: data.unselectAmount,
-              description: <Statistic title="占比" value={`${((data.unselectAmount / data.amount) * 100).toFixed(1)}%`} />,
-            }}
-            onClick={() => {
-              navigate(`/topic/view/SelectTopicSituation/student`);
-            }}
-            chart={<ReactECharts option={unselectedChartOption} style={{ height: '500px', width: '100%' }} />}
-          />
-        </StatisticCard.Group>
+              chartOption: selectedChartOption,
+              description: (
+                <Statistic
+                  title="占比"
+                  value={`${data.amount ? ((data.selectAmount / data.amount) * 100).toFixed(1) : 0}%`}
+                />
+              ),
+            },
+          ].map(({ title, value, chartOption, description }) => (
+            <div
+              key={title}
+              style={{
+                width: 500,
+                background: '#fff',
+                borderRadius: 12,
+                overflow: 'hidden',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                transition: 'transform 0.3s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.02)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              <StatisticCard
+                statistic={{ title, value, description }}
+                chart={
+                  <ReactECharts
+                    option={chartOption}
+                    style={{ height: 400, width: '100%', marginTop: 12 }}
+                  />
+                }
+                bodyStyle={{ padding: 24 }}
+              />
+            </div>
+          ))}
+        </div>
       </RcResizeObserver>
     </div>
   );
