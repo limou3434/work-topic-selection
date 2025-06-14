@@ -1,6 +1,6 @@
 import {
   getTopicListUsingPost
-} from '@/services/bsxt/userController';
+} from '@/services/work-topic-selection/userController';
 import { ActionType, ProColumns } from '@ant-design/pro-components';
 import { useNavigate } from 'react-router-dom';
 import { ProTable } from '@ant-design/pro-components';

@@ -1,5 +1,5 @@
 import { AvatarDropdown, AvatarName, Footer, Question } from '@/components';
-import { getLoginUserUsingGet } from '@/services/bsxt/userController';
+import { getLoginUserUsingGet } from '@/services/work-topic-selection/userController';
 import { LinkOutlined } from '@ant-design/icons';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';

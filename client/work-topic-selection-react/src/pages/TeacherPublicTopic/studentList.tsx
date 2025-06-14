@@ -1,5 +1,5 @@
 // @ts-ignore
-import { listUserByPageUsingPost, selectStudentUsingPost } from '@/services/bsxt/userController';
+import { listUserByPageUsingPost, selectStudentUsingPost } from '@/services/work-topic-selection/userController';
 import { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import React, { useRef } from 'react';

@@ -1,5 +1,5 @@
 import { Footer } from '@/components';
-import {getLoginUserUsingGet, userLoginUsingPost} from '@/services/bsxt/userController';
+import {getLoginUserUsingGet, userLoginUsingPost} from '@/services/work-topic-selection/userController';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormText } from '@ant-design/pro-components';
 import { Helmet, Link, history, useModel } from '@umijs/max';

@@ -8,7 +8,7 @@ import {
   deleteUserUsingPost,
   listUserByPageUsingPost,
   resetPasswordUsingPost
-} from '../../services/bsxt/userController';
+} from '@/services/work-topic-selection/userController';
 
 type GithubIssueItem = {
   userAccount: string;

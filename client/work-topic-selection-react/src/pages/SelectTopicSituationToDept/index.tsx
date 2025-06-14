@@ -2,12 +2,12 @@ import { StatisticCard } from '@ant-design/pro-components';
 import RcResizeObserver from 'rc-resize-observer';
 import ReactECharts from 'echarts-for-react';
 import React, { useState, useEffect } from 'react';
-import { getSelectTopicSituationUsingPost } from '@/services/bsxt/userController';
+import { getSelectTopicSituationUsingPost } from '@/services/work-topic-selection/userController';
 import { useNavigate } from 'react-router-dom';
 import { Button, message } from 'antd';
 import {
   getSelectTopicStudentListCsvUsingPost,
-} from "@/services/bsxt/fileController";
+} from "@/services/work-topic-selection/fileController";
 
 const { Statistic, Divider } = StatisticCard;
 

@@ -7,7 +7,7 @@ import { Tabs, message } from 'antd';
 import { createStyles } from 'antd-style';
 import React, { useState } from 'react';
 import Settings from '../../../../config/defaultSettings';
-import {userUpdatePasswordUsingPost} from "@/services/bsxt/userController";
+import {userUpdatePasswordUsingPost} from "@/services/work-topic-selection/userController";
 
 
 const useStyles = createStyles(({ token }) => {

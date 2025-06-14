@@ -1,9 +1,9 @@
-import { getUnSelectTopicStudentListUsingPost } from '@/services/bsxt/userController';
+import { getUnSelectTopicStudentListUsingPost } from '@/services/work-topic-selection/userController';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import React, { useRef } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from "antd";
-import { getUnSelectTopicStudentListCsvUsingPost } from "@/services/bsxt/fileController";
+import { getUnSelectTopicStudentListCsvUsingPost } from "@/services/work-topic-selection/fileController";
 
 type GithubIssueItem = {
   userAccount: string;

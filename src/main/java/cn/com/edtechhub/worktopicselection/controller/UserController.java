@@ -90,6 +90,155 @@ public class UserController {
     private UserMapper userMapper;
 
     /**
+     * 创建用户
+     *
+     * @param userAddRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/add")
+    public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest, HttpServletRequest request) {
+
+        final User loginUser = userService.getLoginUser(request);
+        if (loginUser == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        final Integer userRole = loginUser.getUserRole();
+        if (userRole != 1 && userRole != 2 && userRole != 3) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+
+        final String userAccount = userAddRequest.getUserAccount();
+        final User oldUser = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
+        if (oldUser != null) {
+            return ResultUtils.error(400, "该用户已存在");
+        }
+        User user = new User();
+        BeanUtils.copyProperties(userAddRequest, user);
+        user.setDept(userAddRequest.getDeptName());
+        user.setProject(userAddRequest.getProject());
+        user.setUserRole(userAddRequest.getUserRole());
+
+        // 默认密码 12345678
+        String defaultPassword = "12345678";
+        String encryptPassword = DigestUtils.md5DigestAsHex(("edtechhub" + defaultPassword).getBytes());
+        user.setUserPassword(encryptPassword);
+        boolean result = userService.save(user);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        return ResultUtils.success(user.getId(), "添加成功");
+    }
+
+    /**
+     * 删除用户
+     *
+     * @param deleteRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/delete")
+    public BaseResponse<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
+        if (deleteRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        final String userAccount = deleteRequest.getUserAccount();
+        boolean b = userService.remove(new QueryWrapper<User>().eq("userAccount", userAccount));
+        if (!b) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        return ResultUtils.success(b, "删除成功");
+    }
+
+    /**
+     * 更新用户
+     *
+     * @param userUpdateRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/update")
+    public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
+        if (userUpdateRequest == null || userUpdateRequest.getId() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = new User();
+        BeanUtils.copyProperties(userUpdateRequest, user);
+        boolean result = userService.updateById(user);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        return ResultUtils.success(true, "修改成功");
+    }
+
+    /**
+     * 根据 id 获取用户（仅管理员）
+     *
+     * @param id
+     * @param request
+     * @return
+     */
+    @GetMapping("/get")
+    public BaseResponse<User> getUserById(long id, HttpServletRequest request) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userService.getById(id);
+        ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR);
+        return ResultUtils.success(user, "获取成功");
+    }
+
+    /**
+     * 根据 id 获取包装类
+     *
+     * @param id
+     * @param request
+     * @return
+     */
+    @GetMapping("/get/vo")
+    public BaseResponse<UserVO> getUserVOById(long id, HttpServletRequest request) {
+        BaseResponse<User> response = getUserById(id, request);
+        User user = response.getData();
+        return ResultUtils.success(userService.getUserVO(user), "获取成功");
+    }
+
+    /**
+     * 分页获取用户列表（仅管理员）
+     *
+     * @param userQueryRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/list/page")
+    public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest, HttpServletRequest request) {
+        long current = userQueryRequest.getCurrent();
+        long size = userQueryRequest.getPageSize();
+        Page<User> userPage = userService.page(new Page<>(current, size),
+                userService.getQueryWrapper(userQueryRequest, request));
+        return ResultUtils.success(userPage, "获取成功");
+    }
+
+    /**
+     * 分页获取用户封装列表
+     *
+     * @param userQueryRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/list/page/vo")
+    public BaseResponse<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryRequest userQueryRequest, HttpServletRequest request) {
+        if (userQueryRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        long current = userQueryRequest.getCurrent();
+        long size = userQueryRequest.getPageSize();
+        // 限制爬虫
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        Page<User> userPage = userService.page(new Page<>(current, size),
+                userService.getQueryWrapper(userQueryRequest, request));
+        Page<UserVO> userVOPage = new Page<>(current, size, userPage.getTotal());
+        List<UserVO> userVO = userService.getUserVO(userPage.getRecords());
+        userVOPage.setRecords(userVO);
+        return ResultUtils.success(userVOPage, "获取成功");
+    }
+
+    /**
      * 用户注册, 实际上本项目不存在注册新用户, 只能管理员由管理员手动导入系统, 这是因为学院系统的特殊性
      */
     @PostMapping("/register")

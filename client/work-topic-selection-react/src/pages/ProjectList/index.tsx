@@ -3,7 +3,7 @@ import { Button, Dropdown, message } from 'antd';
 import { EllipsisOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormSelect, ProFormText, ProTable } from '@ant-design/pro-components';
 import { ModalForm } from '@ant-design/pro-form';
-import { addProjectUsingPost, deleteProjectUsingPost, getDeptListUsingPost, getProjectUsingPost } from '../../services/bsxt/userController';
+import { addProjectUsingPost, deleteProjectUsingPost, getDeptListUsingPost, getProjectUsingPost } from '@/services/work-topic-selection/userController';
 
 type GithubIssueItem = {
   id: number;

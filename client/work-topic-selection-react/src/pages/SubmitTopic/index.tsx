@@ -6,7 +6,7 @@ import {
   getPreTopicUsingPost,
   preSelectTopicByIdUsingPost,
   selectTopicByIdUsingPost
-} from "@/services/bsxt/userController";
+} from "@/services/work-topic-selection/userController";
 
 export type TableListItem = {
   id:number;

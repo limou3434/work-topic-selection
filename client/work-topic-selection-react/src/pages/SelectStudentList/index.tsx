@@ -1,6 +1,6 @@
 import {
   getSelectTopicByIdUsingPost, withdrawUsingPost,
-} from '@/services/bsxt/userController';
+} from '@/services/work-topic-selection/userController';
 import {ActionType, ProColumns} from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import React, { useRef } from 'react';

@@ -4,7 +4,7 @@ import { message } from 'antd';
 import React from "react";
 import {
   getTopicListUsingPost, preSelectTopicByIdUsingPost,
-} from "@/services/bsxt/userController";
+} from "@/services/work-topic-selection/userController";
 import { useParams } from "react-router-dom";
 
 export type TableListItem = {

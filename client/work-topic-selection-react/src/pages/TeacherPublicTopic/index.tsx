@@ -4,14 +4,14 @@ import {
   getTeacherUsingPost1,
   getTopicListUsingPost,
   updateTopicUsingPost
-} from '@/services/bsxt/userController';
+} from '@/services/work-topic-selection/userController';
 import { ActionType, ProColumns, ProFormText } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import React, { useRef } from 'react';
 import { Button, message } from "antd";
 import { ModalForm, ProFormSelect, ProFormTextArea } from "@ant-design/pro-form";
 import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
-import { uploadFileTopicUsingPost } from "@/services/bsxt/fileController";
+import { uploadFileTopicUsingPost } from "@/services/work-topic-selection/fileController";
 import { ProFormUploadButton } from "@ant-design/pro-form";
 import { useNavigate } from "react-router-dom";
 

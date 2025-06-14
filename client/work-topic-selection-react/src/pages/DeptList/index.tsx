@@ -2,7 +2,7 @@
 import {
   addDeptUsingPost, deleteDeptUsingPost,
   getDeptUsingPost,
-} from '../../services/bsxt/userController';
+} from '@/services/work-topic-selection/userController';
 import {ActionType, ProColumns, ProFormText} from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import React, { useRef, useState } from 'react';

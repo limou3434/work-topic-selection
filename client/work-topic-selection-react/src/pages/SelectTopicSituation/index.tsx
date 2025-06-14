@@ -1,5 +1,5 @@
-import { getSelectTopicStudentListCsvUsingPost } from '@/services/bsxt/fileController';
-import { getSelectTopicSituationUsingPost } from '@/services/bsxt/userController';
+import { getSelectTopicStudentListCsvUsingPost } from '@/services/work-topic-selection/fileController';
+import { getSelectTopicSituationUsingPost } from '@/services/work-topic-selection/userController';
 import { StatisticCard } from '@ant-design/pro-components';
 import { Button, message } from 'antd';
 import { useForm } from 'antd/es/form/Form';

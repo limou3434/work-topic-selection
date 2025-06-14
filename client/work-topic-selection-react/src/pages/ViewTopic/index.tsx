@@ -3,7 +3,7 @@ import { ProTable } from '@ant-design/pro-components';
 import React from "react";
 import {
   getSelectTopicUsingPost, withdrawUsingPost
-} from "@/services/bsxt/userController";
+} from "@/services/work-topic-selection/userController";
 import {message} from "antd";
 
 export type TableListItem = {

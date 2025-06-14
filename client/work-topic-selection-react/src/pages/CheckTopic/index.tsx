@@ -5,7 +5,7 @@ import React, { useState, useRef } from "react";
 import {
   checkTopicUsingPost,
   getTopicListUsingPost,
-} from "@/services/bsxt/userController";
+} from "@/services/work-topic-selection/userController";
 
 export type TableListItem = {
   id: number;

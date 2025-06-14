@@ -4,14 +4,14 @@ import {
   deleteUserUsingPost,
   getDeptListUsingPost,
   listUserByPageUsingPost, resetPasswordUsingPost
-} from '@/services/bsxt/userController';
+} from '@/services/work-topic-selection/userController';
 import {ActionType, ProColumns, ProFormText} from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import React, { useRef, useState } from 'react';
 import {Button, Dropdown, message} from "antd";
 import {ModalForm, ProFormSelect} from "@ant-design/pro-form/lib";
 import {EllipsisOutlined, PlusOutlined, UploadOutlined} from "@ant-design/icons";
-import {uploadFileUsingPost} from "@/services/bsxt/fileController";
+import {uploadFileUsingPost} from "@/services/work-topic-selection/fileController";
 import {ProFormUploadButton} from "@ant-design/pro-form";
 
 type GithubIssueItem = {

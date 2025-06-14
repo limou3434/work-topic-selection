@@ -5,7 +5,7 @@ import React from "react";
 import {
   getTopicListUsingPost,
   setTimeByIdUsingPost
-} from "@/services/bsxt/userController";
+} from "@/services/work-topic-selection/userController";
 import { PlusOutlined } from "@ant-design/icons";
 import { ModalForm } from "@ant-design/pro-form/lib";
 import { ProFormDateTimePicker } from "@ant-design/pro-form";
