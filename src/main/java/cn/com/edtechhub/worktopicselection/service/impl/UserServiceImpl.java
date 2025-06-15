@@ -65,7 +65,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         // 3. 记录用户的登录态
         request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, user);
-        log.debug("【limou3434】检查 user {}, 登陆状态 {}", user, request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE));
+        log.debug("检查 user {}, 登陆状态 {}", user, request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE));
         return this.getLoginUserVO(user);
     }
 
