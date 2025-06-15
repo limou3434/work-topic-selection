@@ -230,15 +230,18 @@ public class UserController {
      */
     @PostMapping("/register")
     public BaseResponse<Long> userUpdatePassword(@RequestBody UserUpdatePassword userUpdatePassword) {
-        if (userUpdatePassword == null) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
-        }
+        // TODO: 实际上本项目不存在注册新用户, 只能管理员由管理员手动导入系统, 这是因为学院系统的特殊性, 不过这个接口是用来修改用户的初始化密码用的...
+
+        // 检查参数
+        ThrowUtils.throwIf(userUpdatePassword == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        // 更新用户
         String userAccount = userUpdatePassword.getUserAccount();
         String userPassword = userUpdatePassword.getUserPassword();
         final String updatePassword = userUpdatePassword.getUpdatePassword();
         if (StringUtils.isAnyBlank(userAccount, userPassword, updatePassword)) {
             return null;
-        }
+        } // TODO: 666, 这个逻辑这么写还改不了, 因为鬼知道他是不是后面复用了这个接口...我个人不推荐在接口类内部复用接口的, 除非作接口的强化, 这么写很搞人...
         long result = userService.userUpdatePassword(userAccount, userPassword, updatePassword);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, result);
     }
