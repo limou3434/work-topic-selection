@@ -188,7 +188,7 @@ public class UserController {
     }
 
     /**
-     * 分页获取用户列表（仅管理员）
+     * 分页获取用户列表(仅管理员)
      */
     @PostMapping("/list/page")
     public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest, HttpServletRequest request) {
@@ -208,15 +208,17 @@ public class UserController {
      */
     @PostMapping("/list/page/vo")
     public BaseResponse<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryRequest userQueryRequest, HttpServletRequest request) {
-        if (userQueryRequest == null) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
-        }
-        long current = userQueryRequest.getCurrent();
+        // 参数检查
+        ThrowUtils.throwIf(userQueryRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
         long size = userQueryRequest.getPageSize();
-        // 限制爬虫
-        ThrowUtils.throwIf(size > 20, CodeBindMessageEnums.PARAMS_ERROR, "");
-        Page<User> userPage = userService.page(new Page<>(current, size),
-                userService.getQueryWrapper(userQueryRequest, request));
+        ThrowUtils.throwIf(size > 20, CodeBindMessageEnums.PARAMS_ERROR, "不能一次性获取过多的分页数据");
+
+        long current = userQueryRequest.getCurrent();
+        ThrowUtils.throwIf(current < 0, CodeBindMessageEnums.PARAMS_ERROR, "页号必须是整数");
+
+        // 查询分页结果
+        Page<User> userPage = userService.page(new Page<>(current, size), userService.getQueryWrapper(userQueryRequest, request));
         Page<UserVO> userVOPage = new Page<>(current, size, userPage.getTotal());
         List<UserVO> userVO = userService.getUserVO(userPage.getRecords());
         userVOPage.setRecords(userVO);
@@ -224,7 +226,7 @@ public class UserController {
     }
 
     /**
-     * 用户注册, 实际上本项目不存在注册新用户, 只能管理员由管理员手动导入系统, 这是因为学院系统的特殊性
+     * 用户注册
      */
     @PostMapping("/register")
     public BaseResponse<Long> userUpdatePassword(@RequestBody UserUpdatePassword userUpdatePassword) {
