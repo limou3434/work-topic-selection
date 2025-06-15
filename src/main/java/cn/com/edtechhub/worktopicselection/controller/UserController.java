@@ -157,24 +157,32 @@ public class UserController {
     }
 
     /**
-     * 根据 id 获取用户（仅管理员）
+     * 根据 id 获取用户(仅管理员)
      */
     @GetMapping("/get")
-    public BaseResponse<User> getUserById(long id, HttpServletRequest request) {
-        if (id <= 0) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
-        }
+    public BaseResponse<User> getUserById(long id) {
+        // 检查参数
+        ThrowUtils.throwIf(id <= 0, CodeBindMessageEnums.PARAMS_ERROR, "用户标识必须是正整数");
+
         User user = userService.getById(id);
         ThrowUtils.throwIf(user == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "");
+
+        // TODO: 这里没有做用户权限校验...
+
+        // 返回用户信息
         return TheResult.success(CodeBindMessageEnums.SUCCESS, user);
     }
 
     /**
      * 根据 id 获取包装类
      */
-    @GetMapping("/get/vo")
-    public BaseResponse<UserVO> getUserVOById(long id, HttpServletRequest request) {
-        BaseResponse<User> response = getUserById(id, request);
+    @GetMapping("/get/vo") // TODO: 这里其实有个隐患, 前端传递的 id 值有可能出现襟度问题, 导致 id 值错乱, 因此这里最好是修改为请求体类来传递, 并且携带注解 @JsonSerialize(using = ToStringSerializer.class), 然后前端需要修改请求参数
+    public BaseResponse<UserVO> getUserVOById(long id) {
+        // 检查参数
+        ThrowUtils.throwIf(id <= 0, CodeBindMessageEnums.PARAMS_ERROR, "用户标识必须是正整数");
+
+        // 把脱敏后的数据返回
+        BaseResponse<User> response = getUserById(id);
         User user = response.getData();
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userService.getUserVO(user));
     }
