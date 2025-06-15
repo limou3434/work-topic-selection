@@ -143,13 +143,16 @@ public class UserController {
      */
     @PostMapping("/update")
     public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
-        if (userUpdateRequest == null || userUpdateRequest.getId() == null) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
-        }
+        // 检查参数
+        ThrowUtils.throwIf(userUpdateRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        ThrowUtils.throwIf(userUpdateRequest.getId() == null, CodeBindMessageEnums.PARAMS_ERROR, "没有用户标识无法更新");
+
+        // 创建更新后的新用户实例
         User user = new User();
         BeanUtils.copyProperties(userUpdateRequest, user);
         boolean result = userService.updateById(user);
-        ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "");
+        ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "更新失败");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
     }
 
