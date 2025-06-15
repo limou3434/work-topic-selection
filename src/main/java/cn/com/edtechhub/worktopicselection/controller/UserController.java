@@ -1,6 +1,7 @@
 package cn.com.edtechhub.worktopicselection.controller;
 
 import cn.com.edtechhub.worktopicselection.constant.CommonConstant;
+import cn.com.edtechhub.worktopicselection.constant.UserConstant;
 import cn.com.edtechhub.worktopicselection.exception.BusinessException;
 import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
 import cn.com.edtechhub.worktopicselection.mapper.UserMapper;
@@ -20,6 +21,7 @@ import cn.com.edtechhub.worktopicselection.model.entity.StudentTopicSelection;
 import cn.com.edtechhub.worktopicselection.model.entity.Topic;
 import cn.com.edtechhub.worktopicselection.model.entity.User;
 import cn.com.edtechhub.worktopicselection.model.enums.Dept;
+import cn.com.edtechhub.worktopicselection.model.enums.UserRoleEnum;
 import cn.com.edtechhub.worktopicselection.model.vo.*;
 import cn.com.edtechhub.worktopicselection.response.BaseResponse;
 import cn.com.edtechhub.worktopicselection.response.TheResult;
@@ -38,10 +40,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -94,33 +93,29 @@ public class UserController {
      */
     @PostMapping("/add")
     public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest, HttpServletRequest request) {
+        // 参数检查
+        User loginUser = userService.getLoginUser(request);
+        ThrowUtils.throwIf(loginUser == null, CodeBindMessageEnums.PARAMS_ERROR, "没有登陆无法使用该接口");
 
-        final User loginUser = userService.getLoginUser(request);
-        if (loginUser == null) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "没有登陆无法使用该接口");
-        }
-        final Integer userRole = loginUser.getUserRole();
-        if (userRole != 1 && userRole != 2 && userRole != 3) {
-            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "没有权限动用该接口");
-        }
+        Integer userRole = loginUser.getUserRole();
+        ThrowUtils.throwIf(!Objects.equals(userRole, UserRoleEnum.ADMIN.getValue()), CodeBindMessageEnums.NO_AUTH_ERROR, "只有管理员才能动用该接口");
 
-        final String userAccount = userAddRequest.getUserAccount();
-        final User oldUser = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
-        if (oldUser != null) {
-            return TheResult.error(CodeBindMessageEnums.PARAMS_ERROR, "该用户已存在");
-        }
+        String userAccount = userAddRequest.getUserAccount();
+        User oldUser = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
+        ThrowUtils.throwIf(oldUser != null, CodeBindMessageEnums.PARAMS_ERROR, "该用户已存在, 无法重复添加");
+
+        // 创建新的用户实例
         User user = new User();
         BeanUtils.copyProperties(userAddRequest, user);
         user.setDept(userAddRequest.getDeptName());
         user.setProject(userAddRequest.getProject());
         user.setUserRole(userAddRequest.getUserRole());
+        String encryptPassword = DigestUtils.md5DigestAsHex((UserConstant.SALT + UserConstant.DEFAULT_PASSWD).getBytes());
+        user.setUserPassword(encryptPassword); // 设置默认密码
 
-        // 默认密码 12345678
-        String defaultPassword = "12345678";
-        String encryptPassword = DigestUtils.md5DigestAsHex(("edtechhub" + defaultPassword).getBytes());
-        user.setUserPassword(encryptPassword);
+        // 添加新的用户
         boolean result = userService.save(user);
-        ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "");
+        ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "添加新的用户失败");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, user.getId());
     }
 
