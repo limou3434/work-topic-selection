@@ -1,20 +1,23 @@
 package cn.com.edtechhub.worktopicselection.model.dto.user;
 
-import java.io.Serializable;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
- * 删除请求
+ * 用户删除请求
  *
- *  
+ * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 @Data
 public class DeleteRequest implements Serializable {
 
     /**
-     * id
+     * 账号(因为用户账号本身就是唯一的, 因此完全可以替代 id 值)
      */
     private String userAccount;
 
+    /// 序列化字段 ///
     private static final long serialVersionUID = 1L;
+
 }

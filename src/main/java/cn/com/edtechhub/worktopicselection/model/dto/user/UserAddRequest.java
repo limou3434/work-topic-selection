@@ -1,9 +1,8 @@
 package cn.com.edtechhub.worktopicselection.model.dto.user;
 
-import java.io.Serializable;
-
-import com.sun.xml.internal.ws.developer.Serialization;
 import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  * 用户添加请求

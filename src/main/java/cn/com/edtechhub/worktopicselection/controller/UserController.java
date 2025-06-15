@@ -94,6 +94,8 @@ public class UserController {
     @PostMapping("/add")
     public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest, HttpServletRequest request) {
         // 参数检查
+        ThrowUtils.throwIf(userAddRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
         User loginUser = userService.getLoginUser(request);
         ThrowUtils.throwIf(loginUser == null, CodeBindMessageEnums.PARAMS_ERROR, "没有登陆无法使用该接口");
 
@@ -124,15 +126,16 @@ public class UserController {
      */
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
-        if (deleteRequest == null) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
-        }
-        final String userAccount = deleteRequest.getUserAccount();
-        boolean b = userService.remove(new QueryWrapper<User>().eq("userAccount", userAccount));
-        if (!b) {
-            throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
-        }
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, b);
+        // 参数检查
+        ThrowUtils.throwIf(deleteRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        String userAccount = deleteRequest.getUserAccount();
+        ThrowUtils.throwIf(StringUtils.isBlank(userAccount), CodeBindMessageEnums.PARAMS_ERROR, "用户账号不能为空");
+
+        // 删除用户
+        boolean result = userService.remove(new QueryWrapper<User>().eq("userAccount", userAccount));
+        ThrowUtils.throwIf(!result, CodeBindMessageEnums.NOT_FOUND_ERROR, "删除用户失败");
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, result);
     }
 
     /**
