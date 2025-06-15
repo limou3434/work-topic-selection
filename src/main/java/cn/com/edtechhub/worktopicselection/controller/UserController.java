@@ -54,6 +54,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserController {
 
+    // TODO: 建议使用 Sa-token 优化这里的鉴权认证的写法...
+
     /**
      * 引入用户服务依赖
      */
@@ -84,7 +86,7 @@ public class UserController {
     @Resource
     private StudentTopicSelectionService studentTopicSelectionService;
 
-    // TODO: 等待去除
+    // TODO: 等待去除, 最好不要在接口层写这个玩意, 这个东西应该写在服务层...
     @Resource
     private UserMapper userMapper;
 
@@ -176,7 +178,8 @@ public class UserController {
     /**
      * 根据 id 获取包装类
      */
-    @GetMapping("/get/vo") // TODO: 这里其实有个隐患, 前端传递的 id 值有可能出现襟度问题, 导致 id 值错乱, 因此这里最好是修改为请求体类来传递, 并且携带注解 @JsonSerialize(using = ToStringSerializer.class), 然后前端需要修改请求参数
+    @GetMapping("/get/vo")
+    // TODO: 这里其实有个隐患, 前端传递的 id 值有可能出现襟度问题, 导致 id 值错乱, 因此这里最好是修改为请求体类来传递, 并且携带注解 @JsonSerialize(using = ToStringSerializer.class), 然后前端需要修改请求参数
     public BaseResponse<UserVO> getUserVOById(long id) {
         // 检查参数
         ThrowUtils.throwIf(id <= 0, CodeBindMessageEnums.PARAMS_ERROR, "用户标识必须是正整数");
@@ -251,14 +254,13 @@ public class UserController {
      */
     @PostMapping("/login")
     public BaseResponse<LoginUserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
-        if (userLoginRequest == null) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
-        }
+        // 检查参数
+        ThrowUtils.throwIf(userLoginRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        // 用户登陆
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
-        if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
-        }
+        ThrowUtils.throwIf(StringUtils.isAnyBlank(userAccount, userPassword), CodeBindMessageEnums.PARAMS_ERROR, "缺少登陆时所需要的必要信息");
         LoginUserVO loginUserVO = userService.userLogin(userAccount, userPassword, request);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, loginUserVO);
     }
