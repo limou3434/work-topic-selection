@@ -1,5 +1,3 @@
-// TODO： 教师端查看自己发布的选题有问题(并且无法在未审核的时候看到...)
-
 package cn.com.edtechhub.worktopicselection.controller;
 
 import cn.com.edtechhub.worktopicselection.constant.CommonConstant;
