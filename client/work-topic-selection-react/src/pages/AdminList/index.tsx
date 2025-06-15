@@ -110,7 +110,7 @@ export default () => {
         showSizeChanger: true, // 允许用户选择每页显示条目数
       }}
       dateFormatter="string"
-      headerTitle="管理员账号"
+      headerTitle="系统账号管理"
       toolBarRender={() => [
         <React.Fragment key="toolbar">
           <ModalForm<{

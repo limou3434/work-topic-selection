@@ -1,16 +1,17 @@
+import { uploadFileUsingPost } from '@/services/work-topic-selection/fileController';
 import {
   addUserUsingPost,
   deleteUserUsingPost,
   getDeptListUsingPost,
   getProjectListUsingPost,
-  listUserByPageUsingPost, resetPasswordUsingPost,
+  listUserByPageUsingPost,
+  resetPasswordUsingPost,
 } from '@/services/work-topic-selection/userController';
-import { ActionType, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
-import React, { useRef, useState } from 'react';
-import { Button, message } from 'antd';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { ActionType, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
 import { ModalForm, ProFormSelect, ProFormUploadButton } from '@ant-design/pro-form';
-import { uploadFileUsingPost } from '@/services/work-topic-selection/fileController';
+import { Button, Dropdown, MenuProps, message } from 'antd';
+import { useRef, useState } from 'react';
 
 type GithubIssueItem = {
   id: number;
@@ -37,7 +38,7 @@ export default () => {
       dataIndex: 'userAccount',
     },
     {
-      title: '用户名',
+      title: '名字',
       dataIndex: 'userName',
     },
     {
@@ -71,6 +72,34 @@ export default () => {
       ],
     },
   ];
+
+  const [importModalOpen, setImportModalOpen] = useState(false);
+
+  const items = [
+    {
+      key: 'downloadTemplate',
+      label: '下载批量导入模板',
+    },
+    {
+      key: 'batchAdd',
+      label: '根据模板批量导入',
+    },
+  ];
+
+  const onMenuClick: MenuProps['onClick'] = (e) => {
+    const key = e.key;
+    if (key === 'downloadTemplate') {
+      const link = document.createElement('a');
+      link.href =
+        'https://template-thrive-1322597786.cos.ap-guangzhou.myqcloud.com/%E5%AD%A6%E7%94%9F%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF.xlsx';
+      link.download = '学生账号导入模板.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else if (key === 'batchAdd') {
+      setImportModalOpen(true);
+    }
+  };
 
   return (
     <ProTable<GithubIssueItem>
@@ -131,24 +160,18 @@ export default () => {
         },
       }}
       dateFormatter="string"
-      headerTitle="学生账号"
+      headerTitle="学生账号管理"
       toolBarRender={() => [
         <>
-          <Button type="primary" key="primary">
-            <a href="	https://template-thrive-1322597786.cos.ap-guangzhou.myqcloud.com/%E5%AD%A6%E7%94%9F%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF.xlsx " download>
-              下载模板
-            </a>
-          </Button>
+          <Dropdown menu={{ items, onClick: onMenuClick }}>
+            <Button type="dashed">批量操作</Button>
+          </Dropdown>
           <ModalForm<{
             file: any;
           }>
             title="批量添加学生"
-            trigger={
-              <Button type="primary">
-                <PlusOutlined />
-                批量添加学生
-              </Button>
-            }
+            open={importModalOpen}
+            onOpenChange={setImportModalOpen}
             autoFocusFirstInput
             modalProps={{
               destroyOnClose: true,
@@ -156,7 +179,11 @@ export default () => {
             }}
             submitTimeout={2000}
             onFinish={async (values) => {
-              const res = await uploadFileUsingPost({ status: 0 }, {}, values.file[0].originFileObj);
+              const res = await uploadFileUsingPost(
+                { status: 0 },
+                {},
+                values.file[0].originFileObj,
+              );
               if (res.code === 0) {
                 message.success(res.message);
                 actionRef.current?.reload();
@@ -209,23 +236,13 @@ export default () => {
               }
             }}
           >
-            <ProFormText
-              width="md"
-              name="userAccount"
-              label="学号"
-              required
-            />
-            <ProFormText
-              width="md"
-              name="userName"
-              label="学生姓名"
-              required
-            />
+            <ProFormText width="md" name="userAccount" label="学号" required />
+            <ProFormText width="md" name="userName" label="学生姓名" required />
             <ProFormSelect
               request={async () => {
                 const response = await getDeptListUsingPost({});
                 if (response && response.data) {
-                  return response.data.map(item => ({
+                  return response.data.map((item) => ({
                     label: item.label,
                     value: item.value,
                   }));
@@ -241,7 +258,7 @@ export default () => {
               request={async () => {
                 const response = await getProjectListUsingPost({});
                 if (response && response.data) {
-                  return response.data.map(item => ({
+                  return response.data.map((item) => ({
                     label: item.label,
                     value: item.value,
                   }));
@@ -283,18 +300,8 @@ export default () => {
               }
             }}
           >
-            <ProFormText
-              width="md"
-              name="userAccount"
-              label="学号"
-              required
-            />
-            <ProFormText
-              width="md"
-              name="userName"
-              label="学生姓名"
-              required
-            />
+            <ProFormText width="md" name="userAccount" label="学号" required />
+            <ProFormText width="md" name="userName" label="学生姓名" required />
           </ModalForm>
         </>,
       ]}

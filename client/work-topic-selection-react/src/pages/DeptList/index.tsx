@@ -99,7 +99,7 @@ export default () => {
         pageSize: 5,
       }}
       dateFormatter="string"
-      headerTitle="系部"
+      headerTitle="院系系部管理"
       toolBarRender={() => [
         <>
           <ModalForm<{

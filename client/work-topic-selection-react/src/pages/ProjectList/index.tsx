@@ -118,7 +118,7 @@ export default () => {
         showSizeChanger: true,
       }}
       dateFormatter="string"
-      headerTitle="系部"
+      headerTitle="系部专业管理"
       toolBarRender={() => [
         <>
           <ModalForm<{

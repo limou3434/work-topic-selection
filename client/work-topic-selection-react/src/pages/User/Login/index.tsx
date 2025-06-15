@@ -140,7 +140,7 @@ const Login: React.FC = () => {
                 rules={[
                   {
                     required: true,
-                    message: '用户名是必填项！',
+                    message: '名字是必填项！',
                   },
                 ]}
               />

@@ -27,7 +27,7 @@ export default () => {
       dataIndex: 'userAccount',
     },
     {
-      title: '用户名',
+      title: '名字',
       dataIndex: 'userName',
     },
     {

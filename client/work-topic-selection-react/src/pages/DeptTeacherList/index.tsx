@@ -37,7 +37,7 @@ export default () => {
       dataIndex: 'userAccount',
     },
     {
-      title: '用户名',
+      title: '名字',
       dataIndex: 'userName',
     },
     {
@@ -121,7 +121,7 @@ export default () => {
         showSizeChanger: true,
       }}
       dateFormatter="string"
-      headerTitle="系部老师账号"
+      headerTitle="主任账号管理"
       toolBarRender={() => [
         <React.Fragment key="toolbar">
           <ModalForm<{
