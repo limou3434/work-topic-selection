@@ -270,12 +270,15 @@ public class UserController {
      */
     @PostMapping("/logout")
     public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
-        if (request == null) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
-        }
+        // 检查参数
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        // 注销用户
         boolean result = userService.userLogout(request);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, result);
     }
+
+    // TODO: 需要修改的异常抛出方式太多了...有时间再来修改把...
 
     /**
      * 更新个人信息
