@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.annotation.*;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 
 /**
@@ -17,8 +20,8 @@ public class User implements Serializable {
     /**
      * id
      */
+    @JsonSerialize(using = ToStringSerializer.class) // 避免 id 过大前端出错
     @TableId(type = IdType.ASSIGN_ID)
-
     private Long id;
 
     /**
