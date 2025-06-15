@@ -3,35 +3,23 @@ package cn.com.edtechhub.worktopicselection.constant;
 /**
  * 用户常量
  *
- *  
+ * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 public interface UserConstant {
+
+    /**
+     * 盐值
+     */
+    String SALT = "edtechhub";
 
     /**
      * 用户登录态键
      */
     String USER_LOGIN_STATE = "user_login";
 
-    //  region 权限
-
     /**
-     * 学生
+     * 默认密码
      */
-    int DEFAULT_ROLE = 0;
+    String DEFAULT_PASSWD = "12345678";
 
-    /**
-     * 教师
-     */
-    int TEACHER = 1;
-    /**
-     * 系部
-     */
-    int DEPT = 2;
-    /**
-     * 管理员
-     */
-    int ADMIN = 3;
-
-
-    // endregion
 }

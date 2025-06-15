@@ -1,8 +1,8 @@
 package cn.com.edtechhub.worktopicselection.service.impl;
 
-import cn.com.edtechhub.worktopicselection.common.ErrorCode;
 import cn.com.edtechhub.worktopicselection.constant.CommonConstant;
 import cn.com.edtechhub.worktopicselection.exception.BusinessException;
+import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
 import cn.com.edtechhub.worktopicselection.mapper.DeptMapper;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeptQueryRequest;
 import cn.com.edtechhub.worktopicselection.model.enums.Dept;
@@ -30,7 +30,7 @@ public class DeptServiceImpl extends ServiceImpl<DeptMapper, Dept>
     @Override
     public QueryWrapper<Dept> getDeptQueryWrapper(DeptQueryRequest deptQueryRequest, HttpServletRequest request) {
         if(request==null){
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "没登录");
+            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "没登录");
         }
         String sortField = deptQueryRequest.getSortField();
         String sortOrder = deptQueryRequest.getSortOrder();

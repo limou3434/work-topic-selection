@@ -1,15 +1,15 @@
 package cn.com.edtechhub.worktopicselection.service.impl;
 
-import cn.com.edtechhub.worktopicselection.common.ErrorCode;
 import cn.com.edtechhub.worktopicselection.constant.CommonConstant;
 import cn.com.edtechhub.worktopicselection.exception.BusinessException;
+import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
+import cn.com.edtechhub.worktopicselection.mapper.ProjectMapper;
 import cn.com.edtechhub.worktopicselection.model.dto.project.ProjectQueryRequest;
+import cn.com.edtechhub.worktopicselection.model.entity.Project;
+import cn.com.edtechhub.worktopicselection.service.ProjectService;
 import cn.com.edtechhub.worktopicselection.utils.SqlUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import cn.com.edtechhub.worktopicselection.model.entity.Project;
-import cn.com.edtechhub.worktopicselection.service.ProjectService;
-import cn.com.edtechhub.worktopicselection.mapper.ProjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,14 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletRequest;
 
 /**
-* @author Administrator
-* @description 针对表【project(系部)】的数据库操作Service实现
-* @createDate 2024-06-12 10:34:21
-*/
+ * @author Administrator
+ * @description 针对表【project(系部)】的数据库操作Service实现
+ * @createDate 2024-06-12 10:34:21
+ */
 @Service
 @Transactional
 public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project>
-    implements ProjectService{
+        implements ProjectService {
 
     /**
      * 获取查询条件
@@ -36,10 +36,10 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project>
     @Override
     public QueryWrapper<Project> getQueryWrapper(ProjectQueryRequest projectQueryRequest, HttpServletRequest request) {
         if (projectQueryRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
+            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "请求参数为空");
         }
-        if(request==null){
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "没登录");
+        if (request == null) {
+            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "没登录");
         }
         String sortField = projectQueryRequest.getSortField();
         String sortOrder = projectQueryRequest.getSortOrder();

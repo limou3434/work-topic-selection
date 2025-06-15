@@ -1,6 +1,6 @@
 package cn.com.edtechhub.worktopicselection.model.dto.topic;
 
-import cn.com.edtechhub.worktopicselection.common.PageRequest;
+import cn.com.edtechhub.worktopicselection.model.dto.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

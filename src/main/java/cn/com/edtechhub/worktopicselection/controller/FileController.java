@@ -1,12 +1,13 @@
 package cn.com.edtechhub.worktopicselection.controller;
 
-import cn.com.edtechhub.worktopicselection.common.BaseResponse;
-import cn.com.edtechhub.worktopicselection.common.ErrorCode;
 import cn.com.edtechhub.worktopicselection.exception.BusinessException;
+import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
 import cn.com.edtechhub.worktopicselection.model.dto.file.UploadFileRequest;
 import cn.com.edtechhub.worktopicselection.model.entity.StudentTopicSelection;
 import cn.com.edtechhub.worktopicselection.model.entity.Topic;
 import cn.com.edtechhub.worktopicselection.model.entity.User;
+import cn.com.edtechhub.worktopicselection.response.BaseResponse;
+import cn.com.edtechhub.worktopicselection.response.TheResult;
 import cn.com.edtechhub.worktopicselection.service.StudentTopicSelectionService;
 import cn.com.edtechhub.worktopicselection.service.TopicService;
 import cn.com.edtechhub.worktopicselection.service.UserService;
@@ -20,8 +21,12 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 @Transactional
 @RestController
 @RequestMapping("/file")
@@ -101,12 +107,13 @@ public class FileController {
                 userService.saveOrUpdate(user);
             }
 
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             e.printStackTrace();
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "批量添加失败");
+            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "批量添加失败");
         }
 
-        return new BaseResponse<>(0, "批量添加成功");
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, "批量添加成功");
     }
 
     @PostMapping("/uploadTopic")
@@ -160,8 +167,8 @@ public class FileController {
                     }
                 }
                 final Topic oldTopic = topicService.getOne(new QueryWrapper<Topic>().eq("topic", topic));
-                if(oldTopic!=null){
-                    throw new BusinessException(ErrorCode.OPERATION_ERROR, "批量添加失败,有重复的题目,题目为"+topic);
+                if (oldTopic != null) {
+                    throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "批量添加失败,有重复的题目,题目为" + topic);
                 }
                 Topic topic1 = new Topic();
                 topic1.setTopic(topic);
@@ -174,23 +181,24 @@ public class FileController {
                 topicService.saveOrUpdate(topic1);
             }
 
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             e.printStackTrace();
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "批量添加失败");
+            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "批量添加失败");
         }
 
-        return new BaseResponse<>(0,"成功","批量添加成功");
+        return new BaseResponse<>(0, "成功", "批量添加成功");
     }
 
     @PostMapping("/getUnSelectTopicStudentList")
     public void getUnSelectTopicStudentListCsv(HttpServletRequest request, HttpServletResponse response) {
         final User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
         }
         final String dept = loginUser.getDept();
-        final List<User> userList = userService.list(new QueryWrapper<User>().eq("userRole", 0).eq("dept",dept));
-        final List<StudentTopicSelection> selectedList = studentTopicSelectionService.list(new QueryWrapper<StudentTopicSelection>().eq("status",1));
+        final List<User> userList = userService.list(new QueryWrapper<User>().eq("userRole", 0).eq("dept", dept));
+        final List<StudentTopicSelection> selectedList = studentTopicSelectionService.list(new QueryWrapper<StudentTopicSelection>().eq("status", 1));
         Set<String> selectedUserAccounts = selectedList.stream()
                 .map(StudentTopicSelection::getUserAccount)
                 .collect(Collectors.toSet());
@@ -203,16 +211,17 @@ public class FileController {
 
         try (ServletOutputStream outputStream = response.getOutputStream();
              Writer writer = new OutputStreamWriter(outputStream);
-             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("用户账号", "用户名", "专业","系部"))) {
+             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("用户账号", "用户名", "专业", "系部"))) {
 
             for (User user : unselectedUsers) {
-                csvPrinter.printRecord(user.getUserAccount(), user.getUserName(),user.getProject(), user.getDept());
+                csvPrinter.printRecord(user.getUserAccount(), user.getUserName(), user.getProject(), user.getDept());
             }
 
             csvPrinter.flush();
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             e.printStackTrace();
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "导出CSV失败");
+            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "导出CSV失败");
         }
     }
 
@@ -220,7 +229,7 @@ public class FileController {
     public void getSelectTopicStudentListCsv(HttpServletRequest request, HttpServletResponse response) {
         final User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
         }
         final String dept = loginUser.getDept();
         final List<StudentTopicSelection> selectedList = studentTopicSelectionService.list();
@@ -230,7 +239,7 @@ public class FileController {
         // 获取已选题学生的用户信息和选题信息
         for (StudentTopicSelection studentTopicSelection : selectedList) {
             String userAccount = studentTopicSelection.getUserAccount();
-            User user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount).eq(StringUtils.isNotBlank(dept),"dept",dept));
+            User user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount).eq(StringUtils.isNotBlank(dept), "dept", dept));
             if (user != null) {
                 userList.add(user);
                 Topic topic = topicService.getById(studentTopicSelection.getTopicId());
@@ -246,18 +255,19 @@ public class FileController {
 
         try (ServletOutputStream outputStream = response.getOutputStream();
              OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
-             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("学号","姓名", "专业", "系部", "题目", "指导老师"))) {
+             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("学号", "姓名", "专业", "系部", "题目", "指导老师"))) {
 
             // 将已选题学生信息写入CSV文件
             for (User user : userList) {
-                csvPrinter.printRecord(user.getUserAccount(),user.getUserName(), user.getProject(), user.getDept(),
+                csvPrinter.printRecord(user.getUserAccount(), user.getUserName(), user.getProject(), user.getDept(),
                         topicList.get(userList.indexOf(user)).getTopic(), topicList.get(userList.indexOf(user)).getTeacherName());
             }
 
             csvPrinter.flush(); // 刷新CSV打印器
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             e.printStackTrace();
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "导出CSV失败");
+            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "导出CSV失败");
         }
     }
 

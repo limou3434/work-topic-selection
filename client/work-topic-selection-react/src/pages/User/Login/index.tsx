@@ -1,3 +1,6 @@
+// TODO: 页面的设置系统管理员有些问题
+
+
 import { Footer } from '@/components';
 import {getLoginUserUsingGet, userLoginUsingPost} from '@/services/work-topic-selection/userController';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
@@ -79,7 +82,7 @@ const Login: React.FC = () => {
         history.push('/' || urlParams.get('redirect'));
         refresh();
         return;
-      }else if(res.code===50003){
+      }else if(res.code===40001){
         message.error(res.message);
         navigate(`/user/register`);
       }else {

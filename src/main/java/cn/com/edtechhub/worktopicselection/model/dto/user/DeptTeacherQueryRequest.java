@@ -1,6 +1,6 @@
 package cn.com.edtechhub.worktopicselection.model.dto.user;
 
-import cn.com.edtechhub.worktopicselection.common.PageRequest;
+import cn.com.edtechhub.worktopicselection.model.dto.PageRequest;
 import lombok.Data;
 
 import java.io.Serializable;

@@ -1,8 +1,8 @@
 package cn.com.edtechhub.worktopicselection.service.impl;
 
-import cn.com.edtechhub.worktopicselection.common.ErrorCode;
 import cn.com.edtechhub.worktopicselection.constant.CommonConstant;
 import cn.com.edtechhub.worktopicselection.exception.BusinessException;
+import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
 import cn.com.edtechhub.worktopicselection.mapper.TopicMapper;
 import cn.com.edtechhub.worktopicselection.model.dto.topic.TopicQueryByAdminRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.topic.TopicQueryRequest;
@@ -38,18 +38,18 @@ public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic>
     @Override
     public QueryWrapper<Topic> getTopicQueryWrapper(TopicQueryRequest topicQueryRequest, HttpServletRequest request) {
         if (topicQueryRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
+            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "请求参数为空");
         }
         final User loginUser = userService.getLoginUser(request);
         if(loginUser==null){
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "没登录");
+            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "没登录");
         }
         final Integer userRole = loginUser.getUserRole();
         if(userRole==0){
             final String userAccount = loginUser.getUserAccount();
             final StudentTopicSelection topicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount));
             if(topicSelection!=null){
-                throw new BusinessException(ErrorCode.OPERATION_ERROR, "已选题目");
+                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "已选题目");
             }
         }
         final String status = topicQueryRequest.getStatus();
@@ -78,13 +78,13 @@ public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic>
     public QueryWrapper<Topic> getTopicQueryByAdminWrapper(TopicQueryByAdminRequest topicQueryByAdminRequest, HttpServletRequest request) {
         // 检查请求参数是否为空
         if (topicQueryByAdminRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
+            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "请求参数为空");
         }
 
         // 检查用户是否登录
         final User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "没登录");
+            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "没登录");
         }
 
         // 获取排序字段和排序顺序
