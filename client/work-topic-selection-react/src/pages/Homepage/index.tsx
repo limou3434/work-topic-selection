@@ -1,7 +1,9 @@
 import { PageContainer } from '@ant-design/pro-components';
 import { useModel } from '@umijs/max';
-import { Card, theme } from 'antd';
+import { Card, Divider, theme, Typography } from 'antd';
 import React from 'react';
+
+const { Title, Paragraph, Text, Link } = Typography;
 
 /**
  * 每个单独的卡片，为了复用样式抽成了组件
@@ -109,14 +111,6 @@ const Welcome: React.FC = () => {
               "url('https://gw.alipayobjects.com/mdn/rms_a9745b/afts/img/A*BuFmQqsB2iAAAAAAAAAAAAAAARQnAQ')",
           }}
         >
-          <div
-            style={{
-              fontSize: '20px',
-              color: token.colorTextHeading,
-            }}
-          >
-            欢迎使用 - 广州南方学院 - 毕业设计选题系统
-          </div>
           <p
             style={{
               fontSize: '14px',
@@ -154,6 +148,46 @@ const Welcome: React.FC = () => {
             />
           </div>
         </div>
+        <Divider />
+        <Typography>
+          <Title style={{ textAlign: 'center' }}>欢迎使用毕业设计选题系统🎉</Title>
+          <Title level={2}>1.如何使用?</Title>
+          <Paragraph>
+            作为学生该如何选题呢？
+          </Paragraph>
+          <Paragraph>
+            <Text strong>
+              <ol>
+                <li>
+                  打开冰箱
+                </li>
+                <li>
+                  放入冰箱
+                </li>
+                <li>
+                  关上冰箱
+                </li>
+              </ol>
+            </Text>
+          </Paragraph>
+          <Title level={2}>2.遇到问题?</Title>
+          <Paragraph>
+            如果您在使用的过程中遇到问题，先阅读下面常见的解决方案，尝试是否能够解决，如果实在遇到解决不了的问题可以发送邮箱到 <Text code>898738804@qq.com</Text>
+          </Paragraph>
+          <Paragraph>
+            <ul>
+              <li>
+                <Link href="/docs/spec/proximity">Principles</Link>
+              </li>
+              <li>
+                <Link href="/docs/spec/overview">Patterns</Link>
+              </li>
+              <li>
+                <Link href="/docs/resources">Resource Download</Link>
+              </li>
+            </ul>
+          </Paragraph>
+        </Typography>
       </Card>
     </PageContainer>
   );
