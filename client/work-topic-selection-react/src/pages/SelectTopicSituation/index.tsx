@@ -1,16 +1,15 @@
 import { getSelectTopicStudentListCsvUsingPost } from '@/services/work-topic-selection/fileController';
 import { getSelectTopicSituationUsingPost } from '@/services/work-topic-selection/userController';
 import { StatisticCard } from '@ant-design/pro-components';
-import { Button, message } from 'antd';
-import { useForm } from 'antd/es/form/Form';
+import { Button, FloatButton, message } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import RcResizeObserver from 'rc-resize-observer';
 import { useEffect, useState } from 'react';
+import { FileTextOutlined } from '@ant-design/icons';
 
 const { Statistic } = StatisticCard;
 
 const YourComponent = () => {
-  const [form] = useForm();
   const [data, setData] = useState({ amount: 0, selectAmount: 0, unselectAmount: 0 });
 
   useEffect(() => {
@@ -30,6 +29,10 @@ const YourComponent = () => {
   }, []);
 
   const totalChartOption = {
+    tooltip: {
+      trigger: 'item',
+      formatter: '{b}: {c} 人',
+    },
     series: [
       {
         name: '总人数',
@@ -41,13 +44,21 @@ const YourComponent = () => {
         data: [
           { value: data.amount, name: '总学生人数', itemStyle: { color: '#5ee7e7' } },
           { value: data.selectAmount, name: '已选题人数', itemStyle: { color: '#eee86e' } },
-          { value: data.unselectAmount, name: data.unselectAmount === 0 ? '选题结束!' : '未选题人数', itemStyle: { color: '#d18aec' } },
+          {
+            value: data.unselectAmount,
+            name: data.unselectAmount === 0 ? '选题结束!' : '未选题人数',
+            itemStyle: { color: '#d18aec' },
+          },
         ],
       },
     ],
   };
 
   const selectedChartOption = {
+    tooltip: {
+      trigger: 'item',
+      formatter: '{b}: {c} 人 ({d}%)',
+    },
     series: [
       {
         name: '人数',
@@ -96,20 +107,14 @@ const YourComponent = () => {
 
   return (
     <div style={{ padding: 24, maxWidth: 1600, margin: '0 auto' }}>
-      <div
-        style={{
-          marginBottom: 24,
-          display: 'flex',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 12,
-        }}
-      >
-        <Button type="primary" onClick={exportSelectedStudents}>
-          导出已选题学生名单
-        </Button>
-      </div>
-
+      <FloatButton
+        icon={<FileTextOutlined />}
+        description="导出已选题目学生名单"
+        shape="square"
+        type="primary"
+        style={{ insetInlineEnd: 24, width: 70 }} // 不一定生效
+        onClick={exportSelectedStudents}
+      />
       <RcResizeObserver onResize={() => {}}>
         <div
           style={{
@@ -132,7 +137,14 @@ const YourComponent = () => {
               chartOption: selectedChartOption,
               description: (
                 <>
-                  <Statistic title="已选题人数" value={`${data.selectAmount} 人` + `, 占比 ` + `${data.amount ? ((data.selectAmount / data.amount) * 100).toFixed(1) : 0}`} />
+                  <Statistic
+                    title="已选题人数"
+                    value={
+                      `${data.selectAmount} 人` +
+                      `, 占比 ` +
+                      `${data.amount ? ((data.selectAmount / data.amount) * 100).toFixed(1) : 0}`
+                    }
+                  />
                   <Statistic title="未选题人数" value={`${data.unselectAmount} 人`} />
                 </>
               ),
