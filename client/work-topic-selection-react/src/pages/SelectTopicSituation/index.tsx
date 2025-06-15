@@ -1,11 +1,11 @@
 import { getSelectTopicStudentListCsvUsingPost } from '@/services/work-topic-selection/fileController';
 import { getSelectTopicSituationUsingPost } from '@/services/work-topic-selection/userController';
+import { FileTextOutlined } from '@ant-design/icons';
 import { StatisticCard } from '@ant-design/pro-components';
-import { Button, FloatButton, message } from 'antd';
+import { FloatButton, message } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import RcResizeObserver from 'rc-resize-observer';
 import { useEffect, useState } from 'react';
-import { FileTextOutlined } from '@ant-design/icons';
 
 const { Statistic } = StatisticCard;
 
@@ -109,10 +109,10 @@ const YourComponent = () => {
     <div style={{ padding: 24, maxWidth: 1600, margin: '0 auto' }}>
       <FloatButton
         icon={<FileTextOutlined />}
-        description="导出已选题目学生名单"
+        description="导出已选名单"
         shape="square"
         type="primary"
-        style={{ insetInlineEnd: 24, width: 70 }} // 不一定生效
+        style={{ insetInlineEnd: 24, width: 40 }} // 不一定生效
         onClick={exportSelectedStudents}
       />
       <RcResizeObserver onResize={() => {}}>

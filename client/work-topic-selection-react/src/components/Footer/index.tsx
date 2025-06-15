@@ -3,6 +3,7 @@ import { DefaultFooter } from '@ant-design/pro-components';
 import React from 'react';
 
 const Footer: React.FC = () => {
+  const filingNumber = '粤ICP备2025406450号-1';
   const defaultMessage = '智能大数据工作室出品';
   const currentYear = new Date().getFullYear();
   return (
@@ -10,7 +11,7 @@ const Footer: React.FC = () => {
       style={{
         background: 'none',
       }}
-      copyright={`${currentYear} ${defaultMessage}`}
+      copyright={`${currentYear} ${filingNumber} ${defaultMessage}`}
       links={[
         {
           key: 'github',

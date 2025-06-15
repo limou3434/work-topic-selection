@@ -102,6 +102,7 @@ const Welcome: React.FC = () => {
               : 'background-image: linear-gradient(75deg, #FBFDFF 0%, #F5F7FF 100%)',
         }}
       >
+        <Title style={{ textAlign: 'center' }}>欢迎使用毕业设计选题系统🎉</Title>
         <div
           style={{
             backgroundPosition: '100% -30%',
@@ -150,7 +151,6 @@ const Welcome: React.FC = () => {
         </div>
         <Divider />
         <Typography>
-          <Title style={{ textAlign: 'center' }}>欢迎使用毕业设计选题系统🎉</Title>
           <Title level={2}>1.如何使用?</Title>
           <Paragraph>
             作为学生该如何选题呢？
