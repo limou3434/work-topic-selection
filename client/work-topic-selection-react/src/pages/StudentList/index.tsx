@@ -54,6 +54,7 @@ export default () => {
       key: 'option',
       render: (text, record, _, action) => [
         <a
+          style={{ color: '#ff4d4f' }} // Ant Design 默认危险色
           key="editable"
           onClick={async () => {
             const res = await deleteUserUsingPost({ userAccount: record.userAccount });
@@ -183,11 +184,11 @@ export default () => {
             userName: string;
             project: string;
           }>
-            title="添加学生"
+            title="添加学生账号"
             trigger={
               <Button type="primary">
                 <PlusOutlined />
-                添加学生
+                添加学生账号
               </Button>
             }
             autoFocusFirstInput
@@ -257,11 +258,11 @@ export default () => {
             userAccount: string;
             userName: string;
           }>
-            title="重置密码"
+            title="重置账号密码"
             trigger={
-              <Button type="primary">
+              <Button type="primary" ghost>
                 <PlusOutlined />
-                重置密码
+                重置账号密码
               </Button>
             }
             autoFocusFirstInput

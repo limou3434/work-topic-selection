@@ -26,12 +26,6 @@
     icon: 'FormOutlined',
     routes: [
       {
-        name: '系统账号管理',
-        path: '/admin/admins',
-        component: './AdminList',
-        access: 'canAccessAdmin',
-      },
-      {
         name: '院系系部管理',
         path: '/admin/dept',
         component: './DeptList',
@@ -41,6 +35,12 @@
         name: '系部专业管理',
         path: '/admin/project',
         component: './ProjectList',
+        access: 'canAccessAdmin',
+      },
+      {
+        name: '系统账号管理',
+        path: '/admin/admins',
+        component: './AdminList',
         access: 'canAccessAdmin',
       },
       {

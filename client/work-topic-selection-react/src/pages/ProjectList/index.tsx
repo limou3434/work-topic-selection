@@ -1,9 +1,20 @@
-import React, { useRef } from 'react';
-import { Button, Dropdown, message } from 'antd';
-import { EllipsisOutlined, PlusOutlined } from '@ant-design/icons';
-import { ActionType, ProColumns, ProFormSelect, ProFormText, ProTable } from '@ant-design/pro-components';
+import {
+  addProjectUsingPost,
+  deleteProjectUsingPost,
+  getDeptListUsingPost,
+  getProjectUsingPost,
+} from '@/services/work-topic-selection/userController';
+import { PlusOutlined } from '@ant-design/icons';
+import {
+  ActionType,
+  ProColumns,
+  ProFormSelect,
+  ProFormText,
+  ProTable,
+} from '@ant-design/pro-components';
 import { ModalForm } from '@ant-design/pro-form';
-import { addProjectUsingPost, deleteProjectUsingPost, getDeptListUsingPost, getProjectUsingPost } from '@/services/work-topic-selection/userController';
+import { Button, message } from 'antd';
+import { useRef } from 'react';
 
 type GithubIssueItem = {
   id: number;
@@ -34,6 +45,7 @@ export default () => {
       key: 'option',
       render: (text, record, _, action) => [
         <a
+          style={{ color: '#ff4d4f' }} // Ant Design 默认危险色
           key="editable"
           onClick={async () => {
             const res = await deleteProjectUsingPost({ projectName: record.projectName });
@@ -113,10 +125,10 @@ export default () => {
             projectName: string;
             deptName: string;
           }>
-            title="添加专业"
+            title="添加系部专业"
             trigger={
               <Button type="primary">
-                <PlusOutlined /> 添加专业
+                <PlusOutlined /> 添加系部专业
               </Button>
             }
             autoFocusFirstInput
@@ -137,17 +149,12 @@ export default () => {
               }
             }}
           >
-            <ProFormText
-              width="md"
-              name="projectName"
-              label="专业名称"
-              required={true}
-            />
+            <ProFormText width="md" name="projectName" label="专业名称" required={true} />
             <ProFormSelect
               request={async () => {
                 const response = await getDeptListUsingPost({});
                 if (response && response.data) {
-                  return response.data.map(item => ({
+                  return response.data.map((item) => ({
                     label: item.label,
                     value: item.value,
                   }));
@@ -160,29 +167,6 @@ export default () => {
               required={true}
             />
           </ModalForm>
-          <Dropdown
-            key="menu"
-            menu={{
-              items: [
-                {
-                  label: '1st item',
-                  key: '1',
-                },
-                {
-                  label: '2nd item',
-                  key: '2',
-                },
-                {
-                  label: '3rd item',
-                  key: '3',
-                },
-              ],
-            }}
-          >
-            <Button>
-              <EllipsisOutlined />
-            </Button>
-          </Dropdown>
         </>,
       ]}
     />

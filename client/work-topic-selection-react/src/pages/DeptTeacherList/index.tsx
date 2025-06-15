@@ -1,15 +1,21 @@
-import React, { useRef } from 'react';
-import { Button, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
-import { ActionType, ProColumns, ProFormSelect, ProFormText, ProTable } from '@ant-design/pro-components';
-import { ModalForm } from '@ant-design/pro-form';
 import {
   addUserUsingPost,
   deleteUserUsingPost,
   getDeptListUsingPost,
   listUserByPageUsingPost,
-  resetPasswordUsingPost
+  resetPasswordUsingPost,
 } from '@/services/work-topic-selection/userController';
+import { PlusOutlined } from '@ant-design/icons';
+import {
+  ActionType,
+  ProColumns,
+  ProFormSelect,
+  ProFormText,
+  ProTable,
+} from '@ant-design/pro-components';
+import { ModalForm } from '@ant-design/pro-form';
+import { Button, message } from 'antd';
+import React, { useRef } from 'react';
 
 type GithubIssueItem = {
   userAccount: string;
@@ -44,6 +50,7 @@ export default () => {
       key: 'option',
       render: (text, record, _, action) => [
         <a
+          style={{ color: '#ff4d4f' }} // Ant Design 默认危险色
           key="editable"
           onClick={async () => {
             const res = await deleteUserUsingPost({ userAccount: record.userAccount });
@@ -60,7 +67,6 @@ export default () => {
       ],
     },
   ];
-
 
   return (
     <ProTable<GithubIssueItem>
@@ -123,10 +129,10 @@ export default () => {
             userAccount: string;
             userName: string;
           }>
-            title="添加账号"
+            title="添加主任账号"
             trigger={
               <Button type="primary">
-                <PlusOutlined /> 添加账号
+                <PlusOutlined /> 添加主任账号
               </Button>
             }
             autoFocusFirstInput
@@ -171,11 +177,11 @@ export default () => {
             userAccount: string;
             userName: string;
           }>
-            title="重置密码"
+            title="重置账号密码"
             trigger={
-              <Button type="primary">
+              <Button type="primary" ghost>
                 <PlusOutlined />
-                重置密码
+                重置账号密码
               </Button>
             }
             autoFocusFirstInput
@@ -196,18 +202,8 @@ export default () => {
               }
             }}
           >
-            <ProFormText
-              width="md"
-              name="userAccount"
-              label="账号"
-              required
-            />
-            <ProFormText
-              width="md"
-              name="userName"
-              label="姓名"
-              required
-            />
+            <ProFormText width="md" name="userAccount" label="账号" required />
+            <ProFormText width="md" name="userName" label="姓名" required />
           </ModalForm>
         </React.Fragment>,
       ]}

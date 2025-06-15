@@ -1,14 +1,14 @@
-import React, { useRef } from 'react';
-import { Button, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
-import { ActionType, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
-import { ModalForm } from '@ant-design/pro-form';
 import {
   addUserUsingPost,
   deleteUserUsingPost,
   listUserByPageUsingPost,
-  resetPasswordUsingPost
+  resetPasswordUsingPost,
 } from '@/services/work-topic-selection/userController';
+import { PlusOutlined } from '@ant-design/icons';
+import { ActionType, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
+import { ModalForm } from '@ant-design/pro-form';
+import { Button, message } from 'antd';
+import React, { useRef } from 'react';
 
 type GithubIssueItem = {
   userAccount: string;
@@ -39,6 +39,7 @@ export default () => {
       key: 'option',
       render: (text, record, _, action) => [
         <a
+          style={{ color: '#ff4d4f' }} // Ant Design 默认危险色
           key="editable"
           onClick={async () => {
             const res = await deleteUserUsingPost({ userAccount: record.userAccount });
@@ -116,10 +117,10 @@ export default () => {
             userAccount: string;
             userName: string;
           }>
-            title="添加管理员"
+            title="添加系统账号"
             trigger={
               <Button type="primary">
-                <PlusOutlined /> 添加管理员
+                <PlusOutlined /> 添加系统账号
               </Button>
             }
             autoFocusFirstInput
@@ -149,11 +150,11 @@ export default () => {
           userAccount: string;
           userName: string;
         }>
-          title="重置密码"
+          title="重置账号密码"
           trigger={
-            <Button type="primary">
+            <Button type="primary" ghost>
               <PlusOutlined />
-              重置密码
+              重置账号密码
             </Button>
           }
           autoFocusFirstInput
@@ -174,19 +175,9 @@ export default () => {
             }
           }}
         >
-          <ProFormText
-            width="md"
-            name="userAccount"
-            label="账号"
-            required
-          />
-          <ProFormText
-            width="md"
-            name="userName"
-            label="姓名"
-            required
-          />
-        </ModalForm>
+          <ProFormText width="md" name="userAccount" label="账号" required />
+          <ProFormText width="md" name="userName" label="姓名" required />
+        </ModalForm>,
       ]}
     />
   );

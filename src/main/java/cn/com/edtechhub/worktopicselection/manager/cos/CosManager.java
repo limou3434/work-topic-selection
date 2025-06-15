@@ -1,4 +1,4 @@
-package cn.com.edtechhub.worktopicselection.manager;
+package cn.com.edtechhub.worktopicselection.manager.cos;
 
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.model.PutObjectRequest;
