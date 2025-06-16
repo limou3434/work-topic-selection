@@ -10,8 +10,10 @@ import { Button, message } from 'antd';
 import { useRef, useState } from 'react';
 
 type GithubIssueItem = {
+  id?: number;
   deptName: string;
 };
+
 export default () => {
   const actionRef = useRef<ActionType>();
   const columns: ProColumns<GithubIssueItem>[] = [
@@ -30,16 +32,16 @@ export default () => {
       key: 'option',
       render: (text, record, _, action) => [
         <a
-          style={{ color: '#ff4d4f' }} // Ant Design 默认危险色
-          key="editable"
+          style={{ color: '#ff4d4f' }}
+          key="delete"
           onClick={async () => {
             const res = await deleteDeptUsingPost({ deptName: record.deptName });
             if (res.code === 0) {
               message.success(res.message);
+              action?.reload();
             } else {
               message.error(res.message);
             }
-            action?.reload();
           }}
         >
           删除
@@ -56,21 +58,22 @@ export default () => {
       columns={columns}
       actionRef={actionRef}
       cardBordered
-      // @ts-ignore
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
       request={async (params = {}, sort, filter) => {
-        console.log(sort, filter, params);
         try {
-          const paramsWithFormName = { ...params };
-          const response = await getDeptUsingPost(paramsWithFormName);
+          const response = await getDeptUsingPost(params);
+          const data = response.data || {};
           return {
-            // @ts-ignore
-            data: response.data.records,
+            data: data.records || [],
+            total: data.total || 0,
+            success: response.code === 0,
           };
         } catch (error) {
           console.error('Error fetching data:', error);
           return {
             data: [],
             total: 0,
+            success: false,
           };
         }
       }}
@@ -86,52 +89,52 @@ export default () => {
         labelWidth: 'auto',
       }}
       form={{
-        syncToUrl: (values, type) => {
-          if (type === 'get') {
-            return {
-              ...values,
-            };
-          }
-          return values;
-        },
+        syncToUrl: (values, type) => (type === 'get' ? { ...values } : values),
       }}
       pagination={{
-        pageSize: 5,
+        defaultPageSize: 10,
+        showSizeChanger: true,
       }}
       dateFormatter="string"
       headerTitle="院系系部管理"
       toolBarRender={() => [
-        <>
-          <ModalForm<{
-            deptName: string;
-          }>
-            title="添加院系系部"
-            trigger={
-              <Button type="primary">
-                <PlusOutlined />
-                添加院系系部
-              </Button>
+        // eslint-disable-next-line react/jsx-key
+        <ModalForm<{
+          deptName: string;
+        }>
+          title="添加院系系部"
+          trigger={
+            <Button type="primary">
+              <PlusOutlined />
+              添加院系系部
+            </Button>
+          }
+          autoFocusFirstInput
+          modalProps={{
+            destroyOnClose: true,
+            onCancel: () => console.log('取消添加'),
+          }}
+          submitTimeout={2000}
+          onFinish={async (values) => {
+            const res = await addDeptUsingPost(values);
+            if (res.code === 0) {
+              message.success(res.message);
+              actionRef.current?.reload();
+              return true;
+            } else {
+              message.error(res.message);
+              return false;
             }
-            autoFocusFirstInput
-            modalProps={{
-              destroyOnClose: true,
-              onCancel: () => console.log('run'),
-            }}
-            submitTimeout={2000}
-            onFinish={async (values) => {
-              const res = await addDeptUsingPost(values);
-              if (res.code === 0) {
-                message.success(res.message);
-                actionRef.current?.reload();
-                return true;
-              } else {
-                message.error(res.message);
-              }
-            }}
-          >
-            <ProFormText width="md" name="deptName" label="系部名称" required={true} />
-          </ModalForm>
-        </>,
+          }}
+        >
+          <ProFormText
+            width="md"
+            name="deptName"
+            label="系部名称"
+            placeholder="请输入系部名称"
+            required
+          />
+        </ModalForm>,
       ]}
     />
   );

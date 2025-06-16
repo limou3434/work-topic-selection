@@ -4,9 +4,9 @@ import {
 import { ActionType, ProColumns } from '@ant-design/pro-components';
 import { useNavigate } from 'react-router-dom';
 import { ProTable } from '@ant-design/pro-components';
-import React, {useRef, useState} from 'react';
-import { Button, Dropdown } from "antd";
-import { EllipsisOutlined } from "@ant-design/icons";
+import React, { useRef, useState } from 'react';
+import { Button, Dropdown } from 'antd';
+import { EllipsisOutlined } from '@ant-design/icons';
 
 type GithubIssueItem = {
   id?: number;
@@ -25,8 +25,9 @@ export default () => {
   const actionRef = useRef<ActionType>();
   const navigate = useNavigate();
   const [pageNum, setPageNum] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
+
   const columns: ProColumns<GithubIssueItem>[] = [
     {
       title: '序号',
@@ -50,7 +51,7 @@ export default () => {
     {
       title: '状态',
       dataIndex: 'status',
-      search:false,
+      search: false,
       render: (_, record) => {
         let color = 'black';
         let text = '未知状态';
@@ -68,7 +69,7 @@ export default () => {
           text = '打回';
         }
         return <span style={{ color }}>{text}</span>;
-      }
+      },
     },
     {
       title: '打回理由',
@@ -78,11 +79,10 @@ export default () => {
       title: '操作',
       valueType: 'option',
       key: 'option',
-      render: (text, record, _) => [
+      render: (text, record) => [
         <a
           key="editable"
           onClick={() => {
-            console.log(record.id);
             navigate(`/topic/student/view/${record.id}`);
           }}
         >
@@ -97,17 +97,24 @@ export default () => {
       columns={columns}
       actionRef={actionRef}
       cardBordered
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
       request={async (params = {}, sort, filter) => {
-        console.log(sort, filter, params);
         try {
+          const current = params.current || 1;
+          const size = params.pageSize || 10;
+          setPageNum(current);
+          setPageSize(size);
           const response = await getTopicListUsingPost({
             ...params,
-            pageNumber: params.current,
-            pageSize: params.pageSize,
+            pageNumber: current,
+            pageSize: size,
           });
+          const data = response.data?.records || [];
+          const total = response.data?.total || 0;
+          setTotal(total);
           return {
-            data: response.data.records,
-            total: response.data.total,
+            data,
+            total,
             success: true,
           };
         } catch (error) {
@@ -123,7 +130,7 @@ export default () => {
         type: 'multiple',
       }}
       columnsState={{
-        persistenceKey: 'pro-table-singe-demos',
+        persistenceKey: 'pro-table-topic-demos',
         persistenceType: 'localStorage',
       }}
       rowKey="id"
@@ -141,33 +148,26 @@ export default () => {
         },
       }}
       pagination={{
-        pageSize: 5,
+        pageSize,
         current: pageNum,
         total,
+        showSizeChanger: true,
+        pageSizeOptions: ['10', '20', '50', '100'],
         onChange: (page, size) => {
           setPageNum(page);
           setPageSize(size);
         },
       }}
       dateFormatter="string"
-      headerTitle="选题审核列表"
+      headerTitle="选题状态列表"
       toolBarRender={() => [
         <Dropdown
           key="menu"
           menu={{
             items: [
-              {
-                label: '1st item',
-                key: '1',
-              },
-              {
-                label: '2nd item',
-                key: '2',
-              },
-              {
-                label: '3rd item',
-                key: '3',
-              },
+              { label: '1st item', key: '1' },
+              { label: '2nd item', key: '2' },
+              { label: '3rd item', key: '3' },
             ],
           }}
         >

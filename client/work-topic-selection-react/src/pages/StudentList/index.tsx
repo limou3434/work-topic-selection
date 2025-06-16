@@ -24,7 +24,7 @@ type GithubIssueItem = {
 export default () => {
   const actionRef = useRef<ActionType>();
   const [pageNum, setPageNum] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10); // 默认10
   const [total, setTotal] = useState(0);
 
   const columns: ProColumns<GithubIssueItem>[] = [
@@ -55,8 +55,8 @@ export default () => {
       key: 'option',
       render: (text, record, _, action) => [
         <a
-          style={{ color: '#ff4d4f' }} // Ant Design 默认危险色
-          key="editable"
+          style={{ color: '#ff4d4f' }}
+          key="delete"
           onClick={async () => {
             const res = await deleteUserUsingPost({ userAccount: record.userAccount });
             if (res.code === 0) {
@@ -87,8 +87,7 @@ export default () => {
   ];
 
   const onMenuClick: MenuProps['onClick'] = (e) => {
-    const key = e.key;
-    if (key === 'downloadTemplate') {
+    if (e.key === 'downloadTemplate') {
       const link = document.createElement('a');
       link.href =
         'https://template-thrive-1322597786.cos.ap-guangzhou.myqcloud.com/%E5%AD%A6%E7%94%9F%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF.xlsx';
@@ -96,7 +95,7 @@ export default () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } else if (key === 'batchAdd') {
+    } else if (e.key === 'batchAdd') {
       setImportModalOpen(true);
     }
   };
@@ -106,19 +105,23 @@ export default () => {
       columns={columns}
       actionRef={actionRef}
       cardBordered
-      //@ts-ignore
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
       request={async (params = {}, sort, filter) => {
-        console.log(sort, filter, params);
+        // 取params里的分页参数，默认1和10
+        const currentPage = params.current || 1;
+        const currentPageSize = params.pageSize || 10;
         try {
-          const paramsWithPagination = { ...params, userRole: 0, pageNum, pageSize };
+          const paramsWithPagination = { ...params, userRole: 0, pageNum: currentPage, pageSize: currentPageSize };
           const response = await listUserByPageUsingPost(paramsWithPagination);
           const records = response?.data?.records || [];
           const total = response?.data?.total || 0;
           setTotal(total);
+          setPageNum(currentPage);
+          setPageSize(currentPageSize);
           return {
             data: records,
             success: true,
-            total: total,
+            total,
           };
         } catch (error) {
           console.error('Error fetching data:', error);
@@ -129,34 +132,25 @@ export default () => {
           };
         }
       }}
-      editable={{
-        type: 'multiple',
-      }}
+      editable={{ type: 'multiple' }}
       columnsState={{
         persistenceKey: 'pro-table-singe-demos',
         persistenceType: 'localStorage',
       }}
       rowKey="id"
-      search={{
-        labelWidth: 'auto',
-      }}
+      search={{ labelWidth: 'auto' }}
       form={{
-        syncToUrl: (values, type) => {
-          if (type === 'get') {
-            return {
-              ...values,
-            };
-          }
-          return values;
-        },
+        syncToUrl: (values, type) => (type === 'get' ? { ...values } : values),
       }}
       pagination={{
         pageSize,
         current: pageNum,
         total,
+        showSizeChanger: true,
         onChange: (page, size) => {
           setPageNum(page);
-          setPageSize(size);
+          setPageSize(size || 10);
+          actionRef.current?.reload();
         },
       }}
       dateFormatter="string"
@@ -166,24 +160,15 @@ export default () => {
           <Dropdown menu={{ items, onClick: onMenuClick }}>
             <Button type="dashed">批量操作</Button>
           </Dropdown>
-          <ModalForm<{
-            file: any;
-          }>
+          <ModalForm<{ file: any }>
             title="批量添加学生"
             open={importModalOpen}
             onOpenChange={setImportModalOpen}
             autoFocusFirstInput
-            modalProps={{
-              destroyOnClose: true,
-              onCancel: () => console.log('run'),
-            }}
+            modalProps={{ destroyOnClose: true, onCancel: () => console.log('cancel') }}
             submitTimeout={2000}
             onFinish={async (values) => {
-              const res = await uploadFileUsingPost(
-                { status: 0 },
-                {},
-                values.file[0].originFileObj,
-              );
+              const res = await uploadFileUsingPost({ status: 0 }, {}, values.file[0].originFileObj);
               if (res.code === 0) {
                 message.success(res.message);
                 actionRef.current?.reload();
@@ -219,13 +204,10 @@ export default () => {
               </Button>
             }
             autoFocusFirstInput
-            modalProps={{
-              destroyOnClose: true,
-              onCancel: () => console.log('run'),
-            }}
+            modalProps={{ destroyOnClose: true, onCancel: () => console.log('cancel') }}
             submitTimeout={2000}
             onFinish={async (values) => {
-              const res = await addUserUsingPost({...values, userRole: 0});
+              const res = await addUserUsingPost({ ...values, userRole: 0 });
               if (res.code === 0) {
                 message.success(res.message);
                 actionRef.current?.reload();
@@ -271,10 +253,7 @@ export default () => {
               required
             />
           </ModalForm>
-          <ModalForm<{
-            userAccount: string;
-            userName: string;
-          }>
+          <ModalForm<{ userAccount: string; userName: string }>
             title="重置账号密码"
             trigger={
               <Button type="primary" ghost>
@@ -283,10 +262,7 @@ export default () => {
               </Button>
             }
             autoFocusFirstInput
-            modalProps={{
-              destroyOnClose: true,
-              onCancel: () => console.log('run'),
-            }}
+            modalProps={{ destroyOnClose: true, onCancel: () => console.log('cancel') }}
             submitTimeout={2000}
             onFinish={async (values) => {
               const res = await resetPasswordUsingPost(values);

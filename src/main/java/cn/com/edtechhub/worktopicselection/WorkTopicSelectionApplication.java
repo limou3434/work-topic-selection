@@ -46,3 +46,5 @@ public class WorkTopicSelectionApplication {
 // TODO: 添加广告栏, 进行网站引流
 // TODO: 修改接口, 让用户看得到未到选题时间时的所有选题分页
 // TODO: 批处理功能接口暂时没有验证
+// TODO: 管理员无法取消开放的选题
+// TODO: 主任无法取消审核通过的选题

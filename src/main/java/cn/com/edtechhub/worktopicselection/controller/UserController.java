@@ -612,7 +612,7 @@ public class UserController {
         QueryWrapper<User> queryWrapper = new QueryWrapper<User>()
                 .eq("userRole", UserRoleEnum.USER.getValue()) // 只获取学生记录
                 .eq(!userService.userIsAdmin(loginUser), "dept", loginUser.getDept()) // 获取当前登陆用户系部相同的学生, 但是管理员可以获取所有学生
-        ;
+                ;
         int totalStudents = (int) userService.count(queryWrapper);
         List<User> userList = userService.list(queryWrapper);
 
@@ -910,6 +910,153 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
     }
 
+    /**
+     * 获取系部教师数据
+     */
+    /*
+    @PostMapping("get/dept/teacher")
+    public BaseResponse<Page<DeptTeacherVO>> getTeacher(@RequestBody DeptTeacherQueryRequest deptTeacherQueryRequest, HttpServletRequest request) {
+        if (deptTeacherQueryRequest == null) {
+            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "请求参数为空");
+        }
+        long current = deptTeacherQueryRequest.getCurrent();
+        long size = deptTeacherQueryRequest.getPageSize();
+        String sortField = deptTeacherQueryRequest.getSortField();
+        String sortOrder = deptTeacherQueryRequest.getSortOrder();
+        final User loginUser = userService.getLoginUser(request);
+        final String userAccount = loginUser.getUserAccount();
+        final StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount));
+        if (studentTopicSelection != null) {
+            return TheResult.error(CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "您已经选择过课题");
+        }
+        final String dept = loginUser.getDept();
+
+        // 查询用户列表
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.eq("dept", dept);
+//        userQueryWrapper.eq("userRole", 1);
+        userQueryWrapper.orderBy(SqlUtils.validSortField(sortField),
+                sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
+                sortField);
+        List<User> users = userMapper.selectList(userQueryWrapper);
+
+        // 创建返回的 Page 对象
+        List<DeptTeacherVO> teacherVOList = new ArrayList<>();
+        for (User user : users) {
+            final String userName = user.getUserName();
+
+            // 查询该用户的课题列表
+            QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
+            topicQueryWrapper.eq("teacherName", userName);
+            topicQueryWrapper.eq("deptName", loginUser.getDept());
+            topicQueryWrapper.eq("status", "1");
+            int count = (int) topicService.count(topicQueryWrapper);
+            List<Topic> topicList = topicService.list(topicQueryWrapper);
+
+            // 计算剩余数量和选择数量
+            Integer surplusQuantity = 0;
+            Integer selectAmount = 0;
+            for (Topic topic : topicList) {
+                surplusQuantity += topic.getSurplusQuantity();
+                selectAmount += topic.getSelectAmount();
+            }
+            if (count != 0) {
+                // 构建 DeptTeacherVO 对象
+                DeptTeacherVO teacherVO = new DeptTeacherVO();
+                teacherVO.setTeacherName(userName);
+                teacherVO.setSurplusQuantity(surplusQuantity);
+                teacherVO.setSelectAmount(selectAmount);
+                teacherVO.setTopicAmount(count);
+                teacherVOList.add(teacherVO);
+            }
+            // 添加到列表中
+        }
+
+        // 构建分页对象
+        Page<DeptTeacherVO> teacherPage = new Page<>(current, size);
+        teacherPage.setRecords(teacherVOList);
+
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, teacherPage);
+    }@PostMapping("get/dept/teacher")
+    */
+    @SaCheckLogin
+    @PostMapping("/get/dept/teacher")
+    public BaseResponse<Page<DeptTeacherVO>> getTeacher(@RequestBody DeptTeacherQueryRequest deptTeacherQueryRequest) {
+        // 检查参数
+        ThrowUtils.throwIf(deptTeacherQueryRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        long current = deptTeacherQueryRequest.getCurrent();
+        ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "当前页码必须大于 0");
+
+        long size = deptTeacherQueryRequest.getPageSize();
+        ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "每页大小必须大于 0");
+
+        String sortField = deptTeacherQueryRequest.getSortField();
+
+        String sortOrder = deptTeacherQueryRequest.getSortOrder();
+
+        // 不允许已经选择过课题的学生进行查看
+        Long loginUserId = userService.userGetCurrentLonginUserId();
+        User loginUser = userService.userGetSessionById(loginUserId);
+        String userAccount = loginUser.getUserAccount();
+        StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount));
+        ThrowUtils.throwIf(studentTopicSelection != null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "您已经选择过课题, 不允许再次查看");
+
+        // 查询用户列表, 但是只查询自己这个系部的教师
+        String dept = loginUser.getDept();
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper
+                .eq("dept", dept)
+                .eq("userRole", UserRoleEnum.TEACHER)
+                .orderBy(
+                        SqlUtils.validSortField(sortField),
+                        sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
+                        sortField
+                )
+        ;
+        List<User> users = userMapper.selectList(userQueryWrapper);
+
+        // 创建返回的 Page 对象
+        List<DeptTeacherVO> teacherVOList = new ArrayList<>();
+        for (User user : users) {
+            final String userName = user.getUserName();
+
+            // 查询该用户的课题列表
+            QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
+            topicQueryWrapper.eq("teacherName", userName)
+                    .eq("deptName", loginUser.getDept())
+                    .eq("status", TopicStatusEnum.PUBLISHED)
+            ;
+            int count = (int) topicService.count(topicQueryWrapper);
+            List<Topic> topicList = topicService.list(topicQueryWrapper);
+
+            // 计算剩余数量和选择数量
+            Integer surplusQuantity = 0;
+            Integer selectAmount = 0;
+            for (Topic topic : topicList) {
+                surplusQuantity += topic.getSurplusQuantity();
+                selectAmount += topic.getSelectAmount();
+            }
+            if (count != 0) {
+                // 构建 DeptTeacherVO 对象
+                DeptTeacherVO teacherVO = new DeptTeacherVO();
+                teacherVO.setTeacherName(userName);
+                teacherVO.setSurplusQuantity(surplusQuantity);
+                teacherVO.setSelectAmount(selectAmount);
+                teacherVO.setTopicAmount(count);
+                teacherVOList.add(teacherVO);
+            }
+            // 添加到列表中
+        }
+
+        // 构建分页对象
+        Page<DeptTeacherVO> teacherPage = new Page<>(current, size);
+        teacherPage.setRecords(teacherVOList);
+
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, teacherPage);
+    }
+
+
     /// TODO: 下面都是旧代码...并且把所有的权限都去除了
 
     @Resource
@@ -1014,74 +1161,6 @@ public class UserController {
             projectVOList.add(projectVO);
         }
         return TheResult.success(CodeBindMessageEnums.SUCCESS, projectVOList);
-    }
-
-    /**
-     * 获取系部教师数据
-     */
-    @PostMapping("get/dept/teacher")
-    public BaseResponse<Page<DeptTeacherVO>> getTeacher(@RequestBody DeptTeacherQueryRequest deptTeacherQueryRequest, HttpServletRequest request) {
-        if (deptTeacherQueryRequest == null) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "请求参数为空");
-        }
-        long current = deptTeacherQueryRequest.getCurrent();
-        long size = deptTeacherQueryRequest.getPageSize();
-        String sortField = deptTeacherQueryRequest.getSortField();
-        String sortOrder = deptTeacherQueryRequest.getSortOrder();
-        final User loginUser = userService.getLoginUser(request);
-        final String userAccount = loginUser.getUserAccount();
-        final StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount));
-        if (studentTopicSelection != null) {
-            return TheResult.error(CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "您已经选择过课题");
-        }
-        final String dept = loginUser.getDept();
-
-        // 查询用户列表
-        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        userQueryWrapper.eq("dept", dept);
-//        userQueryWrapper.eq("userRole", 1);
-        userQueryWrapper.orderBy(SqlUtils.validSortField(sortField),
-                sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
-                sortField);
-        List<User> users = userMapper.selectList(userQueryWrapper);
-
-        // 创建返回的 Page 对象
-        List<DeptTeacherVO> teacherVOList = new ArrayList<>();
-        for (User user : users) {
-            final String userName = user.getUserName();
-
-            // 查询该用户的课题列表
-            QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
-            topicQueryWrapper.eq("teacherName", userName);
-            topicQueryWrapper.eq("deptName", loginUser.getDept());
-            topicQueryWrapper.eq("status", "1");
-            int count = (int) topicService.count(topicQueryWrapper);
-            List<Topic> topicList = topicService.list(topicQueryWrapper);
-
-            // 计算剩余数量和选择数量
-            Integer surplusQuantity = 0;
-            Integer selectAmount = 0;
-            for (Topic topic : topicList) {
-                surplusQuantity += topic.getSurplusQuantity();
-                selectAmount += topic.getSelectAmount();
-            }
-            if (count != 0) {
-                // 构建 DeptTeacherVO 对象
-                DeptTeacherVO teacherVO = new DeptTeacherVO();
-                teacherVO.setTeacherName(userName);
-                teacherVO.setSurplusQuantity(surplusQuantity);
-                teacherVO.setSelectAmount(selectAmount);
-                teacherVO.setTopicAmount(count);
-                teacherVOList.add(teacherVO);
-            }
-            // 添加到列表中
-        }
-
-        // 构建分页对象
-        Page<DeptTeacherVO> teacherPage = new Page<>(current, size);
-        teacherPage.setRecords(teacherVOList);
-
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, teacherPage);
     }
 
     /**

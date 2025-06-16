@@ -42,9 +42,16 @@ public class TopicQueryRequest extends PageRequest implements Serializable {
     private Date startTime;
 
     /**
-     *
+     * 结束时间
      */
     private Date endTime;
-    private String status;
+
+    /**
+     * 状态
+     */
+    private Integer status;
+
+    /// 序列化字段 ///
     private static final long serialVersionUID = 1L;
+
 }

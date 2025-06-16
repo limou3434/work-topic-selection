@@ -45,8 +45,8 @@ export default () => {
       key: 'option',
       render: (text, record, _, action) => [
         <a
-          style={{ color: '#ff4d4f' }} // Ant Design 默认危险色
-          key="editable"
+          style={{ color: '#ff4d4f' }}
+          key="delete"
           onClick={async () => {
             const res = await deleteProjectUsingPost({ projectName: record.projectName });
             if (res.code === 0) {
@@ -68,23 +68,22 @@ export default () => {
       columns={columns}
       actionRef={actionRef}
       cardBordered
-      //@ts-ignore
       request={async (params = {}, sort, filter) => {
-        console.log(sort, filter, params);
+        console.log('params:', params, 'sort:', sort, 'filter:', filter);
         try {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { current, pageSize, ...restParams } = params;
-          // @ts-ignore
-          const response = await getProjectUsingPost(restParams);
+          const { current = 1, pageSize = 10, ...restParams } = params;
+          const response = await getProjectUsingPost({
+            ...restParams,
+            current,
+            pageSize,
+          });
           return {
-            //@ts-ignore
-            data: response.data.records,
-            //@ts-ignore
-            total: response.data.total,
-            success: true,
+            data: response.data?.records || [],
+            total: response.data?.total || 0,
+            success: response.code === 0,
           };
         } catch (error) {
-          console.error('Error fetching data:', error);
+          console.error('Error fetching project data:', error);
           return {
             data: [],
             total: 0,
@@ -96,7 +95,7 @@ export default () => {
         type: 'multiple',
       }}
       columnsState={{
-        persistenceKey: 'pro-table-singe-demos',
+        persistenceKey: 'pro-table-project',
         persistenceType: 'localStorage',
       }}
       rowKey="id"
@@ -104,70 +103,64 @@ export default () => {
         labelWidth: 'auto',
       }}
       form={{
-        syncToUrl: (values, type) => {
-          if (type === 'get') {
-            return {
-              ...values,
-            };
-          }
-          return values;
-        },
+        syncToUrl: (values, type) => (type === 'get' ? { ...values } : values),
       }}
       pagination={{
-        pageSize: 5,
+        defaultPageSize: 10,
         showSizeChanger: true,
       }}
       dateFormatter="string"
       headerTitle="系部专业管理"
       toolBarRender={() => [
-        <>
-          <ModalForm<{
-            projectName: string;
-            deptName: string;
-          }>
-            title="添加系部专业"
-            trigger={
-              <Button type="primary">
-                <PlusOutlined /> 添加系部专业
-              </Button>
+        <ModalForm<{
+          projectName: string;
+          deptName: string;
+        }>
+          title="添加系部专业"
+          trigger={
+            <Button type="primary">
+              <PlusOutlined /> 添加系部专业
+            </Button>
+          }
+          autoFocusFirstInput
+          modalProps={{
+            destroyOnClose: true,
+            onCancel: () => console.log('取消添加'),
+          }}
+          submitTimeout={2000}
+          onFinish={async (values) => {
+            const res = await addProjectUsingPost(values);
+            if (res.code === 0) {
+              message.success(res.message);
+              actionRef.current?.reload();
+              return true;
+            } else {
+              message.error(res.message);
+              return false;
             }
-            autoFocusFirstInput
-            modalProps={{
-              destroyOnClose: true,
-              onCancel: () => console.log('run'),
+          }}
+        >
+          <ProFormText
+            width="md"
+            name="projectName"
+            label="专业名称"
+            placeholder="请输入专业名称"
+            required
+          />
+          <ProFormSelect
+            request={async () => {
+              const response = await getDeptListUsingPost({});
+              return response?.data?.map((item) => ({
+                label: item.label,
+                value: item.value,
+              })) || [];
             }}
-            submitTimeout={2000}
-            onFinish={async (values) => {
-              const res = await addProjectUsingPost(values);
-              if (res.code === 0) {
-                message.success(res.message);
-                actionRef.current?.reload();
-                return true;
-              } else {
-                message.error(res.message);
-                return false;
-              }
-            }}
-          >
-            <ProFormText width="md" name="projectName" label="专业名称" required={true} />
-            <ProFormSelect
-              request={async () => {
-                const response = await getDeptListUsingPost({});
-                if (response && response.data) {
-                  return response.data.map((item) => ({
-                    label: item.label,
-                    value: item.value,
-                  }));
-                }
-                return [];
-              }}
-              width="md"
-              name="deptName"
-              label="系部"
-              required={true}
-            />
-          </ModalForm>
-        </>,
+            width="md"
+            name="deptName"
+            label="系部"
+            required
+          />
+        </ModalForm>,
       ]}
     />
   );

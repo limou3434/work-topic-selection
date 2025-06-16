@@ -17,11 +17,12 @@ import { useRef, useState } from 'react';
 type GithubIssueItem = {
   userAccount: string;
   userName: string;
-  userProject: string;
+  dept: string;
 };
 
 export default () => {
   const actionRef = useRef<ActionType>();
+
   const columns: ProColumns<GithubIssueItem>[] = [
     {
       dataIndex: 'id',
@@ -46,16 +47,16 @@ export default () => {
       key: 'option',
       render: (text, record, _, action) => [
         <a
-          style={{ color: '#ff4d4f' }} // Ant Design 默认危险色
-          key="editable"
+          style={{ color: '#ff4d4f' }}
+          key="delete"
           onClick={async () => {
             const res = await deleteUserUsingPost({ userAccount: record.userAccount });
             if (res.code === 0) {
               message.success(res.message);
+              action?.reload();
             } else {
               message.error(res.message);
             }
-            action?.reload();
           }}
         >
           删除
@@ -63,9 +64,6 @@ export default () => {
       ],
     },
   ];
-
-  const [data, setData] = useState<GithubIssueItem[]>([]);
-  const [total, setTotal] = useState<number>(0);
 
   const [importModalOpen, setImportModalOpen] = useState(false);
 
@@ -81,8 +79,7 @@ export default () => {
   ];
 
   const onMenuClick: MenuProps['onClick'] = (e) => {
-    const key = e.key;
-    if (key === 'downloadTemplate') {
+    if (e.key === 'downloadTemplate') {
       const link = document.createElement('a');
       link.href =
         'https://template-thrive-1322597786.cos.ap-guangzhou.myqcloud.com/%E6%95%99%E5%B8%88%E6%A8%A1%E6%9D%BF.xlsx';
@@ -90,7 +87,7 @@ export default () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } else if (key === 'batchAdd') {
+    } else if (e.key === 'batchAdd') {
       setImportModalOpen(true);
     }
   };
@@ -100,20 +97,22 @@ export default () => {
       columns={columns}
       actionRef={actionRef}
       cardBordered
-      // @ts-ignore
+      rowKey="id"
+      // 不要自己管理data和total，交给ProTable处理分页
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
       request={async (params = {}, sort, filter) => {
-        console.log(sort, filter, params);
         try {
-          const paramsWithFormName = { ...params, userRole: 1 };
-          const response = await listUserByPageUsingPost(paramsWithFormName);
-          //@ts-ignore
-          setData(response.data.records);
-          //@ts-ignore
-          setTotal(response.data.total);
+          // 确保分页参数转换正确，比如 current -> pageNum 或 page
+          const requestParams = {
+            ...params,
+            userRole: 1,
+            // 如果后端需要page字段，而ProTable默认用current，做转换
+            page: params.current,
+            pageSize: params.pageSize,
+          };
+          const response = await listUserByPageUsingPost(requestParams);
           return {
-            // @ts-ignore
             data: response.data.records,
-            //@ts-ignore
             total: response.data.total,
             success: true,
           };
@@ -133,23 +132,15 @@ export default () => {
         persistenceKey: 'pro-table-singe-demos',
         persistenceType: 'localStorage',
       }}
-      rowKey="id"
       search={{
         labelWidth: 'auto',
       }}
       form={{
-        syncToUrl: (values, type) => {
-          if (type === 'get') {
-            return {
-              ...values,
-            };
-          }
-          return values;
-        },
+        syncToUrl: (values, type) => (type === 'get' ? values : values),
       }}
       pagination={{
-        pageSize: 5,
-        total: total,
+        showSizeChanger: true,
+        defaultPageSize: 10,
       }}
       dateFormatter="string"
       headerTitle="教师账号管理"
@@ -167,12 +158,9 @@ export default () => {
             autoFocusFirstInput
             modalProps={{
               destroyOnClose: true,
-              onCancel: () => console.log('run'),
             }}
             submitTimeout={2000}
             onFinish={async (values) => {
-              console.log(values);
-              console.log(values.file[0].originFileObj);
               const res = await uploadFileUsingPost(
                 { status: 1 },
                 {},
@@ -180,7 +168,7 @@ export default () => {
               );
               if (res.code === 0) {
                 message.success(res.message);
-                actionRef?.current?.reload();
+                actionRef.current?.reload();
                 return true;
               } else {
                 message.error(res.message);
@@ -214,7 +202,6 @@ export default () => {
             autoFocusFirstInput
             modalProps={{
               destroyOnClose: true,
-              onCancel: () => console.log('run'),
             }}
             submitTimeout={2000}
             onFinish={async (values) => {
@@ -222,22 +209,21 @@ export default () => {
               const res = await addUserUsingPost(addTeacher);
               if (res.code === 0) {
                 message.success(res.message);
-                actionRef?.current?.reload();
+                actionRef.current?.reload();
                 return true;
               } else {
                 message.error(res.message);
+                return false;
               }
             }}
           >
-            <ProFormText width="md" name="userAccount" label="工号" required={true} />
-            <ProFormText width="md" name="userName" label="姓名" required={true} />
+            <ProFormText width="md" name="userAccount" label="工号" required />
+            <ProFormText width="md" name="userName" label="姓名" required />
             <ProFormSelect
               request={async () => {
                 const response = await getDeptListUsingPost({});
-                // 确保返回的数据格式符合ProFormSelect的需求
                 if (response && response.data) {
-                  //@ts-ignore
-                  return response.data.map((item) => ({
+                  return response.data.map((item: any) => ({
                     label: item.label,
                     value: item.value,
                   }));
@@ -247,7 +233,7 @@ export default () => {
               width="md"
               name="deptName"
               label="系部"
-              required={true}
+              required
             />
           </ModalForm>
           <ModalForm<{
@@ -264,7 +250,6 @@ export default () => {
             autoFocusFirstInput
             modalProps={{
               destroyOnClose: true,
-              onCancel: () => console.log('run'),
             }}
             submitTimeout={2000}
             onFinish={async (values) => {

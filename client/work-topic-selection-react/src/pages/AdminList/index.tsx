@@ -39,8 +39,8 @@ export default () => {
       key: 'option',
       render: (text, record, _, action) => [
         <a
-          style={{ color: '#ff4d4f' }} // Ant Design 默认危险色
-          key="editable"
+          style={{ color: '#ff4d4f' }}
+          key="delete"
           onClick={async () => {
             const res = await deleteUserUsingPost({ userAccount: record.userAccount });
             if (res.code === 0) {
@@ -62,21 +62,24 @@ export default () => {
       columns={columns}
       actionRef={actionRef}
       cardBordered
-      // @ts-ignore
       request={async (params = {}, sort, filter) => {
         console.log(sort, filter, params);
         try {
-          const paramsWithUserRole = { ...params, userRole: 3 };
-          const response = await listUserByPageUsingPost(paramsWithUserRole);
+          const { current = 1, pageSize = 10, ...rest } = params;
+          const requestParams = {
+            ...rest,
+            userRole: 3,
+            current,
+            pageSize,
+          };
+          const response = await listUserByPageUsingPost(requestParams);
           return {
-            // @ts-ignore
-            data: response.data.records,
-            // @ts-ignore
-            total: response.data.total,
-            success: true,
+            data: response.data?.records || [],
+            total: response.data?.total || 0,
+            success: response.code === 0,
           };
         } catch (error) {
-          console.error('Error fetching data:', error);
+          console.error('Error fetching user data:', error);
           return {
             data: [],
             total: 0,
@@ -88,7 +91,7 @@ export default () => {
         type: 'multiple',
       }}
       columnsState={{
-        persistenceKey: 'pro-table-singe-demos',
+        persistenceKey: 'pro-table-user',
         persistenceType: 'localStorage',
       }}
       rowKey="id"
@@ -96,55 +99,47 @@ export default () => {
         labelWidth: 'auto',
       }}
       form={{
-        syncToUrl: (values, type) => {
-          if (type === 'get') {
-            return {
-              ...values,
-            };
-          }
-          return values;
-        },
+        syncToUrl: (values, type) => (type === 'get' ? { ...values } : values),
       }}
       pagination={{
-        pageSize: 5,
-        showSizeChanger: true, // 允许用户选择每页显示条目数
+        defaultPageSize: 10,
+        showSizeChanger: true,
       }}
       dateFormatter="string"
       headerTitle="系统账号管理"
       toolBarRender={() => [
-        <React.Fragment key="toolbar">
-          <ModalForm<{
-            userAccount: string;
-            userName: string;
-          }>
-            title="添加系统账号"
-            trigger={
-              <Button type="primary">
-                <PlusOutlined /> 添加系统账号
-              </Button>
+        // eslint-disable-next-line react/jsx-key
+        <ModalForm<{
+          userAccount: string;
+          userName: string;
+        }>
+          title="添加系统账号"
+          trigger={
+            <Button type="primary">
+              <PlusOutlined /> 添加系统账号
+            </Button>
+          }
+          autoFocusFirstInput
+          modalProps={{
+            destroyOnClose: true,
+            onCancel: () => console.log('取消添加'),
+          }}
+          submitTimeout={2000}
+          onFinish={async (values) => {
+            const res = await addUserUsingPost({ ...values, userRole: 3 });
+            if (res.code === 0) {
+              message.success(res.message);
+              actionRef.current?.reload();
+              return true;
+            } else {
+              message.error(res.message);
+              return false;
             }
-            autoFocusFirstInput
-            modalProps={{
-              destroyOnClose: true,
-              onCancel: () => console.log('run'),
-            }}
-            submitTimeout={2000}
-            onFinish={async (values) => {
-              const res = await addUserUsingPost({...values, userRole: 3});
-              if (res.code === 0) {
-                message.success(res.message);
-                actionRef.current?.reload();
-                return true;
-              } else {
-                message.error(res.message);
-                return false;
-              }
-            }}
-          >
-            <ProFormText width="md" name="userAccount" label="工号" required={true} />
-            <ProFormText width="md" name="userName" label="姓名" required={true} />
-          </ModalForm>
-        </React.Fragment>,
+          }}
+        >
+          <ProFormText width="md" name="userAccount" label="工号" required />
+          <ProFormText width="md" name="userName" label="姓名" required />
+        </ModalForm>,
         // eslint-disable-next-line react/jsx-key
         <ModalForm<{
           userAccount: string;
@@ -153,14 +148,13 @@ export default () => {
           title="重置账号密码"
           trigger={
             <Button type="primary" ghost>
-              <PlusOutlined />
-              重置账号密码
+              <PlusOutlined /> 重置账号密码
             </Button>
           }
           autoFocusFirstInput
           modalProps={{
             destroyOnClose: true,
-            onCancel: () => console.log('run'),
+            onCancel: () => console.log('取消重置'),
           }}
           submitTimeout={2000}
           onFinish={async (values) => {

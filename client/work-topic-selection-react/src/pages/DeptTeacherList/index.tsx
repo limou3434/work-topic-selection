@@ -50,8 +50,8 @@ export default () => {
       key: 'option',
       render: (text, record, _, action) => [
         <a
-          style={{ color: '#ff4d4f' }} // Ant Design 默认危险色
-          key="editable"
+          style={{ color: '#ff4d4f' }}
+          key="delete"
           onClick={async () => {
             const res = await deleteUserUsingPost({ userAccount: record.userAccount });
             if (res.code === 0) {
@@ -73,18 +73,21 @@ export default () => {
       columns={columns}
       actionRef={actionRef}
       cardBordered
-      // @ts-ignore
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
       request={async (params = {}, sort, filter) => {
-        console.log(sort, filter, params);
         try {
-          const paramsWithUserRole = { ...params, userRole: 2 }; // Assuming userRole needs to be passed in params
-          const response = await listUserByPageUsingPost(paramsWithUserRole);
+          const { current = 1, pageSize = 10, ...rest } = params;
+          const requestParams = {
+            ...rest,
+            userRole: 2,
+            current,
+            pageSize,
+          };
+          const response = await listUserByPageUsingPost(requestParams);
           return {
-            // @ts-ignore
-            data: response.data.records,
-            // @ts-ignore
-            total: response.data.total,
-            success: true,
+            data: response.data?.records || [],
+            total: response.data?.total || 0,
+            success: response.code === 0,
           };
         } catch (error) {
           console.error('Error fetching data:', error);
@@ -99,7 +102,7 @@ export default () => {
         type: 'multiple',
       }}
       columnsState={{
-        persistenceKey: 'pro-table-singe-demos',
+        persistenceKey: 'pro-table-user',
         persistenceType: 'localStorage',
       }}
       rowKey="id"
@@ -107,105 +110,97 @@ export default () => {
         labelWidth: 'auto',
       }}
       form={{
-        syncToUrl: (values, type) => {
-          if (type === 'get') {
-            return {
-              ...values,
-            };
-          }
-          return values;
-        },
+        syncToUrl: (values, type) => (type === 'get' ? { ...values } : values),
       }}
       pagination={{
-        pageSize: 5,
+        defaultPageSize: 10,
         showSizeChanger: true,
       }}
       dateFormatter="string"
       headerTitle="主任账号管理"
       toolBarRender={() => [
-        <React.Fragment key="toolbar">
-          <ModalForm<{
-            deptName: string;
-            userAccount: string;
-            userName: string;
-          }>
-            title="添加主任账号"
-            trigger={
-              <Button type="primary">
-                <PlusOutlined /> 添加主任账号
-              </Button>
+        // eslint-disable-next-line react/jsx-key
+        <ModalForm<{
+          deptName: string;
+          userAccount: string;
+          userName: string;
+        }>
+          title="添加主任账号"
+          trigger={
+            <Button type="primary">
+              <PlusOutlined /> 添加主任账号
+            </Button>
+          }
+          autoFocusFirstInput
+          modalProps={{
+            destroyOnClose: true,
+            onCancel: () => console.log('取消添加'),
+          }}
+          submitTimeout={2000}
+          onFinish={async (values) => {
+            const addDeptTeacher = { ...values, userRole: 2 };
+            const res = await addUserUsingPost(addDeptTeacher);
+            if (res.code === 0) {
+              message.success(res.message);
+              actionRef.current?.reload();
+              return true;
+            } else {
+              message.error(res.message);
+              return false;
             }
-            autoFocusFirstInput
-            modalProps={{
-              destroyOnClose: true,
-              onCancel: () => console.log('run'),
-            }}
-            submitTimeout={2000}
-            onFinish={async (values) => {
-              const addDeptTeacher = { ...values, userRole: 2 }; // Assuming userRole needs to be passed in values
-              const res = await addUserUsingPost(addDeptTeacher);
-              if (res.code === 0) {
-                message.success(res.message);
-                actionRef.current?.reload();
-                return true;
-              } else {
-                message.error(res.message);
-                return false;
+          }}
+        >
+          <ProFormText width="md" name="userAccount" label="工号" required />
+          <ProFormText width="md" name="userName" label="姓名" required />
+          <ProFormSelect
+            request={async () => {
+              const response = await getDeptListUsingPost({});
+              if (response && response.data) {
+                return response.data.map((item) => ({
+                  label: item.label,
+                  value: item.value,
+                }));
               }
+              return [];
             }}
-          >
-            <ProFormText width="md" name="userAccount" label="工号" required={true} />
-            <ProFormText width="md" name="userName" label="姓名" required={true} />
-            <ProFormSelect
-              request={async () => {
-                const response = await getDeptListUsingPost({});
-                if (response && response.data) {
-                  return response.data.map((item) => ({
-                    label: item.label,
-                    value: item.value,
-                  }));
-                }
-                return [];
-              }}
-              width="md"
-              name="deptName"
-              label="系部"
-              required={true}
-            />
-          </ModalForm>
-          <ModalForm<{
-            userAccount: string;
-            userName: string;
-          }>
-            title="重置账号密码"
-            trigger={
-              <Button type="primary" ghost>
-                <PlusOutlined />
-                重置账号密码
-              </Button>
+            width="md"
+            name="deptName"
+            label="系部"
+            required
+          />
+        </ModalForm>,
+        // eslint-disable-next-line react/jsx-key
+        <ModalForm<{
+          userAccount: string;
+          userName: string;
+        }>
+          title="重置账号密码"
+          trigger={
+            <Button type="primary" ghost>
+              <PlusOutlined /> 重置账号密码
+            </Button>
+          }
+          autoFocusFirstInput
+          modalProps={{
+            destroyOnClose: true,
+            onCancel: () => console.log('取消重置'),
+          }}
+          submitTimeout={2000}
+          onFinish={async (values) => {
+            const res = await resetPasswordUsingPost(values);
+            if (res.code === 0) {
+              message.success(res.message);
+              actionRef.current?.reload();
+              return true;
+            } else {
+              message.error(res.message);
+              return false;
             }
-            autoFocusFirstInput
-            modalProps={{
-              destroyOnClose: true,
-              onCancel: () => console.log('run'),
-            }}
-            submitTimeout={2000}
-            onFinish={async (values) => {
-              const res = await resetPasswordUsingPost(values);
-              if (res.code === 0) {
-                message.success(res.message);
-                actionRef.current?.reload();
-                return true;
-              } else {
-                message.error(res.message);
-                return false;
-              }
-            }}
-          >
-            <ProFormText width="md" name="userAccount" label="账号" required />
-            <ProFormText width="md" name="userName" label="姓名" required />
-          </ModalForm>
-        </React.Fragment>,
+          }}
+        >
+          <ProFormText width="md" name="userAccount" label="账号" required />
+          <ProFormText width="md" name="userName" label="姓名" required />
+        </ModalForm>,
       ]}
     />
   );

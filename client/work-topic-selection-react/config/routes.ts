@@ -138,7 +138,7 @@
     icon: 'BarChartOutlined',
     routes: [
       {
-        name: '选题审核',
+        name: '选题状态',
         path: '/topic/view/topic',
         component: './ViewStudentTopic',
         access: 'canAccessNotStudent',
