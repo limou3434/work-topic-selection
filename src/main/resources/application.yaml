@@ -96,13 +96,3 @@ sa-token: # 默认开启 Redis 配置将自动支持 Sa-token 使用 Redis 存�
   token-style: uuid # 默认可取值: uuid、simple-uuid、random-32、random-64、random-128、tik
   ## 是否输出操作日志
   is-log: true
-
-# 配置 COS
-cos:
-  client:
-    accessKey: ""
-    host: ${COS_CLIENT_HOST} # 访问域名
-    secretId: ${COS_CLIENT_SECRET_ID} # 密钥标识(SECRETID 和 SECRETKEY 请登录访问管理控制台 https://console.cloud.tencent.com/cam/capi 进行查看和管理)
-    secretKey: ${COS_CLIENT_SECRET_KEY} # 密钥的值
-    region: ${COS_CLIENT_REGION} # 地域简称(COS 地域的简称请参见 https://cloud.tencent.com/document/product/436/6224)
-    bucket: ${COS_CLIENT_BUCKET} # 存储桶名

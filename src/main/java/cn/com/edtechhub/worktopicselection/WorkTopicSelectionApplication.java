@@ -17,7 +17,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  */
 @Slf4j
 @SpringBootApplication()
-@MapperScan("cn.com.edtechhub.worktopicselection.mapper")
 @EnableScheduling
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 public class WorkTopicSelectionApplication {

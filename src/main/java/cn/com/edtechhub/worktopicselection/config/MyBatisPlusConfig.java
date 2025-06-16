@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
  *
  */
 @Configuration
-@MapperScan("com.Lzh.answer.mapper")
+@MapperScan("cn.com.edtechhub.worktopicselection.mapper")
 public class MyBatisPlusConfig {
 
     /**
@@ -27,4 +27,5 @@ public class MyBatisPlusConfig {
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
         return interceptor;
     }
+
 }

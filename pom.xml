@@ -152,13 +152,6 @@
             <version>1.42.0</version>
         </dependency>
 
-        <!-- Tencent COS: https://cloud.tencent.com/document/product/436/10199 -->
-        <dependency>
-            <groupId>com.qcloud</groupId>
-            <artifactId>cos_api</artifactId>
-            <version>5.6.89</version>
-        </dependency>
-
         <!-- JSON -->
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -173,37 +166,6 @@
             <version>3.1.1</version>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            &lt;!&ndash; 操作 Excel 97-2003(xls)、Word(doc) 等老版本 Office 文件, 提供基本的 HSSF(Excel) API、HWPF(Word) API &ndash;&gt;-->
-        <!--            <groupId>org.apache.poi</groupId>-->
-        <!--            <artifactId>poi</artifactId>-->
-        <!--            <version>5.2.3</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            &lt;!&ndash; 操作 Excel 2007+（xlsx）、Word（docx） 等新格式 Office 文件, 扩展支持 OOXML(Office Open XML) 格式 &ndash;&gt;-->
-        <!--            <groupId>org.apache.poi</groupId>-->
-        <!--            <artifactId>poi-ooxml</artifactId>-->
-        <!--            <version>5.2.3</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            &lt;!&ndash; 读写 CSV(逗号分隔值)格式文件, 提供流式读取、写入、定制分隔符等功能 &ndash;&gt;-->
-        <!--            <groupId>org.apache.commons</groupId>-->
-        <!--            <artifactId>commons-csv</artifactId>-->
-        <!--            <version>1.8</version>-->
-        <!--        </dependency>-->
-        <!--        &lt;!&ndash; https://github.com/alibaba/easyexcel &ndash;&gt;-->
-
-        <!--        <dependency>-->
-        <!--            <groupId>org.springframework.session</groupId>-->
-        <!--            <artifactId>spring-session-data-redis</artifactId>-->
-        <!--        </dependency>-->
-
-        <!--        <dependency>-->
-        <!--            &lt;!&ndash; 主要依赖 &ndash;&gt;-->
-        <!--            <groupId>org.mybatis.spring.boot</groupId>-->
-        <!--            <artifactId>mybatis-spring-boot-starter</artifactId>-->
-        <!--            <version>2.2.2</version>-->
-        <!--        </dependency>-->
 
     </dependencies>
 

@@ -14,7 +14,7 @@ import java.util.List;
  */
 @Configuration
 @Slf4j
-public class CorsConfig implements WebMvcConfigurer {
+public class CrossDomainConfig implements WebMvcConfigurer {
 
     /**
      * 配置跨域共享
@@ -45,7 +45,7 @@ public class CorsConfig implements WebMvcConfigurer {
      */
     @PostConstruct
     public void printConfig() {
-        log.debug("[CorsConfig] 当前项目 Cors 跨域规则为 {}", this.getCorsRule());
+        log.debug("[CrossDomainConfig] 当前项目 Cors 跨域规则为 {}", this.getCorsRule());
     }
 
 }
