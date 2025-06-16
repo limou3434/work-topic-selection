@@ -195,16 +195,31 @@ public class UserController {
         ThrowUtils.throwIf(StringUtils.isBlank(userName), CodeBindMessageEnums.PARAMS_ERROR, "缺少用户名字");
 
         String userAccount = userAddRequest.getUserAccount();
-        ThrowUtils.throwIf(StringUtils.isBlank(userAccount), CodeBindMessageEnums.PARAMS_ERROR, "缺少用户账号");
-
-        String userDeptName = userAddRequest.getDeptName();
-        ThrowUtils.throwIf(StringUtils.isBlank(userDeptName), CodeBindMessageEnums.PARAMS_ERROR, "缺少系部名称");
-
-        String userProject = userAddRequest.getProject();
-        ThrowUtils.throwIf(StringUtils.isBlank(userProject), CodeBindMessageEnums.PARAMS_ERROR, "缺少专业名称");
+        ThrowUtils.throwIf(StringUtils.isBlank(userAccount), CodeBindMessageEnums.PARAMS_ERROR, "缺少用户学号/工号");
 
         User oldUser = userService.userIsExist(userAccount);
         ThrowUtils.throwIf(oldUser != null, CodeBindMessageEnums.PARAMS_ERROR, "该学号/工号对于的用户已经存在, 无法重复添加");
+
+        Integer userRole = userAddRequest.getUserRole();
+        ThrowUtils.throwIf(userRole == null, CodeBindMessageEnums.PARAMS_ERROR, "缺少用户角色");
+
+        UserRoleEnum userRoleEnum = UserRoleEnum.getEnumByValue(userRole);
+        ThrowUtils.throwIf(userRoleEnum == null, CodeBindMessageEnums.PARAMS_ERROR, "不存在该用户角色");
+
+        // 如果是添加学生则需要检查是否设置了系部和专业
+        if (userRoleEnum == UserRoleEnum.USER) {
+            String userDeptName = userAddRequest.getDeptName();
+            ThrowUtils.throwIf(StringUtils.isBlank(userDeptName), CodeBindMessageEnums.PARAMS_ERROR, "缺少系部名称");
+
+            String userProject = userAddRequest.getProject();
+            ThrowUtils.throwIf(StringUtils.isBlank(userProject), CodeBindMessageEnums.PARAMS_ERROR, "缺少专业名称");
+        }
+
+        // 如果是添加主任或教师则需要检查是否设置了系部和专业
+        if (userRoleEnum == UserRoleEnum.DEPT || userRoleEnum == UserRoleEnum.TEACHER) {
+            String userDeptName = userAddRequest.getDeptName();
+            ThrowUtils.throwIf(StringUtils.isBlank(userDeptName), CodeBindMessageEnums.PARAMS_ERROR, "缺少系部名称");
+        }
 
         // 创建新的用户实例
         User user = new User();
@@ -283,6 +298,112 @@ public class UserController {
         boolean result = userService.updateById(user);
         ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "更新失败");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
+    }
+
+    // 重置用户密码
+    /*
+    @PostMapping("reset/password")
+    public BaseResponse<String> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest, HttpServletRequest request) {
+        final User loginUser = userService.getLoginUser(request);
+        if (resetPasswordRequest == null) {
+            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "请求数据为空");
+        }
+        String userName = resetPasswordRequest.getUserName();
+        String userAccount = resetPasswordRequest.getUserAccount();
+        final User student = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount).eq("userName", userName));
+        if (student == null) {
+            throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "该用户不存在");
+        }
+        final String SALT = "yupi";
+        String newEncryptPassword = DigestUtils.md5DigestAsHex((SALT + "12345678").getBytes());
+        student.setUserPassword(newEncryptPassword);
+        student.setStatus(" ");
+        final boolean b = userService.updateById(student);
+        if (!b) {
+            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "修改失败");
+        }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, student.getUserAccount());
+    }
+    */
+    @SaCheckRole("admin")
+    @PostMapping("/reset/password")
+    public BaseResponse<String> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest, HttpServletRequest request) {
+        // 参数检查
+        ThrowUtils.throwIf(resetPasswordRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        String userName = resetPasswordRequest.getUserName();
+        ThrowUtils.throwIf(StringUtils.isBlank(userName), CodeBindMessageEnums.PARAMS_ERROR, "用户名不能为空");
+
+        String userAccount = resetPasswordRequest.getUserAccount();
+        ThrowUtils.throwIf(StringUtils.isBlank(userAccount), CodeBindMessageEnums.PARAMS_ERROR, "用户账号不能为空");
+
+        User user = userService.getOne(
+                new QueryWrapper<User>()
+                        .eq("userAccount", userAccount)
+                        .eq("userName", userName)
+        );
+        ThrowUtils.throwIf(user == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "该用户不存在, 无需重置密码");
+
+        // 获取新的初始化密码
+        String newEncryptPassword = DigestUtils.md5DigestAsHex((UserConstant.SALT + UserConstant.DEFAULT_PASSWD).getBytes());
+        user.setUserPassword(newEncryptPassword);
+        user.setStatus(null); // 状态置空, 以方便后续强制要求用户重新登陆
+        final boolean result = userService.updateById(user);
+        ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "修改用户密码失败");
+
+        // 强制要求用户重新登陆并且清理缓存
+        StpUtil.logout(user.getId()); // 默认该用户的所有设备都被登出
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, user.getUserAccount());
+    }
+
+    // 用户自己手动修改密码
+    /*
+    @PostMapping("/register")
+    public BaseResponse<Long> userUpdatePassword(@RequestBody UserUpdatePassword userUpdatePassword) {
+        // TODO: 实际上本项目不存在注册新用户, 只能管理员由管理员手动导入系统, 这是因为学院系统的特殊性, 不过这个接口是用来修改用户的初始化密码用的...
+
+        // 检查参数
+        ThrowUtils.throwIf(userUpdatePassword == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        // 更新用户
+        String userAccount = userUpdatePassword.getUserAccount();
+        String userPassword = userUpdatePassword.getUserPassword();
+        final String updatePassword = userUpdatePassword.getUpdatePassword();
+        if (StringUtils.isAnyBlank(userAccount, userPassword, updatePassword)) {
+            return null;
+        } // TODO: 666, 这个逻辑这么写还改不了, 因为鬼知道他是不是后面复用了这个接口...我个人不推荐在接口类内部复用接口的, 除非作接口的强化, 这么写很搞人...
+        long result = userService.userUpdatePassword(userAccount, userPassword, updatePassword);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, result);
+    }
+    */
+    @SaIgnore
+    @PostMapping("/updata/password")
+    public BaseResponse<Long> userUpdatePassword(@RequestBody UserUpdatePassword userUpdatePassword) {
+        // 检查参数
+        ThrowUtils.throwIf(userUpdatePassword == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        String userAccount = userUpdatePassword.getUserAccount();
+        ThrowUtils.throwIf(StringUtils.isBlank(userAccount), CodeBindMessageEnums.PARAMS_ERROR, "用户学号/工号不能为空");
+
+        String userPassword = userUpdatePassword.getUserPassword();
+        ThrowUtils.throwIf(StringUtils.isBlank(userPassword), CodeBindMessageEnums.PARAMS_ERROR, "用户密码不能为空");
+
+        String updatePassword = userUpdatePassword.getUpdatePassword();
+        ThrowUtils.throwIf(StringUtils.isBlank(updatePassword), CodeBindMessageEnums.PARAMS_ERROR, "新密码不能为空");
+
+        // 必须通过学号/工号密码验证后才能修改密码
+        User user = userService.getOne(
+                new QueryWrapper<User>()
+                        .eq("userAccount", userAccount)
+                        .eq("userPassword", DigestUtils.md5DigestAsHex((UserConstant.SALT + userPassword).getBytes()))
+        );
+        ThrowUtils.throwIf(user == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "旧密码不正确, 无法修改密码, 如果忘记旧密码请发送邮箱 898738804@qq.com 向联系管理员重置密码");
+
+        // 更新用户
+        user.setUserPassword(DigestUtils.md5DigestAsHex((UserConstant.SALT + updatePassword).getBytes()));
+        boolean result = userService.updateById(user);
+        ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "修改密码失败");
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, user.getId());
     }
 
     // 根据 id 获取用户数据
@@ -687,27 +808,6 @@ public class UserController {
     }
 
     /**
-     * 用户注册
-     */
-    @PostMapping("/register")
-    public BaseResponse<Long> userUpdatePassword(@RequestBody UserUpdatePassword userUpdatePassword) {
-        // TODO: 实际上本项目不存在注册新用户, 只能管理员由管理员手动导入系统, 这是因为学院系统的特殊性, 不过这个接口是用来修改用户的初始化密码用的...
-
-        // 检查参数
-        ThrowUtils.throwIf(userUpdatePassword == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
-
-        // 更新用户
-        String userAccount = userUpdatePassword.getUserAccount();
-        String userPassword = userUpdatePassword.getUserPassword();
-        final String updatePassword = userUpdatePassword.getUpdatePassword();
-        if (StringUtils.isAnyBlank(userAccount, userPassword, updatePassword)) {
-            return null;
-        } // TODO: 666, 这个逻辑这么写还改不了, 因为鬼知道他是不是后面复用了这个接口...我个人不推荐在接口类内部复用接口的, 除非作接口的强化, 这么写很搞人...
-        long result = userService.userUpdatePassword(userAccount, userPassword, updatePassword);
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, result);
-    }
-
-    /**
      * 更新个人信息
      */
     @PostMapping("/update/my")
@@ -1073,32 +1173,6 @@ public class UserController {
         }
 
         return TheResult.success(CodeBindMessageEnums.SUCCESS, "更新成功");
-    }
-
-    /**
-     * 重置密码
-     */
-    @PostMapping("reset/password")
-    public BaseResponse<String> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest, HttpServletRequest request) {
-        final User loginUser = userService.getLoginUser(request);
-        if (resetPasswordRequest == null) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "请求数据为空");
-        }
-        String userName = resetPasswordRequest.getUserName();
-        String userAccount = resetPasswordRequest.getUserAccount();
-        final User student = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount).eq("userName", userName));
-        if (student == null) {
-            throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "该用户不存在");
-        }
-        final String SALT = "yupi";
-        String newEncryptPassword = DigestUtils.md5DigestAsHex((SALT + "12345678").getBytes());
-        student.setUserPassword(newEncryptPassword);
-        student.setStatus(" ");
-        final boolean b = userService.updateById(student);
-        if (!b) {
-            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "修改失败");
-        }
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, student.getUserAccount());
     }
 
     /**

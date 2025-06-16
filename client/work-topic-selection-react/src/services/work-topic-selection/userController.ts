@@ -449,21 +449,6 @@ export async function preSelectTopicByIdUsingPost(
   });
 }
 
-/** userUpdatePassword POST /user/register */
-export async function userUpdatePasswordUsingPost(
-  body: API.UserUpdatePassword,
-  options?: { [key: string]: any },
-) {
-  return request<API.BaseResponseLong_>('/user/register', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: body,
-    ...(options || {}),
-  });
-}
-
 /** resetPassword POST /user/reset/password */
 export async function resetPasswordUsingPost(
   body: API.ResetPasswordRequest,
@@ -515,6 +500,21 @@ export async function setTimeByIdUsingPost(
   options?: { [key: string]: any },
 ) {
   return request<API.BaseResponseString_>('/user/set/time/by/id', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** userUpdatePassword POST /user/updata/password */
+export async function userUpdatePasswordUsingPost(
+  body: API.UserUpdatePassword,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseLong_>('/user/updata/password', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

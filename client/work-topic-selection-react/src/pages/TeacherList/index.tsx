@@ -1,18 +1,18 @@
 // @ts-ignore
+import { uploadFileUsingPost } from '@/services/work-topic-selection/fileController';
 import {
   addUserUsingPost,
   deleteUserUsingPost,
   getDeptListUsingPost,
-  listUserByPageUsingPost, resetPasswordUsingPost
+  listUserByPageUsingPost,
+  resetPasswordUsingPost,
 } from '@/services/work-topic-selection/userController';
-import {ActionType, ProColumns, ProFormText} from '@ant-design/pro-components';
-import { ProTable } from '@ant-design/pro-components';
-import React, { useRef, useState } from 'react';
+import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { ActionType, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
+import { ProFormUploadButton } from '@ant-design/pro-form';
+import { ModalForm, ProFormSelect } from '@ant-design/pro-form/lib';
 import { Button, Dropdown, MenuProps, message } from 'antd';
-import {ModalForm, ProFormSelect} from "@ant-design/pro-form/lib";
-import {EllipsisOutlined, PlusOutlined, UploadOutlined} from "@ant-design/icons";
-import {uploadFileUsingPost} from "@/services/work-topic-selection/fileController";
-import {ProFormUploadButton} from "@ant-design/pro-form";
+import { useRef, useState } from 'react';
 
 type GithubIssueItem = {
   userAccount: string;
@@ -35,12 +35,10 @@ export default () => {
     {
       title: '名字',
       dataIndex: 'userName',
-
     },
     {
       title: '系部',
       dataIndex: 'dept',
-
     },
     {
       title: '操作',
@@ -51,11 +49,11 @@ export default () => {
           style={{ color: '#ff4d4f' }} // Ant Design 默认危险色
           key="editable"
           onClick={async () => {
-            const res = await deleteUserUsingPost({userAccount: record.userAccount})
+            const res = await deleteUserUsingPost({ userAccount: record.userAccount });
             if (res.code === 0) {
-              message.success(res.message)
+              message.success(res.message);
             } else {
-              message.error(res.message)
+              message.error(res.message);
             }
             action?.reload();
           }}
@@ -95,7 +93,7 @@ export default () => {
     } else if (key === 'batchAdd') {
       setImportModalOpen(true);
     }
-  }
+  };
 
   return (
     <ProTable<GithubIssueItem>
@@ -173,9 +171,13 @@ export default () => {
             }}
             submitTimeout={2000}
             onFinish={async (values) => {
-              console.log(values)
-              console.log(values.file[0].originFileObj)
-              const res = await uploadFileUsingPost({status:1},{},values.file[0].originFileObj);
+              console.log(values);
+              console.log(values.file[0].originFileObj);
+              const res = await uploadFileUsingPost(
+                { status: 1 },
+                {},
+                values.file[0].originFileObj,
+              );
               if (res.code === 0) {
                 message.success(res.message);
                 actionRef?.current?.reload();
@@ -192,8 +194,9 @@ export default () => {
               label="上传xlsx文件"
               accept=".xlsx"
               max={1}
-              required>
-              <Button icon={<UploadOutlined />  } >选择文件</Button>
+              required
+            >
+              <Button icon={<UploadOutlined />}>选择文件</Button>
             </ProFormUploadButton>
           </ModalForm>
           <ModalForm<{
@@ -202,10 +205,12 @@ export default () => {
             userName: string;
           }>
             title="添加教师账号"
-            trigger={<Button type="primary">
-              <PlusOutlined/>
-              添加教师账号
-            </Button>}
+            trigger={
+              <Button type="primary">
+                <PlusOutlined />
+                添加教师账号
+              </Button>
+            }
             autoFocusFirstInput
             modalProps={{
               destroyOnClose: true,
@@ -213,36 +218,26 @@ export default () => {
             }}
             submitTimeout={2000}
             onFinish={async (values) => {
-              const addTeacher = {...values,userRole: 1}
-              const res = await addUserUsingPost(addTeacher)
-              if(res.code===0){
-                message.success(res.message)
+              const addTeacher = { ...values, userRole: 1 };
+              const res = await addUserUsingPost(addTeacher);
+              if (res.code === 0) {
+                message.success(res.message);
                 actionRef?.current?.reload();
                 return true;
-              }else {
-                message.error(res.message)
+              } else {
+                message.error(res.message);
               }
             }}
           >
-            <ProFormText
-              width="md"
-              name="userAccount"
-              label="工号"
-              required={true}
-            />
-            <ProFormText
-              width="md"
-              name="userName"
-              label="姓名"
-              required={true}
-            />
+            <ProFormText width="md" name="userAccount" label="工号" required={true} />
+            <ProFormText width="md" name="userName" label="姓名" required={true} />
             <ProFormSelect
               request={async () => {
                 const response = await getDeptListUsingPost({});
                 // 确保返回的数据格式符合ProFormSelect的需求
                 if (response && response.data) {
                   //@ts-ignore
-                  return response.data.map(item => ({
+                  return response.data.map((item) => ({
                     label: item.label,
                     value: item.value,
                   }));
@@ -284,18 +279,8 @@ export default () => {
               }
             }}
           >
-            <ProFormText
-              width="md"
-              name="userAccount"
-              label="账号"
-              required
-            />
-            <ProFormText
-              width="md"
-              name="userName"
-              label="姓名"
-              required
-            />
+            <ProFormText width="md" name="userAccount" label="账号" required />
+            <ProFormText width="md" name="userName" label="姓名" required />
           </ModalForm>
         </>,
       ]}

@@ -225,7 +225,7 @@ export default () => {
             }}
             submitTimeout={2000}
             onFinish={async (values) => {
-              const res = await addUserUsingPost(values);
+              const res = await addUserUsingPost({...values, userRole: 0});
               if (res.code === 0) {
                 message.success(res.message);
                 actionRef.current?.reload();
