@@ -185,7 +185,7 @@ public class UserController {
         ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "添加新的用户失败");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, user.getId());
     }*/
-    @SaCheckRole("admin")
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/add")
     public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest, HttpServletRequest request) {
         // 参数检查
@@ -250,7 +250,7 @@ public class UserController {
         ThrowUtils.throwIf(!result, CodeBindMessageEnums.NOT_FOUND_ERROR, "删除用户失败");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, result);
     }*/
-    @SaCheckRole("admin")
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         // 参数检查
@@ -283,7 +283,7 @@ public class UserController {
         ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "更新失败");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
     }*/
-    @SaCheckRole("admin")
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/update")
     public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
         // 检查参数
@@ -325,7 +325,7 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, student.getUserAccount());
     }
     */
-    @SaCheckRole("admin")
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/reset/password")
     public BaseResponse<String> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest, HttpServletRequest request) {
         // 参数检查
@@ -418,7 +418,7 @@ public class UserController {
         // 返回用户信息
         return TheResult.success(CodeBindMessageEnums.SUCCESS, user);
     }*/
-    @SaCheckRole("admin")
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @GetMapping("/get")
     public BaseResponse<User> getUserById(long id) {
         // 检查参数
@@ -778,6 +778,63 @@ public class UserController {
         boolean result = topicService.save(topic);
         ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "无法添加新的选题");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topic.getId());
+    }
+
+    // 根据题目 id 添加开放的开始时间和结束时间
+    /*
+    @PostMapping("set/time/by/id")
+    public BaseResponse<String> setTimeById(@RequestBody SetTimeRequest setTimeRequest, HttpServletRequest request) {
+        final User loginUser = userService.getLoginUser(request);
+//        final Integer userRole = loginUser.getUserRole();
+        if (request == null) {
+            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
+        }
+//        if (userRole != 2 && userRole != 3) {
+//            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
+//        }
+        if (setTimeRequest == null) {
+            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
+        }
+        Date startTime = setTimeRequest.getStartTime();
+        Date endTime = setTimeRequest.getEndTime();
+        for (Topic topic : setTimeRequest.getTopicList()) {
+            final Long id = topic.getId();
+            final Topic topic1 = topicService.getById(id);
+            topic1.setStatus("1");
+            topic1.setStartTime(startTime);
+            topic1.setEndTime(endTime);
+            final boolean b = topicService.updateById(topic1);
+            if (!b) {
+                throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
+            }
+        }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, "");
+    }
+    */
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/set/time/by/id")
+    public BaseResponse<String> setTimeById(@RequestBody SetTimeRequest setTimeRequest) {
+        // 检查参数
+        ThrowUtils.throwIf(setTimeRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        List<Topic> topicList = setTimeRequest.getTopicList();
+        ThrowUtils.throwIf(topicList == null || topicList.isEmpty(), CodeBindMessageEnums.PARAMS_ERROR, "请先选择要开放的题目");
+
+        Date startTime = setTimeRequest.getStartTime();
+        ThrowUtils.throwIf(startTime == null, CodeBindMessageEnums.PARAMS_ERROR, "请选择开始时间");
+
+        Date endTime = setTimeRequest.getEndTime();
+        ThrowUtils.throwIf(endTime == null, CodeBindMessageEnums.PARAMS_ERROR, "请选择结束时间");
+
+        // 遍历选题列表开始设置开始时间和结束时间
+        for (Topic topic : setTimeRequest.getTopicList()) {
+            topic.setStatus("1");
+            topic.setStartTime(startTime);
+            topic.setEndTime(endTime);
+            boolean result = topicService.updateById(topic);
+            ThrowUtils.throwIf(!result, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "无法开放该选题, 请联系管理员 898738804@qq.com");
+        }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, "开始选题!");
     }
 
     /// TODO: 下面都是旧代码...并且把所有的权限都去除了
@@ -1226,38 +1283,6 @@ public class UserController {
             userList.add(user);
         }
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userList);
-    }
-
-    /**
-     * 根据题目id添加开启时间和结束时间
-     */
-    @PostMapping("set/time/by/id")
-    public BaseResponse<String> setTimeById(@RequestBody SetTimeRequest setTimeRequest, HttpServletRequest request) {
-        final User loginUser = userService.getLoginUser(request);
-//        final Integer userRole = loginUser.getUserRole();
-        if (request == null) {
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
-        }
-//        if (userRole != 2 && userRole != 3) {
-//            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
-//        }
-        if (setTimeRequest == null) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
-        }
-        Date startTime = setTimeRequest.getStartTime();
-        Date endTime = setTimeRequest.getEndTime();
-        for (Topic topic : setTimeRequest.getTopicList()) {
-            final Long id = topic.getId();
-            final Topic topic1 = topicService.getById(id);
-            topic1.setStatus("1");
-            topic1.setStartTime(startTime);
-            topic1.setEndTime(endTime);
-            final boolean b = topicService.updateById(topic1);
-            if (!b) {
-                throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
-            }
-        }
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, "");
     }
 
     /**
