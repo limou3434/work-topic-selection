@@ -1007,7 +1007,7 @@ public class UserController {
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper
                 .eq("dept", dept)
-                .eq("userRole", UserRoleEnum.TEACHER)
+                .eq("userRole", UserRoleEnum.TEACHER.getValue())
                 .orderBy(
                         SqlUtils.validSortField(sortField),
                         sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
@@ -1023,9 +1023,10 @@ public class UserController {
 
             // 查询该用户的课题列表
             QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
-            topicQueryWrapper.eq("teacherName", userName)
+            topicQueryWrapper
+                    .eq("teacherName", userName)
                     .eq("deptName", loginUser.getDept())
-                    .eq("status", TopicStatusEnum.PUBLISHED)
+                    .eq("status", TopicStatusEnum.PUBLISHED.getCode())
             ;
             int count = (int) topicService.count(topicQueryWrapper);
             List<Topic> topicList = topicService.list(topicQueryWrapper);

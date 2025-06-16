@@ -2,19 +2,20 @@
 import {
   getTeacherUsingPost,
 } from '@/services/work-topic-selection/userController';
-import {ActionType, ProColumns} from '@ant-design/pro-components';
-import { ProTable } from '@ant-design/pro-components';
+import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import React, { useRef } from 'react';
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 type GithubIssueItem = {
   topicAmount: number;
   teacherName: string;
   selectAmount: number;
 };
+
 export default () => {
   const actionRef = useRef<ActionType>();
   const navigate = useNavigate();
+
   const columns: ProColumns<GithubIssueItem>[] = [
     {
       dataIndex: 'id',
@@ -28,12 +29,12 @@ export default () => {
     {
       title: '题目数量',
       dataIndex: 'topicAmount',
-      search:false
+      search: false,
     },
     {
       title: '预选人数',
       dataIndex: 'selectAmount',
-      search: false
+      search: false,
     },
     {
       title: '操作',
@@ -52,27 +53,30 @@ export default () => {
     },
   ];
 
-
   return (
     <ProTable<GithubIssueItem>
       columns={columns}
       actionRef={actionRef}
       cardBordered
-      // @ts-ignore
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
       request={async (params = {}, sort, filter) => {
-        console.log(sort, filter, params);
         try {
-          const paramsWithFormName = { ...params};
-          const response = await getTeacherUsingPost(paramsWithFormName);
+          const response = await getTeacherUsingPost({
+            ...params,
+            pageNumber: params.current,
+            pageSize: params.pageSize,
+          });
           return {
-            // @ts-ignore
-            data: response.data.records
+            data: response.data?.records || [],
+            total: response.data?.total || 0,
+            success: true,
           };
         } catch (error) {
           console.error('Error fetching data:', error);
           return {
             data: [],
             total: 0,
+            success: false,
           };
         }
       }}
@@ -89,21 +93,18 @@ export default () => {
       }}
       form={{
         syncToUrl: (values, type) => {
-          if (type === 'get') {
-            return {
-              ...values,
-            };
-          }
-          return values;
+          return type === 'get' ? { ...values } : values;
         },
       }}
       pagination={{
-        pageSize: 5,
+        pageSize: 10, // 默认10条
+        showSizeChanger: true,
+        pageSizeOptions: ['10', '20', '50'],
+        showQuickJumper: true,
       }}
       dateFormatter="string"
       headerTitle="题目"
-      toolBarRender={() => [
-      ]}
+      toolBarRender={false}
     />
   );
 };
