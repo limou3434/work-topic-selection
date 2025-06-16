@@ -59,7 +59,7 @@ const TopicReviewTable: React.FC = () => {
         <a
           key="approve"
           onClick={async () => {
-            const res = await checkTopicUsingPost({ id: record.id, status: '0' });
+            const res = await checkTopicUsingPost({ id: record.id, status: 0 });
             if (res.code === 0) {
               message.success(res.message);
             } else {
@@ -122,7 +122,7 @@ const TopicReviewTable: React.FC = () => {
         onVisibleChange={setModalVisible}
         onFinish={async (values) => {
           if (!currentRecord) return false;
-          const res = await checkTopicUsingPost({ id: currentRecord.id, status: '-2', reason: values.reason });
+          const res = await checkTopicUsingPost({ id: currentRecord.id, status: -2, reason: values.reason });
           if (res.code === 0) {
             message.success('打回成功');
             setModalVisible(false);

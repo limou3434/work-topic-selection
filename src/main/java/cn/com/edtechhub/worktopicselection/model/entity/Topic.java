@@ -81,28 +81,32 @@ public class Topic implements Serializable {
      */
     private Integer surplusQuantity;
 
-
     /**
-     * 开启时间
+     * 开始时间
      */
     private Date startTime;
 
     /**
-     * 
+     * 结束时间
      */
     private Date endTime;
 
     /**
-     * 是否发布,1-以发布，0-没发布
+     * 发布状态
      */
-    private String status;
+    private Integer status;
 
     /**
      * 预选人数
      */
     private Integer selectAmount;
 
+    /**
+     * 审核理由
+     */
     private String reason;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
 }

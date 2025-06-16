@@ -1,7 +1,9 @@
 package cn.com.edtechhub.worktopicselection.controller;
 
 import cn.com.edtechhub.worktopicselection.constant.CommonConstant;
+import cn.com.edtechhub.worktopicselection.constant.TopicConstant;
 import cn.com.edtechhub.worktopicselection.constant.UserConstant;
+import cn.com.edtechhub.worktopicselection.enums.TopicStatusEnum;
 import cn.com.edtechhub.worktopicselection.exception.BusinessException;
 import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
 import cn.com.edtechhub.worktopicselection.mapper.UserMapper;
@@ -444,6 +446,32 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userService.getLoginUserVO(user));
     }
 
+    // 获取用户分页数据
+    /*
+    @PostMapping("/list/page")
+    public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest, HttpServletRequest request) {
+        long current = userQueryRequest.getCurrent();
+        long size = userQueryRequest.getPageSize();
+        Page<User> userPage = userService.page(new Page<>(current, size),
+                userService.getQueryWrapper(userQueryRequest, request));
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, userPage);
+    }
+    */
+    @SaCheckRole(value = {"admin", "dept", "teacher"}, mode = SaMode.OR)
+    @PostMapping("/get/user/page")
+    public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest) {
+        // 检查参数
+        long current = userQueryRequest.getCurrent();
+        ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "页码号必须大于 0");
+
+        long size = userQueryRequest.getPageSize();
+        ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "页大小必须大于 0");
+
+        // 获取用户数据
+        Page<User> userPage = userService.page(new Page<>(current, size), userService.getQueryWrapper(userQueryRequest));
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, userPage);
+    }
+
     // TODO: 这个接口感觉没有使用, 但是竟然给了前端未脱敏的数据...
     // 根据 id 获取用户包装数据
     /*@GetMapping("/get/vo")
@@ -470,32 +498,6 @@ public class UserController {
         UserVO userVO = new UserVO();
         userVO = userService.getUserVO(user);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userVO);
-    }
-
-    // 获取用户分页数据
-    /*
-    @PostMapping("/list/page")
-    public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest, HttpServletRequest request) {
-        long current = userQueryRequest.getCurrent();
-        long size = userQueryRequest.getPageSize();
-        Page<User> userPage = userService.page(new Page<>(current, size),
-                userService.getQueryWrapper(userQueryRequest, request));
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, userPage);
-    }
-    */
-    @SaCheckRole(value = {"admin", "dept", "teacher"}, mode = SaMode.OR)
-    @PostMapping("/get/user/page")
-    public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest) {
-        // 检查参数
-        long current = userQueryRequest.getCurrent();
-        ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "页码号必须大于 0");
-
-        long size = userQueryRequest.getPageSize();
-        ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "页大小必须大于 0");
-
-        // 获取用户数据
-        Page<User> userPage = userService.page(new Page<>(current, size), userService.getQueryWrapper(userQueryRequest));
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, userPage);
     }
 
     /// 选题相关接口 ///
@@ -828,13 +830,84 @@ public class UserController {
 
         // 遍历选题列表开始设置开始时间和结束时间
         for (Topic topic : setTimeRequest.getTopicList()) {
-            topic.setStatus("1");
+            topic.setStatus(TopicStatusEnum.PUBLISHED.getCode());
             topic.setStartTime(startTime);
             topic.setEndTime(endTime);
             boolean result = topicService.updateById(topic);
             ThrowUtils.throwIf(!result, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "无法开放该选题, 请联系管理员 898738804@qq.com");
         }
         return TheResult.success(CodeBindMessageEnums.SUCCESS, "开始选题!");
+    }
+
+    // 审核题目
+    /*
+    @PostMapping("/check/topic")
+    public BaseResponse<Boolean> checkTopic(@RequestBody CheckTopicRequest checkTopicRequest, HttpServletRequest request) {
+        final User loginUser = userService.getLoginUser(request);
+        if (checkTopicRequest == null) {
+            throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "请求参数为空");
+        }
+
+        Long id = checkTopicRequest.getId();
+        String status = checkTopicRequest.getStatus();
+        final String reason = checkTopicRequest.getReason();
+        final Topic topic = topicService.getById(id);
+        if (topic == null) {
+            throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "未找到对应的题目");
+        }
+
+        if (status.equals("-1")) {
+            final String currentStatus = topic.getStatus();
+            if (!currentStatus.equals("-2")) {
+                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "当前题目状态不允许此操作");
+            }
+        }
+        if (reason != null) {
+            topic.setReason(reason);
+        }
+        topic.setStatus(status);
+        final boolean updated = topicService.updateById(topic);
+        if (!updated) {
+            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "更新题目状态失败");
+        }
+
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
+    }
+    */
+    @SaCheckRole(value = {"dept"}, mode = SaMode.OR)
+    @PostMapping("/check/topic")
+    public BaseResponse<Boolean> checkTopic(@RequestBody CheckTopicRequest checkTopicRequest, HttpServletRequest request) {
+        // 检查参数
+        ThrowUtils.throwIf(checkTopicRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        Long id = checkTopicRequest.getId();
+        ThrowUtils.throwIf(id == null, CodeBindMessageEnums.PARAMS_ERROR, "选题 id 不能为空");
+        ThrowUtils.throwIf(id <= 0, CodeBindMessageEnums.PARAMS_ERROR, "选题 id 必须是正整数");
+
+        Integer status = checkTopicRequest.getStatus();
+        ThrowUtils.throwIf(status == null, CodeBindMessageEnums.PARAMS_ERROR, "选题状态不能为空");
+
+        TopicStatusEnum statusEnum = TopicStatusEnum.getEnums(status);
+        ThrowUtils.throwIf(statusEnum == null, CodeBindMessageEnums.PARAMS_ERROR, "未知的选题状态");
+
+        String reason = checkTopicRequest.getReason();
+        ThrowUtils.throwIf(reason != null && reason.length() > TopicConstant.DEFAULT_REASON_SIZE, CodeBindMessageEnums.PARAMS_ERROR, "理由不能超过 1024 个字符");
+
+        Topic topic = topicService.getById(id);
+        ThrowUtils.throwIf(topic == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "对应的选题不存在, 无需进行审核");
+
+        Integer currentStatus = topic.getStatus();
+        TopicStatusEnum currentStatusEnum = TopicStatusEnum.getEnums(currentStatus);
+        ThrowUtils.throwIf(currentStatusEnum == statusEnum, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "请不要重复设置相同的状态");
+
+        // 更新选题审核内容
+        topic.setStatus(status);
+        if (reason != null) {
+            topic.setReason(reason);
+        }
+        boolean result = topicService.updateById(topic);
+        ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "更新题目状态失败");
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
     }
 
     /// TODO: 下面都是旧代码...并且把所有的权限都去除了
@@ -1505,42 +1578,6 @@ public class UserController {
         Page<Topic> topicPage = topicService.page(new Page<>(current, size),
                 topicService.getTopicQueryByAdminWrapper(topicQueryByAdminRequest, request));
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topicPage);
-    }
-
-    /**
-     * 审核题目
-     */
-    @PostMapping("check/topic")
-    public BaseResponse<Boolean> checkTopic(@RequestBody CheckTopicRequest checkTopicRequest, HttpServletRequest request) {
-        final User loginUser = userService.getLoginUser(request);
-        if (checkTopicRequest == null) {
-            throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "请求参数为空");
-        }
-
-        Long id = checkTopicRequest.getId();
-        String status = checkTopicRequest.getStatus();
-        final String reason = checkTopicRequest.getReason();
-        final Topic topic = topicService.getById(id);
-        if (topic == null) {
-            throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "未找到对应的题目");
-        }
-
-        if (status.equals("-1")) {
-            final String currentStatus = topic.getStatus();
-            if (!currentStatus.equals("-2")) {
-                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "当前题目状态不允许此操作");
-            }
-        }
-        if (reason != null) {
-            topic.setReason(reason);
-        }
-        topic.setStatus(status);
-        final boolean updated = topicService.updateById(topic);
-        if (!updated) {
-            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "更新题目状态失败");
-        }
-
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
     }
 
     /**

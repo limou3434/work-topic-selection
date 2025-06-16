@@ -145,7 +145,7 @@ export default () => {
         <a
           key="selectStudent"
           onClick={async () => {
-            const res = await checkTopicUsingPost({id: record.id, status: "-1"});
+            const res = await checkTopicUsingPost({id: record.id, status: -1});
             if (res.code === 0) {
               message.success("提交成功");
               action?.reload();

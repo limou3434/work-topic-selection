@@ -14,7 +14,6 @@ const Footer: React.FC = () => {
         style={{
           background: 'none',
         }}
-        copyright={`${currentYear} ${filingNumber} ${defaultMessage}`}
         links={[
           {
             key: 'github',
@@ -29,12 +28,17 @@ const Footer: React.FC = () => {
             blankTarget: true,
           },
           {
-            key: '前往 QQ 邮箱联系管理员以解决问题（管理员邮箱为 898738804@qq.com）',
-            title: '前往 QQ 邮箱联系管理员',
+            key: '前往 QQ 邮箱联系管理员以解决问题',
+            title: '前往 QQ 邮箱联系管理员以解决问题',
             href: 'https://mail.qq.com/',
             blankTarget: true,
           },
+          {
+            key: '管理员邮箱 898738804@qq.com',
+            title: '管理员邮箱 898738804@qq.com',
+          },
         ]}
+        copyright={`${currentYear} ${filingNumber} ${defaultMessage}`}
       />
     </>
   );
