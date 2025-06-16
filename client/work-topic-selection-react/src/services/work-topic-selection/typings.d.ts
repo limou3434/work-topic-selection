@@ -123,12 +123,6 @@ declare namespace API {
     message?: string;
   };
 
-  type BaseResponseUserVO_ = {
-    code?: number;
-    data?: UserVO;
-    message?: string;
-  };
-
   type CheckTopicRequest = {
     id?: number;
     reason?: string;
@@ -205,11 +199,6 @@ declare namespace API {
 
   type GetUserListRequest = {
     userRole?: number;
-  };
-
-  type getUserVOByIdUsingGETParams = {
-    /** id */
-    id?: number;
   };
 
   type LoginUserVO = {
@@ -507,7 +496,6 @@ declare namespace API {
     status?: string;
     userAvatar?: string;
     userName?: string;
-    userProfile?: string;
     userRole?: number;
   };
 }

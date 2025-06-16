@@ -28,18 +28,11 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project>
 
     /**
      * 获取查询条件
-     *
-     * @param projectQueryRequest
-     * @param request
-     * @return
      */
     @Override
-    public QueryWrapper<Project> getQueryWrapper(ProjectQueryRequest projectQueryRequest, HttpServletRequest request) {
+    public QueryWrapper<Project> getQueryWrapper(ProjectQueryRequest projectQueryRequest) {
         if (projectQueryRequest == null) {
             throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "请求参数为空");
-        }
-        if (request == null) {
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "没登录");
         }
         String sortField = projectQueryRequest.getSortField();
         String sortOrder = projectQueryRequest.getSortOrder();
@@ -50,6 +43,7 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project>
                 sortField);
         return queryWrapper;
     }
+
 }
 
 

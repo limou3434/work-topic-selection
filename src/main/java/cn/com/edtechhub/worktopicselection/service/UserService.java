@@ -17,6 +17,23 @@ import javax.servlet.http.HttpServletRequest;
  */
 public interface UserService extends IService<User> {
 
+    // 获取当前登陆用户标识
+    Long userGetCurrentLonginUserId();
+
+    // 获取当前登陆用户会话
+    User userGetSessionById(Long id);
+
+    // 检查一个用户是否存在
+    User userIsExist(String userAccount);
+
+    // 检查用户是否是管理员
+    Boolean userIsAdmin(User user);
+
+    // 获取查询条件
+    QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
+
+    // TODO: 下面是旧代码
+
     /**
      * 用户登录
      */
@@ -51,10 +68,5 @@ public interface UserService extends IService<User> {
      * 获取脱敏的用户信息列表
      */
     List<UserVO> getUserVO(List<User> userList);
-
-    /**
-     * 获取查询条件
-     */
-    QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest, HttpServletRequest request);
 
 }

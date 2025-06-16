@@ -26,12 +26,8 @@ import javax.servlet.http.HttpServletRequest;
 public class DeptServiceImpl extends ServiceImpl<DeptMapper, Dept>
     implements DeptService{
 
-
     @Override
-    public QueryWrapper<Dept> getDeptQueryWrapper(DeptQueryRequest deptQueryRequest, HttpServletRequest request) {
-        if(request==null){
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "没登录");
-        }
+    public QueryWrapper<Dept> getQueryWrapper(DeptQueryRequest deptQueryRequest) {
         String sortField = deptQueryRequest.getSortField();
         String sortOrder = deptQueryRequest.getSortOrder();
         QueryWrapper<Dept> queryWrapper = new QueryWrapper<>();

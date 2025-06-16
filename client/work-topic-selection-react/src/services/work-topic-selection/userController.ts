@@ -161,12 +161,12 @@ export async function getUserByIdUsingGet(
   });
 }
 
-/** getDept POST /user/get/dept */
-export async function getDeptUsingPost(
+/** getDeptList POST /user/get/dept/list */
+export async function getDeptListUsingPost(
   body: API.DeptQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponsePageDept_>('/user/get/dept', {
+  return request<API.BaseResponseListDeptVO_>('/user/get/dept/list', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -176,12 +176,12 @@ export async function getDeptUsingPost(
   });
 }
 
-/** getDeptList POST /user/get/dept/list */
-export async function getDeptListUsingPost(
+/** getDept POST /user/get/dept/page */
+export async function getDeptUsingPost(
   body: API.DeptQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseListDeptVO_>('/user/get/dept/list', {
+  return request<API.BaseResponsePageDept_>('/user/get/dept/page', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -237,12 +237,12 @@ export async function getPreTopicUsingPost(options?: { [key: string]: any }) {
   });
 }
 
-/** getProject POST /user/get/project */
-export async function getProjectUsingPost(
+/** getProjectList POST /user/get/project/list */
+export async function getProjectListUsingPost(
   body: API.ProjectQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponsePageProject_>('/user/get/project', {
+  return request<API.BaseResponseListProjectVO_>('/user/get/project/list', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -252,12 +252,12 @@ export async function getProjectUsingPost(
   });
 }
 
-/** getProjectList POST /user/get/project/list */
-export async function getProjectListUsingPost(
+/** getProject POST /user/get/project/page */
+export async function getProjectUsingPost(
   body: API.ProjectQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseListProjectVO_>('/user/get/project/list', {
+  return request<API.BaseResponsePageProject_>('/user/get/project/page', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -328,12 +328,12 @@ export async function getTeacherUsingPost1(
   });
 }
 
-/** getTopicList POST /user/get/topic/list */
-export async function getTopicListUsingPost(
-  body: API.TopicQueryRequest,
+/** getTopicListByAdmin POST /user/get/topic/list/by/admin */
+export async function getTopicListByAdminUsingPost(
+  body: API.TopicQueryByAdminRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponsePageTopic_>('/user/get/topic/list', {
+  return request<API.BaseResponsePageTopic_>('/user/get/topic/list/by/admin', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -343,12 +343,12 @@ export async function getTopicListUsingPost(
   });
 }
 
-/** getTopicListByAdmin POST /user/get/topic/list/by/admin */
-export async function getTopicListByAdminUsingPost(
-  body: API.TopicQueryByAdminRequest,
+/** getTopicList POST /user/get/topic/page */
+export async function getTopicListUsingPost(
+  body: API.TopicQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponsePageTopic_>('/user/get/topic/list/by/admin', {
+  return request<API.BaseResponsePageTopic_>('/user/get/topic/page', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -381,27 +381,12 @@ export async function getUserListUsingPost(
   });
 }
 
-/** getUserVOById GET /user/get/vo */
-export async function getUserVoByIdUsingGet(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getUserVOByIdUsingGETParams,
-  options?: { [key: string]: any },
-) {
-  return request<API.BaseResponseUserVO_>('/user/get/vo', {
-    method: 'GET',
-    params: {
-      ...params,
-    },
-    ...(options || {}),
-  });
-}
-
-/** listUserByPage POST /user/list/page */
+/** listUserByPage POST /user/get/user/page */
 export async function listUserByPageUsingPost(
   body: API.UserQueryRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponsePageUser_>('/user/list/page', {
+  return request<API.BaseResponsePageUser_>('/user/get/user/page', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

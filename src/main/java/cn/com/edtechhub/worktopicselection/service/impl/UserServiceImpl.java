@@ -7,11 +7,16 @@ import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
 import cn.com.edtechhub.worktopicselection.mapper.UserMapper;
 import cn.com.edtechhub.worktopicselection.model.dto.user.UserQueryRequest;
 import cn.com.edtechhub.worktopicselection.model.entity.User;
+import cn.com.edtechhub.worktopicselection.model.enums.UserRoleEnum;
 import cn.com.edtechhub.worktopicselection.model.vo.LoginUserVO;
 import cn.com.edtechhub.worktopicselection.model.vo.UserVO;
 import cn.com.edtechhub.worktopicselection.service.UserService;
 import cn.com.edtechhub.worktopicselection.utils.SqlUtils;
+import cn.com.edtechhub.worktopicselection.utils.ThrowUtils;
+import cn.dev33.satoken.session.SaSession;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.collection.CollUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +29,7 @@ import org.springframework.util.DigestUtils;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +41,58 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+
+    @Override
+    public QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest) {
+        if (userQueryRequest == null) {
+            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "请求参数为空");
+        }
+        String userAccount = userQueryRequest.getUserAccount();
+        final Integer userRole = userQueryRequest.getUserRole();
+        String userName = userQueryRequest.getUserName();
+        String dept = userQueryRequest.getDept();
+        String sortField = userQueryRequest.getSortField();
+        String sortOrder = userQueryRequest.getSortOrder();
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like(StringUtils.isNotBlank(userAccount), "userAccount", userAccount);
+        queryWrapper.eq("userRole", userRole);
+        queryWrapper.like(StringUtils.isNotBlank(dept), "dept", dept);
+        queryWrapper.like(StringUtils.isNotBlank(userName), "userName", userName);
+        queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
+                sortField);
+        return queryWrapper;
+    }
+
+    @Override
+    public Long userGetCurrentLonginUserId() {
+        return Long.valueOf(StpUtil.getLoginId().toString());
+    }
+
+    @Override
+    public User userGetSessionById(Long id) {
+        SaSession session = StpUtil.getSessionByLoginId(id);
+        ThrowUtils.throwIf(session == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "无法获取会话");
+        User user = (User) session.get(UserConstant.USER_LOGIN_STATE);
+        ThrowUtils.throwIf(user == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "该用户尚未登录没有会话资源");
+        return user;
+    }
+
+    @Override
+    public User userIsExist(String userAccount) {
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper
+                .eq(User::getUserAccount, userAccount)
+        ;
+        User user = this.getOne(lambdaQueryWrapper);
+        return user;
+    }
+
+    @Override
+    public Boolean userIsAdmin(User user) {
+        return Objects.equals(user.getUserRole(), UserRoleEnum.ADMIN.getValue());
+    }
+
+    // TODO: 下面是旧代码
 
     @Override
     public LoginUserVO userLogin(String userAccount, String userPassword, HttpServletRequest request) {
@@ -169,30 +227,5 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         return userList.stream().map(this::getUserVO).collect(Collectors.toList());
     }
-
-    @Override
-    public QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest, HttpServletRequest request) {
-        if (userQueryRequest == null) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "请求参数为空");
-        }
-        if (request == null) {
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "没登录");
-        }
-        String userAccount = userQueryRequest.getUserAccount();
-        final Integer userRole = userQueryRequest.getUserRole();
-        String userName = userQueryRequest.getUserName();
-        String dept = userQueryRequest.getDept();
-        String sortField = userQueryRequest.getSortField();
-        String sortOrder = userQueryRequest.getSortOrder();
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like(StringUtils.isNotBlank(userAccount), "userAccount", userAccount);
-        queryWrapper.eq("userRole", userRole);
-        queryWrapper.like(StringUtils.isNotBlank(dept), "dept", dept);
-        queryWrapper.like(StringUtils.isNotBlank(userName), "userName", userName);
-        queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
-                sortField);
-        return queryWrapper;
-    }
-
 
 }

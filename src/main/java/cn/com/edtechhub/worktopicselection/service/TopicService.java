@@ -15,7 +15,10 @@ import javax.servlet.http.HttpServletRequest;
 */
 public interface TopicService extends IService<Topic> {
 
-    QueryWrapper<Topic> getTopicQueryWrapper(TopicQueryRequest topicQueryRequest, HttpServletRequest request);
+    // 获取查询条件
+    QueryWrapper<Topic> getQueryWrapper(TopicQueryRequest topicQueryRequest);
 
+    // TODO: 下面是旧的代码
     QueryWrapper<Topic> getTopicQueryByAdminWrapper(TopicQueryByAdminRequest topicQueryByAdminRequest, HttpServletRequest request);
+
 }

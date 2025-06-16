@@ -14,5 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 */
 public interface DeptService extends IService<Dept> {
 
-    QueryWrapper<Dept> getDeptQueryWrapper(DeptQueryRequest deptQueryRequest, HttpServletRequest request);
+    // 获取查询条件
+    QueryWrapper<Dept> getQueryWrapper(DeptQueryRequest deptQueryRequest);
+
 }

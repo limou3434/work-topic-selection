@@ -26,8 +26,14 @@ import cn.com.edtechhub.worktopicselection.model.vo.*;
 import cn.com.edtechhub.worktopicselection.response.BaseResponse;
 import cn.com.edtechhub.worktopicselection.response.TheResult;
 import cn.com.edtechhub.worktopicselection.service.*;
+import cn.com.edtechhub.worktopicselection.utils.DeviceUtils;
 import cn.com.edtechhub.worktopicselection.utils.SqlUtils;
 import cn.com.edtechhub.worktopicselection.utils.ThrowUtils;
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaIgnore;
+import cn.dev33.satoken.annotation.SaMode;
+import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -53,8 +59,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/user")
 @Slf4j
 public class UserController {
-
-    // TODO: 建议使用 Sa-token 优化这里的鉴权认证的写法...
 
     /**
      * 引入用户服务依赖
@@ -86,14 +90,71 @@ public class UserController {
     @Resource
     private StudentTopicSelectionService studentTopicSelectionService;
 
-    // TODO: 等待去除, 最好不要在接口层写这个玩意, 这个东西应该写在服务层...
-    @Resource
-    private UserMapper userMapper;
+    // 用户登入
+    /*@PostMapping("/login")
+    public BaseResponse<LoginUserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+        // 检查参数
+        ThrowUtils.throwIf(userLoginRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
 
-    /**
-     * 创建用户
-     */
-    @PostMapping("/add")
+        // 用户登陆
+        String userAccount = userLoginRequest.getUserAccount();
+        String userPassword = userLoginRequest.getUserPassword();
+        ThrowUtils.throwIf(StringUtils.isAnyBlank(userAccount, userPassword), CodeBindMessageEnums.PARAMS_ERROR, "缺少登陆时所需要的必要信息");
+        LoginUserVO loginUserVO = userService.userLogin(userAccount, userPassword, request);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, loginUserVO);
+    }*/
+    @SaIgnore
+    @PostMapping("/login")
+    public BaseResponse<LoginUserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+        // 检查参数
+        ThrowUtils.throwIf(userLoginRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        String userAccount = userLoginRequest.getUserAccount();
+        ThrowUtils.throwIf(StringUtils.isBlank(userAccount), CodeBindMessageEnums.PARAMS_ERROR, "缺少登陆时所需要的账号");
+
+        String userPassword = userLoginRequest.getUserPassword();
+        ThrowUtils.throwIf(StringUtils.isBlank(userPassword), CodeBindMessageEnums.PARAMS_ERROR, "缺少登陆时所需要的密码");
+
+        User user = userService.userIsExist(userAccount);
+        ThrowUtils.throwIf(user == null, CodeBindMessageEnums.PARAMS_ERROR, "用户不存在, 请发邮件 898738804@qq.com 向管理员确认您的账号是否未被学院导入");
+
+        String encryptPassword = DigestUtils.md5DigestAsHex((UserConstant.SALT + userPassword).getBytes()); // 提前得到加密密码
+        ThrowUtils.throwIf(!Objects.equals(user.getUserPassword(), encryptPassword), CodeBindMessageEnums.PARAMS_ERROR, "用户密码不正确");
+
+        // 用户登陆
+        String device = DeviceUtils.getRequestDevice(request); // 登陆设备
+        StpUtil.login(user.getId(), device); // 开始登录
+        StpUtil.getSession().set(UserConstant.USER_LOGIN_STATE, user); // 把用户的信息存储到 Sa-Token 的会话中, 这样后续的用权限判断就不需要一直查询 SQL 才能得到, 缺点是更新权限的时候需要把用户踢下线否则会话无法更新
+
+        // 数据脱敏
+        LoginUserVO loginUserVO = new LoginUserVO();
+        BeanUtils.copyProperties(user, loginUserVO);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, loginUserVO);
+    }
+
+    // 用户注销
+    /*@PostMapping("/logout")
+    public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
+        // 检查参数
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        // 注销用户
+        boolean result = userService.userLogout(request);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, result);
+    }*/
+    @SaCheckLogin
+    @PostMapping("/logout")
+    public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
+        // 检查参数
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        // 注销用户
+        StpUtil.logout(); // 默认所有设备都被登出
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
+    }
+
+    // 创建用户
+    /*@PostMapping("/add")
     public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest, HttpServletRequest request) {
         // 参数检查
         ThrowUtils.throwIf(userAddRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
@@ -101,8 +162,8 @@ public class UserController {
         User loginUser = userService.getLoginUser(request);
         ThrowUtils.throwIf(loginUser == null, CodeBindMessageEnums.PARAMS_ERROR, "没有登陆无法使用该接口");
 
-        Integer userRole = loginUser.getUserRole();
-        ThrowUtils.throwIf(!Objects.equals(userRole, UserRoleEnum.ADMIN.getValue()), CodeBindMessageEnums.NO_AUTH_ERROR, "只有管理员才能动用该接口");
+//        Integer userRole = loginUser.getUserRole();
+//        ThrowUtils.throwIf(!Objects.equals(userRole, UserRoleEnum.ADMIN.getValue()), CodeBindMessageEnums.NO_AUTH_ERROR, "只有管理员才能动用该接口");
 
         String userAccount = userAddRequest.getUserAccount();
         User oldUser = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
@@ -121,12 +182,45 @@ public class UserController {
         boolean result = userService.save(user);
         ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "添加新的用户失败");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, user.getId());
+    }*/
+    @SaCheckRole("admin")
+    @PostMapping("/add")
+    public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest, HttpServletRequest request) {
+        // 参数检查
+        ThrowUtils.throwIf(userAddRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        String userName = userAddRequest.getUserName();
+        ThrowUtils.throwIf(StringUtils.isBlank(userName), CodeBindMessageEnums.PARAMS_ERROR, "缺少用户名字");
+
+        String userAccount = userAddRequest.getUserAccount();
+        ThrowUtils.throwIf(StringUtils.isBlank(userAccount), CodeBindMessageEnums.PARAMS_ERROR, "缺少用户账号");
+
+        String userDeptName = userAddRequest.getDeptName();
+        ThrowUtils.throwIf(StringUtils.isBlank(userDeptName), CodeBindMessageEnums.PARAMS_ERROR, "缺少系部名称");
+
+        String userProject = userAddRequest.getProject();
+        ThrowUtils.throwIf(StringUtils.isBlank(userProject), CodeBindMessageEnums.PARAMS_ERROR, "缺少专业名称");
+
+        User oldUser = userService.userIsExist(userAccount);
+        ThrowUtils.throwIf(oldUser != null, CodeBindMessageEnums.PARAMS_ERROR, "该学号/工号对于的用户已经存在, 无法重复添加");
+
+        // 创建新的用户实例
+        User user = new User();
+        BeanUtils.copyProperties(userAddRequest, user);
+        user.setDept(userAddRequest.getDeptName());
+        user.setProject(userAddRequest.getProject());
+        user.setUserRole(userAddRequest.getUserRole());
+        String encryptPassword = DigestUtils.md5DigestAsHex((UserConstant.SALT + UserConstant.DEFAULT_PASSWD).getBytes());
+        user.setUserPassword(encryptPassword); // 设置默认密码
+
+        // 添加新的用户
+        boolean result = userService.save(user);
+        ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "添加新的用户失败");
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, user.getId());
     }
 
-    /**
-     * 删除用户
-     */
-    @PostMapping("/delete")
+    // 删除用户
+    /*@PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         // 参数检查
         ThrowUtils.throwIf(deleteRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
@@ -138,12 +232,27 @@ public class UserController {
         boolean result = userService.remove(new QueryWrapper<User>().eq("userAccount", userAccount));
         ThrowUtils.throwIf(!result, CodeBindMessageEnums.NOT_FOUND_ERROR, "删除用户失败");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, result);
+    }*/
+    @SaCheckRole("admin")
+    @PostMapping("/delete")
+    public BaseResponse<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
+        // 参数检查
+        ThrowUtils.throwIf(deleteRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        String userAccount = deleteRequest.getUserAccount();
+        ThrowUtils.throwIf(StringUtils.isBlank(userAccount), CodeBindMessageEnums.PARAMS_ERROR, "用户账号不能为空");
+
+        User user = userService.userIsExist(userAccount);
+        ThrowUtils.throwIf(user == null, CodeBindMessageEnums.PARAMS_ERROR, "用户不存在无需删除");
+
+        // 删除用户
+        boolean result = userService.removeById(user.getId());
+        ThrowUtils.throwIf(!result, CodeBindMessageEnums.SYSTEM_ERROR, "删除用户失败");
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, result);
     }
 
-    /**
-     * 更新用户
-     */
-    @PostMapping("/update")
+    // 更新用户
+    /*@PostMapping("/update")
     public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
         // 检查参数
         ThrowUtils.throwIf(userUpdateRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
@@ -156,12 +265,26 @@ public class UserController {
         boolean result = userService.updateById(user);
         ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "更新失败");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
+    }*/
+    @SaCheckRole("admin")
+    @PostMapping("/update")
+    public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
+        // 检查参数
+        ThrowUtils.throwIf(userUpdateRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        Long id = userUpdateRequest.getId();
+        ThrowUtils.throwIf(id < 0, CodeBindMessageEnums.PARAMS_ERROR, "用户标识不合法, 必须为正整数");
+
+        // 创建更新后的新用户实例
+        User user = new User();
+        BeanUtils.copyProperties(userUpdateRequest, user);
+        boolean result = userService.updateById(user);
+        ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "更新失败");
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
     }
 
-    /**
-     * 根据 id 获取用户(仅管理员)
-     */
-    @GetMapping("/get")
+    // 根据 id 获取用户数据
+    /*@GetMapping("/get")
     public BaseResponse<User> getUserById(long id) {
         // 检查参数
         ThrowUtils.throwIf(id <= 0, CodeBindMessageEnums.PARAMS_ERROR, "用户标识必须是正整数");
@@ -169,30 +292,89 @@ public class UserController {
         User user = userService.getById(id);
         ThrowUtils.throwIf(user == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "");
 
-        // TODO: 这里没有做用户权限校验...
-
         // 返回用户信息
         return TheResult.success(CodeBindMessageEnums.SUCCESS, user);
-    }
-
-    /**
-     * 根据 id 获取包装类
-     */
-    @GetMapping("/get/vo")
-    // TODO: 这里其实有个隐患, 前端传递的 id 值有可能出现襟度问题, 导致 id 值错乱, 因此这里最好是修改为请求体类来传递, 并且携带注解 @JsonSerialize(using = ToStringSerializer.class), 然后前端需要修改请求参数
-    public BaseResponse<UserVO> getUserVOById(long id) {
+    }*/
+    @SaCheckRole("admin")
+    @GetMapping("/get")
+    public BaseResponse<User> getUserById(long id) {
         // 检查参数
         ThrowUtils.throwIf(id <= 0, CodeBindMessageEnums.PARAMS_ERROR, "用户标识必须是正整数");
 
-        // 把脱敏后的数据返回
-        BaseResponse<User> response = getUserById(id);
-        User user = response.getData();
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, userService.getUserVO(user));
+        // 返回用户信息
+        User user = userService.getById(id);
+        ThrowUtils.throwIf(user == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "不存在该用户");
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, user);
     }
 
-    /**
-     * 分页获取用户列表(仅管理员)
-     */
+    // 获取当前登录用户数据
+    /*@GetMapping("/get/login")
+    public BaseResponse<LoginUserVO> getLoginUser(HttpServletRequest request) {
+        User user = userService.getLoginUser(request);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, userService.getLoginUserVO(user));
+    }*/
+    @SaCheckLogin
+    @GetMapping("/get/login")
+    public BaseResponse<LoginUserVO> getLoginUser() {
+        Long LoginUserId = userService.userGetCurrentLonginUserId();
+        User user = userService.userGetSessionById(LoginUserId);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, userService.getLoginUserVO(user));
+    }
+
+    // 获取系部分页数据
+    /*
+    @PostMapping("get/dept")
+    public BaseResponse<Page<Dept>> getDept(@RequestBody DeptQueryRequest deptQueryRequest, HttpServletRequest request) {
+        long current = deptQueryRequest.getCurrent();
+        long size = deptQueryRequest.getPageSize();
+        Page<Dept> deptPage = deptService.page(new Page<>(current, size),
+                deptService.getDeptQueryWrapper(deptQueryRequest, request));
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, deptPage);
+    }
+    */
+    @SaCheckLogin
+    @PostMapping("/get/dept/page")
+    public BaseResponse<Page<Dept>> getDept(@RequestBody DeptQueryRequest deptQueryRequest) {
+        // 检查参数
+        long current = deptQueryRequest.getCurrent();
+        ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "页码号必须大于 0");
+
+        long size = deptQueryRequest.getPageSize();
+        ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "页大小必须大于 0");
+
+        // 获取系部数据
+        Page<Dept> deptPage = deptService.page(new Page<>(current, size), deptService.getQueryWrapper(deptQueryRequest));
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, deptPage);
+    }
+
+    // 获取专业分页数据
+    /*
+    @PostMapping("get/project")
+    public BaseResponse<Page<Project>> getProject(@RequestBody ProjectQueryRequest projectQueryRequest, HttpServletRequest request) {
+        long current = projectQueryRequest.getCurrent();
+        long size = projectQueryRequest.getPageSize();
+        Page<Project> projectPage = projectService.page(new Page<>(current, size),
+                projectService.getQueryWrapper(projectQueryRequest, request));
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, projectPage);
+    }
+    */
+    @SaCheckLogin
+    @PostMapping("/get/project/page")
+    public BaseResponse<Page<Project>> getProject(@RequestBody ProjectQueryRequest projectQueryRequest, HttpServletRequest request) {
+        // 检查参数
+        long current = projectQueryRequest.getCurrent();
+        ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "页码号必须大于 0");
+
+        long size = projectQueryRequest.getPageSize();
+        ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "页大小必须大于 0");
+
+        // 获取专业数据
+        Page<Project> projectPage = projectService.page(new Page<>(current, size), projectService.getQueryWrapper(projectQueryRequest));
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, projectPage);
+    }
+
+    // 获取用户分页数据
+    /*
     @PostMapping("/list/page")
     public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest, HttpServletRequest request) {
         long current = userQueryRequest.getCurrent();
@@ -201,13 +383,140 @@ public class UserController {
                 userService.getQueryWrapper(userQueryRequest, request));
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userPage);
     }
+    */
+    @SaCheckRole(value = {"admin", "dept", "teacher"}, mode = SaMode.OR)
+    @PostMapping("/get/user/page")
+    public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest) {
+        // 检查参数
+        long current = userQueryRequest.getCurrent();
+        ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "页码号必须大于 0");
+
+        long size = userQueryRequest.getPageSize();
+        ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "页大小必须大于 0");
+
+        // 获取用户数据
+        Page<User> userPage = userService.page(new Page<>(current, size), userService.getQueryWrapper(userQueryRequest));
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, userPage);
+    }
+
+    // 获取选题分页数据
+    @SaCheckLogin
+    @PostMapping("/get/topic/page")
+    public BaseResponse<Page<Topic>> getTopicList(@RequestBody TopicQueryRequest topicQueryRequest) {
+        // 检查参数
+        long current = topicQueryRequest.getCurrent();
+        ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "页码号必须大于 0");
+
+        long size = topicQueryRequest.getPageSize();
+        ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "页大小必须大于 0");
+
+        // 获取选题数据
+        Page<Topic> topicPage = topicService.page(new Page<>(current, size), topicService.getQueryWrapper(topicQueryRequest));
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, topicPage);
+    }
+
+    // 获取当前的选题情况(只能获取和当前登陆用户系部相同的选题)
+    /*
+    @PostMapping("get/select/topic/situation")
+    public BaseResponse<SituationVO> getSelectTopicSituation(HttpServletRequest request) {
+        final User loginUser = userService.getLoginUser(request);
+        if (loginUser == null) {
+            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
+        }
+
+        // 获取所有学生的总人数和已选题人数
+        final int totalStudents = (int) userService.count(new QueryWrapper<User>().eq("userRole", 0).eq(StringUtils.isNotBlank(loginUser.getDept()), "dept", loginUser.getDept()));
+        final List<User> userList = userService.list(new QueryWrapper<User>().eq("userRole", 0).eq(StringUtils.isNotBlank(loginUser.getDept()), "dept", loginUser.getDept()));
+
+        int selectedStudents = 0;
+        for (User user : userList) {
+            final String userAccount = user.getUserAccount();
+            selectedStudents += (int) studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>().eq("status", 1).eq("userAccount", userAccount));
+        }
+
+        final int unselectedStudents = totalStudents - selectedStudents;
+
+        // 封装返回数据
+        SituationVO situationVO = new SituationVO();
+        situationVO.setSelectAmount(selectedStudents);
+        situationVO.setAmount(totalStudents);
+        situationVO.setUnselectAmount(unselectedStudents);
+
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, situationVO);
+    }
+    */
+    @SaCheckRole(value = {"admin", "dept"}, mode = SaMode.OR)
+    @SaCheckLogin
+    @PostMapping("/get/select/topic/situation")
+    public BaseResponse<SituationVO> getSelectTopicSituation() {
+        // 获取当前登陆用户
+        Long loginUserId = userService.userGetCurrentLonginUserId();
+        User loginUser = userService.userGetSessionById(loginUserId);
+
+        // 获取总人数
+        QueryWrapper<User> queryWrapper = new QueryWrapper<User>()
+                .eq("userRole", UserRoleEnum.USER.getValue()) // 只获取学生记录
+                .eq(!userService.userIsAdmin(loginUser), "dept", loginUser.getDept()) // 获取当前登陆用户系部相同的学生, 但是管理员可以获取所有学生
+        ;
+        int totalStudents = (int) userService.count(queryWrapper);
+        List<User> userList = userService.list(queryWrapper);
+
+        // 获取已选题人数
+        int selectedStudents = 0;
+        for (User user : userList) {
+            final String userAccount = user.getUserAccount();
+            selectedStudents += (int) studentTopicSelectionService.count(
+                    new QueryWrapper<StudentTopicSelection>()
+                            .eq("userAccount", userAccount) // 获取当前用户的记录
+                            .eq("status", 1) // 查询状态为已选题的
+            ); // TODO: 这个查询过程可以被优化, 但是暂时先这样
+        }
+
+        // 获取未选题人数
+        int unselectedStudents = totalStudents - selectedStudents;
+
+        // 封装返回数据
+        SituationVO situationVO = new SituationVO();
+        situationVO.setSelectAmount(selectedStudents);
+        situationVO.setAmount(totalStudents);
+        situationVO.setUnselectAmount(unselectedStudents);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, situationVO);
+    }
+
+    // 根据 id 获取用户包装数据
+    /*@GetMapping("/get/vo")
+    public BaseResponse<UserVO> getUserVOById(long id) {
+        // 检查参数
+        ThrowUtils.throwIf(id <= 0, CodeBindMessageEnums.PARAMS_ERROR, "用户标识必须是正整数");
+
+        // 把脱敏后的数据返回
+        BaseResponse<User> response = getUserById(id);
+        User user = response.getData();
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, userService.getUserVO(user));
+    }*/
+    @SaCheckLogin
+//    @GetMapping("/get/vo")
+    public BaseResponse<UserVO> getUserVOById(long id) {
+        // 检查参数
+        ThrowUtils.throwIf(id <= 0, CodeBindMessageEnums.PARAMS_ERROR, "用户标识必须是正整数");
+
+        // 获取用户数据
+        BaseResponse<User> response = getUserById(id);
+        User user = response.getData();
+
+        // 获取脱敏后的数据
+        UserVO userVO = new UserVO();
+        userVO = userService.getUserVO(user);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, userVO);
+    }
+
+    /// TODO: 下面都是旧代码...并且把所有的权限都去除了
+
+    @Resource
+    private UserMapper userMapper;
 
     /**
      * 分页获取用户封装列表
-     *
-     * @param userQueryRequest
-     * @param request
-     * @return
      */
     @PostMapping("/list/page/vo")
     public BaseResponse<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryRequest userQueryRequest, HttpServletRequest request) {
@@ -221,7 +530,7 @@ public class UserController {
         ThrowUtils.throwIf(current < 0, CodeBindMessageEnums.PARAMS_ERROR, "页号必须是整数");
 
         // 查询分页结果
-        Page<User> userPage = userService.page(new Page<>(current, size), userService.getQueryWrapper(userQueryRequest, request));
+        Page<User> userPage = userService.page(new Page<>(current, size), userService.getQueryWrapper(userQueryRequest));
         Page<UserVO> userVOPage = new Page<>(current, size, userPage.getTotal());
         List<UserVO> userVO = userService.getUserVO(userPage.getRecords());
         userVOPage.setRecords(userVO);
@@ -250,37 +559,6 @@ public class UserController {
     }
 
     /**
-     * 用户登录
-     */
-    @PostMapping("/login")
-    public BaseResponse<LoginUserVO> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
-        // 检查参数
-        ThrowUtils.throwIf(userLoginRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
-
-        // 用户登陆
-        String userAccount = userLoginRequest.getUserAccount();
-        String userPassword = userLoginRequest.getUserPassword();
-        ThrowUtils.throwIf(StringUtils.isAnyBlank(userAccount, userPassword), CodeBindMessageEnums.PARAMS_ERROR, "缺少登陆时所需要的必要信息");
-        LoginUserVO loginUserVO = userService.userLogin(userAccount, userPassword, request);
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, loginUserVO);
-    }
-
-    /**
-     * 用户注销
-     */
-    @PostMapping("/logout")
-    public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
-        // 检查参数
-        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
-
-        // 注销用户
-        boolean result = userService.userLogout(request);
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, result);
-    }
-
-    // TODO: 需要修改的异常抛出方式太多了...有时间再来修改把...
-
-    /**
      * 更新个人信息
      */
     @PostMapping("/update/my")
@@ -298,15 +576,6 @@ public class UserController {
     }
 
     /**
-     * 获取当前登录用户
-     */
-    @GetMapping("/get/login")
-    public BaseResponse<LoginUserVO> getLoginUser(HttpServletRequest request) {
-        User user = userService.getLoginUser(request);
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, userService.getLoginUserVO(user));
-    }
-
-    /**
      * 获取用户列表数据
      */
     @PostMapping("/get/user/list")
@@ -314,18 +583,18 @@ public class UserController {
         if (getUserListRequest == null) {
             throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
         }
-        final Integer userRole = getUserListRequest.getUserRole();
+//        final Integer userRole = getUserListRequest.getUserRole();
         User loginUser = userService.getLoginUser(request);
-        final Integer adminRole = loginUser.getUserRole();
+//        final Integer adminRole = loginUser.getUserRole();
         final String dept = loginUser.getDept();
         List<UserNameVO> userNameVO = new ArrayList<>();
         List<User> userList;
-        if (adminRole == 3) {
-            userList = userService.list(new QueryWrapper<User>().eq("userRole", userRole));
-            BeanUtils.copyProperties(userList, userNameVO);
-        } else {
-            userList = userService.list(new QueryWrapper<User>().eq("userRole", userRole).eq("dept", dept));
-        }
+//        if (adminRole == 3) {
+//            userList = userService.list(new QueryWrapper<User>().eq("userRole", userRole));
+//            BeanUtils.copyProperties(userList, userNameVO);
+//        } else {
+//            userList = userService.list(new QueryWrapper<User>().eq("userRole", userRole).eq("dept", dept));
+//        }
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userNameVO);
     }
 
@@ -336,8 +605,7 @@ public class UserController {
     public BaseResponse<List<DeptVO>> getDeptList(@RequestBody DeptQueryRequest deptQueryRequest, HttpServletRequest request) {
         long current = deptQueryRequest.getCurrent();
         long size = deptQueryRequest.getPageSize();
-        Page<Dept> deptPage = deptService.page(new Page<>(current, size),
-                deptService.getDeptQueryWrapper(deptQueryRequest, request));
+        Page<Dept> deptPage = deptService.page(new Page<>(current, size), deptService.getQueryWrapper(deptQueryRequest));
         List<DeptVO> deptVOList = new ArrayList<>();
         for (Dept dept : deptPage.getRecords()) {
             final String deptName = dept.getDeptName();
@@ -352,24 +620,12 @@ public class UserController {
     /**
      * 获取专业数据
      */
-    @PostMapping("get/project")
-    public BaseResponse<Page<Project>> getProject(@RequestBody ProjectQueryRequest projectQueryRequest, HttpServletRequest request) {
-        long current = projectQueryRequest.getCurrent();
-        long size = projectQueryRequest.getPageSize();
-        Page<Project> projectPage = projectService.page(new Page<>(current, size),
-                projectService.getQueryWrapper(projectQueryRequest, request));
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, projectPage);
-    }
-
-    /**
-     * 获取专业数据
-     */
     @PostMapping("get/project/list")
     public BaseResponse<List<ProjectVO>> getProjectList(@RequestBody ProjectQueryRequest projectQueryRequest, HttpServletRequest request) {
         long current = projectQueryRequest.getCurrent();
         long size = projectQueryRequest.getPageSize();
         Page<Project> projectPage = projectService.page(new Page<>(current, size),
-                projectService.getQueryWrapper(projectQueryRequest, request));
+                projectService.getQueryWrapper(projectQueryRequest));
         List<ProjectVO> projectVOList = new ArrayList<>();
         for (Project project : projectPage.getRecords()) {
             final String projectName = project.getProjectName();
@@ -379,18 +635,6 @@ public class UserController {
             projectVOList.add(projectVO);
         }
         return TheResult.success(CodeBindMessageEnums.SUCCESS, projectVOList);
-    }
-
-    /**
-     * 获取系部数据
-     */
-    @PostMapping("get/dept")
-    public BaseResponse<Page<Dept>> getDept(@RequestBody DeptQueryRequest deptQueryRequest, HttpServletRequest request) {
-        long current = deptQueryRequest.getCurrent();
-        long size = deptQueryRequest.getPageSize();
-        Page<Dept> deptPage = deptService.page(new Page<>(current, size),
-                deptService.getDeptQueryWrapper(deptQueryRequest, request));
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, deptPage);
     }
 
     /**
@@ -416,7 +660,7 @@ public class UserController {
         // 查询用户列表
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper.eq("dept", dept);
-        userQueryWrapper.eq("userRole", 1);
+//        userQueryWrapper.eq("userRole", 1);
         userQueryWrapper.orderBy(SqlUtils.validSortField(sortField),
                 sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                 sortField);
@@ -510,10 +754,10 @@ public class UserController {
             throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
         }
         final User loginUser = userService.getLoginUser(request);
-        final Integer userRole = loginUser.getUserRole();
-        if (userRole != 3) {
-            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
-        }
+//        final Integer userRole = loginUser.getUserRole();
+//        if (userRole != 3) {
+//            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
+//        }
         final String deptName = deptAddRequest.getDeptName();
         final Dept dept = deptService.getOne(new QueryWrapper<Dept>().eq("deptName", deptName));
         if (dept != null) {
@@ -535,10 +779,10 @@ public class UserController {
             throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
         }
         final User loginUser = userService.getLoginUser(request);
-        final Integer userRole = loginUser.getUserRole();
-        if (userRole != 3) {
-            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
-        }
+//        final Integer userRole = loginUser.getUserRole();
+//        if (userRole != 3) {
+//            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
+//        }
         final String projectName = projectAddRequest.getProjectName();
         final String deptName = projectAddRequest.getDeptName();
         final Project project = projectService.getOne(new QueryWrapper<Project>().eq("projectName", projectName));
@@ -564,19 +808,19 @@ public class UserController {
             throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
         }
         final User loginUser = userService.getLoginUser(request);
-        final Integer userRole = loginUser.getUserRole();
-        if (userRole != 1 && userRole != 2 && userRole != 3) {
-            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
-        }
+//        final Integer userRole = loginUser.getUserRole();
+//        if (userRole != 1 && userRole != 2 && userRole != 3) {
+//            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
+//        }
         final Topic oldTopic = topicService.getOne(new QueryWrapper<Topic>().eq("topic", addTopicRequest.getTopic()));
         if (oldTopic != null) {
             return TheResult.error(CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "该课题已存在");
         }
         final Topic topic = new Topic();
         BeanUtils.copyProperties(addTopicRequest, topic);
-        if (userRole == 1) {
-            topic.setTeacherName(loginUser.getUserName());
-        }
+//        if (userRole == 1) {
+//            topic.setTeacherName(loginUser.getUserName());
+//        }
         topic.setSurplusQuantity(addTopicRequest.getAmount());
         boolean result = topicService.save(topic);
         ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "");
@@ -653,10 +897,10 @@ public class UserController {
             throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
         }
         final User loginUser = userService.getLoginUser(request);
-        final Integer userRole = loginUser.getUserRole();
-        if (userRole != 1 && userRole != 2 && userRole != 3) {
-            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
-        }
+//        final Integer userRole = loginUser.getUserRole();
+//        if (userRole != 1 && userRole != 2 && userRole != 3) {
+//            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
+//        }
         final Long id = deleteTopicRequest.getId();
         boolean b = topicService.removeById(id);
         final boolean b1 = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("topicId", id));
@@ -714,10 +958,10 @@ public class UserController {
     @PostMapping("/update/topic")
     public BaseResponse<String> updateTopic(@RequestBody UpdateTopicRequest updateTopicRequest, HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
-        final Integer userRole = loginUser.getUserRole();
-        if (userRole != 1 && userRole != 2 && userRole != 3) {
-            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
-        }
+//        final Integer userRole = loginUser.getUserRole();
+//        if (userRole != 1 && userRole != 2 && userRole != 3) {
+//            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
+//        }
 
         int current = updateTopicRequest.getCurrent();
         int pageSize = updateTopicRequest.getPageSize();
@@ -791,30 +1035,18 @@ public class UserController {
     }
 
     /**
-     * 获取选题数据
-     */
-    @PostMapping("get/topic/list")
-    public BaseResponse<Page<Topic>> getTopicList(@RequestBody TopicQueryRequest topicQueryRequest, HttpServletRequest request) {
-        long current = topicQueryRequest.getCurrent();
-        long size = topicQueryRequest.getPageSize();
-        Page<Topic> topicPage = topicService.page(new Page<>(current, size),
-                topicService.getTopicQueryWrapper(topicQueryRequest, request));
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, topicPage);
-    }
-
-    /**
      * 添加数量
      */
     @PostMapping("add/count")
     public BaseResponse<String> addCount(@RequestBody AddCountRequest addCountRequest, HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
-        final Integer userRole = loginUser.getUserRole();
+//        final Integer userRole = loginUser.getUserRole();
         if (request == null) {
             throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
         }
-        if (userRole != 1 && userRole != 2 && userRole != 3) {
-            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
-        }
+//        if (userRole != 1 && userRole != 2 && userRole != 3) {
+//            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
+//        }
         long id = addCountRequest.getId();
         int count = addCountRequest.getCount();
         final Topic topic = topicService.getById(id);
@@ -832,13 +1064,13 @@ public class UserController {
     @PostMapping("get/student/by/topicId")
     public BaseResponse<List<User>> getStudentByTopicId(@RequestBody GetStudentByTopicId getStudentByTopicId, HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
-        final Integer userRole = loginUser.getUserRole();
+//        final Integer userRole = loginUser.getUserRole();
         if (request == null) {
             throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
         }
-        if (userRole != 1 && userRole != 2 && userRole != 3) {
-            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
-        }
+//        if (userRole != 1 && userRole != 2 && userRole != 3) {
+//            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
+//        }
         if (getStudentByTopicId == null) {
             throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
         }
@@ -861,13 +1093,13 @@ public class UserController {
     @PostMapping("set/time/by/id")
     public BaseResponse<String> setTimeById(@RequestBody SetTimeRequest setTimeRequest, HttpServletRequest request) {
         final User loginUser = userService.getLoginUser(request);
-        final Integer userRole = loginUser.getUserRole();
+//        final Integer userRole = loginUser.getUserRole();
         if (request == null) {
             throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
         }
-        if (userRole != 2 && userRole != 3) {
-            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
-        }
+//        if (userRole != 2 && userRole != 3) {
+//            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
+//        }
         if (setTimeRequest == null) {
             throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
         }
@@ -1066,37 +1298,6 @@ public class UserController {
             userList.add(user);
         }
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userList);
-    }
-
-    /**
-     * 获取选题情况
-     */
-    @PostMapping("get/select/topic/situation")
-    public BaseResponse<SituationVO> getSelectTopicSituation(HttpServletRequest request) {
-        final User loginUser = userService.getLoginUser(request);
-        if (loginUser == null) {
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
-        }
-
-        // 获取所有学生的总人数和已选题人数
-        final int totalStudents = (int) userService.count(new QueryWrapper<User>().eq("userRole", 0).eq(StringUtils.isNotBlank(loginUser.getDept()), "dept", loginUser.getDept()));
-        final List<User> userList = userService.list(new QueryWrapper<User>().eq("userRole", 0).eq(StringUtils.isNotBlank(loginUser.getDept()), "dept", loginUser.getDept()));
-
-        int selectedStudents = 0;
-        for (User user : userList) {
-            final String userAccount = user.getUserAccount();
-            selectedStudents += (int) studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>().eq("status", 1).eq("userAccount", userAccount));
-        }
-
-        final int unselectedStudents = totalStudents - selectedStudents;
-
-        // 封装返回数据
-        SituationVO situationVO = new SituationVO();
-        situationVO.setSelectAmount(selectedStudents);
-        situationVO.setAmount(totalStudents);
-        situationVO.setUnselectAmount(unselectedStudents);
-
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, situationVO);
     }
 
     /**

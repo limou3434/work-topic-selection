@@ -29,22 +29,23 @@ import javax.servlet.http.HttpServletRequest;
 */
 @Service
 @Transactional
-public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic>
-    implements TopicService{
+public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic> implements TopicService{
+
     @Resource
     private UserService userService;
+
     @Resource
     private StudentTopicSelectionService studentTopicSelectionService;
+
     @Override
-    public QueryWrapper<Topic> getTopicQueryWrapper(TopicQueryRequest topicQueryRequest, HttpServletRequest request) {
+    public QueryWrapper<Topic> getQueryWrapper(TopicQueryRequest topicQueryRequest) {
         if (topicQueryRequest == null) {
             throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "请求参数为空");
         }
-        final User loginUser = userService.getLoginUser(request);
-        if(loginUser==null){
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "没登录");
-        }
-        final Integer userRole = loginUser.getUserRole();
+
+        Long id = userService.userGetCurrentLonginUserId();
+        User loginUser = userService.userGetSessionById(id);
+        Integer userRole = loginUser.getUserRole();
         if(userRole==0){
             final String userAccount = loginUser.getUserAccount();
             final StudentTopicSelection topicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount));

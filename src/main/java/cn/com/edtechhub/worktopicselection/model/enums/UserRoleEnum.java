@@ -11,11 +11,11 @@ import java.util.stream.Collectors;
  */
 public enum UserRoleEnum {
 
-    USER("学生", 0),
-    TEACHER("教师", 1),
-    DEPT("系部", 2),
-
-    ADMIN("管理员",3);
+    USER("student", 0),
+    TEACHER("tercher", 1),
+    DEPT("dept", 2),
+    ADMIN("admin",3),
+    ;
 
     private final String text;
 
@@ -60,4 +60,5 @@ public enum UserRoleEnum {
     public String getText() {
         return text;
     }
+
 }

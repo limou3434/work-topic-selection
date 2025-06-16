@@ -13,12 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 * @createDate 2024-06-12 10:34:21
 */
 public interface ProjectService extends IService<Project> {
-    /**
-     * 获取查询条件
-     *
-     * @param projectQueryRequest
-     * @param request
-     * @return
-     */
-    QueryWrapper<Project> getQueryWrapper(ProjectQueryRequest projectQueryRequest, HttpServletRequest request);
+
+    // 获取查询条件
+    QueryWrapper<Project> getQueryWrapper(ProjectQueryRequest projectQueryRequest);
+
 }

@@ -26,12 +26,7 @@ public class UserVO implements Serializable {
     /**
      * 用户头像
      */
-    private String userAvatar;
-
-    /**
-     * 用户简介
-     */
-    private String userProfile;
+    private String userAvatar = "https://pic4.zhimg.com/v2-2eb598cdd000376bf0f6027a7bb326c7_r.jpg";
 
     /**
      * 用户角色：user/admin/ban
