@@ -156,7 +156,7 @@ export default () => {
       pagination={{
       }}
       rowKey="id" // 确保这个键与数据中的唯一标识符匹配
-      headerTitle="设置时间管理"
+      headerTitle="设置选题开放时间（这里只能看到审核通过的题目）"
     />
   );
 };

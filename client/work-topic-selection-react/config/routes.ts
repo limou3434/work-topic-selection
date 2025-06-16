@@ -86,7 +86,7 @@
     component: './setTopicTime',
   },
   {
-    name: '选题',
+    name: '开放',
     path: '/schedule',
     icon: 'FieldTimeOutlined',
     component: './setTopicTime',
@@ -133,12 +133,12 @@
     component: './studentSelection/topic',
   },
   {
-    name: '查看',
+    name: '选题',
     path: '/topic/view',
     icon: 'BarChartOutlined',
     routes: [
       {
-        name: '查看选题',
+        name: '选题审核',
         path: '/topic/view/topic',
         component: './ViewStudentTopic',
         access: 'canAccessNotStudent',
