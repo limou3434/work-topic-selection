@@ -29,7 +29,7 @@ const Footer: React.FC = () => {
             blankTarget: true,
           },
           {
-            key: '前往 QQ 邮箱联系管理员',
+            key: '前往 QQ 邮箱联系管理员以解决问题（管理员邮箱为 898738804@qq.com）',
             title: '前往 QQ 邮箱联系管理员',
             href: 'https://mail.qq.com/',
             blankTarget: true,
