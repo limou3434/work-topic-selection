@@ -150,7 +150,7 @@ export default () => {
         },
       }}
       dateFormatter="string"
-      headerTitle="管理员发布计设管理"
+      headerTitle="选题审核列表"
       toolBarRender={() => [
         <Dropdown
           key="menu"
