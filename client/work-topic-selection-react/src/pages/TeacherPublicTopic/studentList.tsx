@@ -2,7 +2,7 @@
 import { listUserByPageUsingPost, selectStudentUsingPost } from '@/services/work-topic-selection/userController';
 import { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { message } from 'antd';
 import { useParams } from "react-router-dom";
 
@@ -16,6 +16,10 @@ type GithubIssueItem = {
 export default () => {
   const { topic } = useParams();
   const actionRef = useRef<ActionType>();
+
+  const [pageNum, setPageNum] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
 
   const columns: ProColumns<GithubIssueItem>[] = [
     {
@@ -48,7 +52,7 @@ export default () => {
         <a
           key="selectStudent"
           onClick={async () => {
-            const res = await selectStudentUsingPost({ userAccount: record.userAccount, topic: topic });
+            const res = await selectStudentUsingPost({ userAccount: record.userAccount, topic });
             if (res.code === 0) {
               message.success(res.message);
             } else {
@@ -68,14 +72,21 @@ export default () => {
       columns={columns}
       actionRef={actionRef}
       cardBordered
-      // @ts-ignore
       request={async (params = {}, sort, filter) => {
-        console.log(sort, filter, params);
         try {
-          const paramsWithFormName = { ...params, userRole: 0, };
-          const response = await listUserByPageUsingPost(paramsWithFormName);
+          const current = params.current || 1;
+          const size = params.pageSize || 10;
+          setPageNum(current);
+          setPageSize(size);
+          const response = await listUserByPageUsingPost({
+            ...params,
+            userRole: 0,
+            pageNumber: current,
+            pageSize: size,
+          });
           const records = response?.data?.records || [];
           const total = response?.data?.total || 0;
+          setTotal(total);
           return {
             data: records,
             total: total,
@@ -94,29 +105,34 @@ export default () => {
         type: 'multiple',
       }}
       columnsState={{
-        persistenceKey: 'pro-table-singe-demos',
+        persistenceKey: 'pro-table-user-demos',
         persistenceType: 'localStorage',
       }}
-      rowKey="id"
+      rowKey="userAccount"
       search={{
         labelWidth: 'auto',
       }}
       form={{
         syncToUrl: (values, type) => {
           if (type === 'get') {
-            return {
-              ...values,
-            };
+            return { ...values };
           }
           return values;
         },
       }}
       pagination={{
-        pageSize: 5,
-        showQuickJumper: true,
+        current: pageNum,
+        pageSize: pageSize,
+        total: total,
+        showSizeChanger: true,
+        pageSizeOptions: ['10', '20', '50', '100'],
+        onChange: (page, size) => {
+          setPageNum(page);
+          setPageSize(size);
+        },
       }}
       dateFormatter="string"
-      headerTitle="学生"
+      headerTitle="和当前教师同系部的所有学生"
       toolBarRender={() => []}
     />
   );

@@ -131,7 +131,7 @@ const TopicReviewTable: React.FC = () => {
             actionRef.current?.reload();
             return true;
           } else {
-            message.error('打回失败');
+            message.error(res.message);
             return false;
           }
         }}

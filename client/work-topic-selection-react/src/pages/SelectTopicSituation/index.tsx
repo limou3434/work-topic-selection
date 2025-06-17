@@ -100,7 +100,6 @@ const YourComponent = () => {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('导出失败:', error);
       message.error('导出失败，请稍后重试！');
     }
   };

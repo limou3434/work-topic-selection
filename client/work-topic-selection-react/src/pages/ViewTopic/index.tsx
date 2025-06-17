@@ -19,7 +19,7 @@ export default () => {
         setTopic(null);
       }
     } catch (e) {
-      message.error('加载题目失败');
+      message.error(res.message);
     } finally {
       setLoading(false);
     }
@@ -29,10 +29,10 @@ export default () => {
     if (!topic?.id) return;
     const res = await withdrawUsingPost({ id: topic.id });
     if (res.code === 0) {
-      message.success(res.message || '退选成功');
+      message.success(res.message);
       fetchTopic(); // 刷新数据
     } else {
-      message.error(res.message || '退选失败');
+      message.error(res.message);
     }
   };
 

@@ -64,14 +64,20 @@
     ],
   },
   {
-    name: '毕业设计题目管理',
+    name: '教师发布',
     path: '/topic',
     icon: 'BarChartOutlined',
     routes: [
       {
-        name: '发布及修改题目',
+        name: '发布题目和修改题目',
         path: '/topic/teacher',
         component: './TeacherPublicTopic',
+        access: 'canAccessTeacher',
+      },
+      {
+        name: '查看选择自己的学生',
+        path: '/topic/view/topic',
+        component: './ViewStudentTopic',
         access: 'canAccessTeacher',
       },
     ],
@@ -137,12 +143,6 @@
     path: '/topic/view',
     icon: 'BarChartOutlined',
     routes: [
-      {
-        name: '选题状态',
-        path: '/topic/view/topic',
-        component: './ViewStudentTopic',
-        access: 'canAccessNotStudent',
-      },
       {
         name: '选题情况',
         path: '/topic/view/SelectTopicSituation',

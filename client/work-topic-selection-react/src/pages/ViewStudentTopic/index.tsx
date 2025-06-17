@@ -159,7 +159,7 @@ export default () => {
         },
       }}
       dateFormatter="string"
-      headerTitle="选题状态列表"
+      headerTitle="查看选择自己的学生"
       toolBarRender={() => [
         <Dropdown
           key="menu"

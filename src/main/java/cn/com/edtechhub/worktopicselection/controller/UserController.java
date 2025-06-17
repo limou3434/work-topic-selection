@@ -989,7 +989,7 @@ public class UserController {
     }
     */
     @SaCheckLogin
-    @SaCheckRole(value = {"dept"}, mode = SaMode.OR)
+    @SaCheckRole(value = {"dept", "teacher"}, mode = SaMode.OR)
     @PostMapping("/check/topic")
     public BaseResponse<Boolean> checkTopic(@RequestBody CheckTopicRequest checkTopicRequest, HttpServletRequest request) {
         // 检查参数
@@ -1473,6 +1473,7 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topicList);
     }
     */
+    @SaCheckLogin
     @SaCheckRole(value = {"student"}, mode = SaMode.OR)
     @PostMapping("get/select/topic")
     public BaseResponse<List<Topic>> getSelectTopic() {
@@ -1497,6 +1498,122 @@ public class UserController {
         ThrowUtils.throwIf(topic == null, CodeBindMessageEnums.OPERATION_ERROR, "不存在对应的题目, 请联系管理员 898738804@qq.com");
         topicList.add(topic);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topicList);
+    }
+
+    // 更新选题信息
+    /*
+        @PostMapping("/update/topic")
+    public BaseResponse<String> updateTopic(@RequestBody UpdateTopicRequest updateTopicRequest) {
+        long current = updateTopicRequest.getCurrent();
+        ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "当前页码必须大于 0");
+
+        long size = updateTopicRequest.getPageSize();
+        ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "每页大小必须大于 0");
+
+        List<UpdateTopicListRequest> updateTopicListRequests = updateTopicRequest.getUpdateTopicListRequests();
+
+        // 获取当前用户
+        User loginUser = userService.userGetCurrentLoginUser();
+        final String teacherName = loginUser.getUserName();
+
+        // 获取教师的分页topics
+        Page<Topic> page = new Page<>(current, size);
+        QueryWrapper<Topic> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("teacherName", teacherName);
+        IPage<Topic> teacherTopicsPage = topicService.page(page, queryWrapper);
+        List<Topic> teacherTopics = teacherTopicsPage.getRecords();
+
+        // 获取updateTopicRequestList中的所有id
+        Set<Long> updateTopicIds = updateTopicListRequests.stream()
+                .map(UpdateTopicListRequest::getId)
+                .collect(Collectors.toSet());
+
+        // 过滤teacherTopics中不在updateTopicIds中的项
+        List<Topic> topicsToRemove = teacherTopics.stream()
+                .filter(topic -> !updateTopicIds.contains(topic.getId()))
+                .collect(Collectors.toList());
+
+        // 删除topicsToRemove中的所有项
+        if (!topicsToRemove.isEmpty()) {
+            List<Long> topicsToRemoveIds = topicsToRemove.stream()
+                    .map(Topic::getId)
+                    .collect(Collectors.toList());
+            topicService.removeByIds(topicsToRemoveIds);
+            // 删除与这些主题相关的学生选择记录
+            for (Long topicId : topicsToRemoveIds) {
+                studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("topivId", topicId));
+            }
+        }
+
+        // 更新updateTopicListRequests中的项
+        for (UpdateTopicListRequest updateRequest : updateTopicListRequests) {
+            Topic topic = new Topic();
+            BeanUtils.copyProperties(updateRequest, topic);
+            boolean result = topicService.updateById(topic);
+            ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "");
+        }
+
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, "更新成功");
+    }
+    */
+    @SaCheckLogin
+    @SaCheckRole(value = {"teacher"}, mode = SaMode.OR)
+    @PostMapping("/update/topic")
+    public BaseResponse<String> updateTopic(@RequestBody UpdateTopicRequest updateTopicRequest) {
+        // 检查参数
+        ThrowUtils.throwIf(updateTopicRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        long current = updateTopicRequest.getCurrent();
+        ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "当前页码必须大于 0");
+
+        long size = updateTopicRequest.getPageSize();
+        ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "每页大小必须大于 0");
+
+        // 获取当前登陆的教师
+        User loginUser = userService.userGetCurrentLoginUser();
+        final String teacherName = loginUser.getUserName();
+
+        // 获取当前登陆教师所提交的所有选题分页数据
+        Page<Topic> page = new Page<>(current, size);
+        QueryWrapper<Topic> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("teacherName", teacherName);
+        IPage<Topic> teacherTopicsPage = topicService.page(page, queryWrapper);
+        List<Topic> teacherTopics = teacherTopicsPage.getRecords();
+
+        // 处理请求列表中的所有 id(也就是前端表格中的所有列的数据)
+        List<UpdateTopicListRequest> updateTopicListRequests = updateTopicRequest.getUpdateTopicListRequests();
+        Set<Long> updateTopicIds = updateTopicListRequests
+                .stream()
+                .map(UpdateTopicListRequest::getId)
+                .collect(Collectors.toSet());
+
+        // 过滤 teacherTopics 中不在 updateTopicIds 中的项
+        List<Topic> topicsToRemove = teacherTopics
+                .stream()
+                .filter(topic -> !updateTopicIds.contains(topic.getId()))
+                .collect(Collectors.toList());
+
+        // 删除 topicsToRemove 中的所有项
+        if (!topicsToRemove.isEmpty()) {
+            List<Long> topicsToRemoveIds = topicsToRemove.stream()
+                    .map(Topic::getId)
+                    .collect(Collectors.toList());
+            topicService.removeByIds(topicsToRemoveIds);
+            // 删除与这些主题相关的学生选择记录
+            for (Long topicId : topicsToRemoveIds) {
+                studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("topivId", topicId));
+            }
+        }
+
+        // 更新 updateTopicListRequests 中的项
+        for (UpdateTopicListRequest updateRequest : updateTopicListRequests) {
+            Topic topic = new Topic();
+            BeanUtils.copyProperties(updateRequest, topic);
+            boolean result = topicService.updateById(topic);
+            ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "");
+        }
+
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, "更新成功");
     }
 
     /// TODO: 下面都是旧代码...并且把所有的权限都去除了
@@ -1749,62 +1866,6 @@ public class UserController {
             // 返回成功信息
             return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
         }
-    }
-
-    /**
-     * 更新选题
-     */
-    @PostMapping("/update/topic")
-    public BaseResponse<String> updateTopic(@RequestBody UpdateTopicRequest updateTopicRequest, HttpServletRequest request) {
-        final User loginUser = userService.getLoginUser(request);
-//        final Integer userRole = loginUser.getUserRole();
-//        if (userRole != 1 && userRole != 2 && userRole != 3) {
-//            throw new BusinessException(CodeBindMessageEnums.NO_AUTH_ERROR, "");
-//        }
-
-        int current = updateTopicRequest.getCurrent();
-        int pageSize = updateTopicRequest.getPageSize();
-        List<UpdateTopicListRequest> updateTopicListRequests = updateTopicRequest.getUpdateTopicListRequests();
-        final String teacherName = loginUser.getUserName();
-
-        // 获取教师的分页topics
-        Page<Topic> page = new Page<>(current, pageSize);
-        QueryWrapper<Topic> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("teacherName", teacherName);
-        IPage<Topic> teacherTopicsPage = topicService.page(page, queryWrapper);
-        List<Topic> teacherTopics = teacherTopicsPage.getRecords();
-
-        // 获取updateTopicRequestList中的所有id
-        Set<Long> updateTopicIds = updateTopicListRequests.stream()
-                .map(UpdateTopicListRequest::getId)
-                .collect(Collectors.toSet());
-
-        // 过滤teacherTopics中不在updateTopicIds中的项
-        List<Topic> topicsToRemove = teacherTopics.stream()
-                .filter(topic -> !updateTopicIds.contains(topic.getId()))
-                .collect(Collectors.toList());
-
-        // 删除topicsToRemove中的所有项
-        if (!topicsToRemove.isEmpty()) {
-            List<Long> topicsToRemoveIds = topicsToRemove.stream()
-                    .map(Topic::getId)
-                    .collect(Collectors.toList());
-            topicService.removeByIds(topicsToRemoveIds);
-            // 删除与这些主题相关的学生选择记录
-            for (Long topicId : topicsToRemoveIds) {
-                studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("topivId", topicId));
-            }
-        }
-
-        // 更新updateTopicListRequests中的项
-        for (UpdateTopicListRequest updateRequest : updateTopicListRequests) {
-            Topic topic = new Topic();
-            BeanUtils.copyProperties(updateRequest, topic);
-            boolean result = topicService.updateById(topic);
-            ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "");
-        }
-
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, "更新成功");
     }
 
     /**
