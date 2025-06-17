@@ -229,9 +229,9 @@ export async function getLoginUserUsingGet(options?: { [key: string]: any }) {
   });
 }
 
-/** getPreTopic POST /user/get/pre/topic */
+/** getPreTopic POST /user/get/preselect/topic */
 export async function getPreTopicUsingPost(options?: { [key: string]: any }) {
-  return request<API.BaseResponseListTopic_>('/user/get/pre/topic', {
+  return request<API.BaseResponseListTopic_>('/user/get/preselect/topic', {
     method: 'POST',
     ...(options || {}),
   });

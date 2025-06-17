@@ -15,7 +15,9 @@ public enum StudentTopicSelectionStatusEnum {
 
     EN_PRESELECT(0, "确认预先选择"),
 
-    SELECT(1, "确定选择"),
+    UN_SELECT(1, "取消确认选择"),
+
+    EN_SELECT(2, "确定确认选择"),
 
     ;
 

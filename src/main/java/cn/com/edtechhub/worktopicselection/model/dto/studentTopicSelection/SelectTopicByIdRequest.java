@@ -5,7 +5,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 预选选题请求体
+ * 请求添加选题体
  *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */

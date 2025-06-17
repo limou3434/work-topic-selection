@@ -1,9 +1,3 @@
-/**
- * component - 用于提供学生查询某个教师所有选题的表格弹窗组件
- *
- * @author <a href="https://github.com/limou3434">limou3434</a>
- */
-
 import { ProColumns, ProTable, ActionType } from '@ant-design/pro-components';
 import { message } from 'antd';
 import React, { useEffect, useRef } from 'react';
@@ -11,6 +5,7 @@ import {
   getTopicListUsingPost,
   preSelectTopicByIdUsingPost,
 } from '@/services/work-topic-selection/userController';
+import './index.css'; // 引入样式文件
 
 export type TableListItem = {
   id: number;
@@ -33,22 +28,31 @@ const columns: ProColumns<TableListItem>[] = [
     title: '相关操作',
     valueType: 'option',
     width: 80,
-    render: (_, record, __, action) => [
-      <a
-        key="select"
-        onClick={async () => {
-          const res = await preSelectTopicByIdUsingPost({ id: record.id, status: 0 });
-          if (res.code === 0) {
-            message.success(res.message);
-          } else {
-            message.error(res.message);
-          }
-          action?.reload();
-        }}
-      >
-        预选题目
-      </a>,
-    ],
+    render: (_, record, __, action) => {
+      const disabled = record.surplusQuantity === 0;
+      return [
+        <a
+          key="select"
+          onClick={async () => {
+            if (disabled) return;
+            const res = await preSelectTopicByIdUsingPost({ id: record.id, status: 0 });
+            if (res.code === 0) {
+              message.success(res.message);
+            } else {
+              message.error(res.message);
+            }
+            action?.reload();
+          }}
+          style={{
+            color: disabled ? 'gray' : undefined,
+            pointerEvents: disabled ? 'none' : 'auto',
+            cursor: disabled ? 'not-allowed' : 'pointer',
+          }}
+        >
+          预选题目
+        </a>,
+      ];
+    },
   },
   {
     title: '剩余数量',
@@ -86,7 +90,6 @@ const columns: ProColumns<TableListItem>[] = [
 const TopicTable: React.FC<{ teacherName: string }> = ({ teacherName }) => {
   const actionRef = useRef<ActionType>();
 
-  // 当 teacherName 变动时，手动触发 reload
   useEffect(() => {
     actionRef.current?.reload();
   }, [teacherName]);
@@ -119,6 +122,7 @@ const TopicTable: React.FC<{ teacherName: string }> = ({ teacherName }) => {
       search={false}
       pagination={{ pageSize: 10 }}
       rowKey="id"
+      rowClassName={(record) => (record.surplusQuantity === 0 ? 'row-disabled' : '')}
     />
   );
 };

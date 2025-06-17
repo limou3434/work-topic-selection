@@ -33,7 +33,7 @@ const columns: ProColumns<TableListItem>[] = [
       <a
         key="select"
         onClick={async () => {
-          const res = await selectTopicByIdUsingPost({ id: record.id, status: 1 });
+          const res = await selectTopicByIdUsingPost({ id: record.id, status: 2 });
           if (res.code === 0) {
             message.success(res.message);
           } else {

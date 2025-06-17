@@ -1,105 +1,66 @@
-import {ProColumns} from '@ant-design/pro-components';
-import { ProTable } from '@ant-design/pro-components';
-import React from "react";
+import React, { useEffect, useState } from 'react';
+import { Card, Button, Descriptions, message, Spin, Empty, Flex } from 'antd';
 import {
-  getSelectTopicUsingPost, withdrawUsingPost
-} from "@/services/work-topic-selection/userController";
-import {message} from "antd";
-
-export type TableListItem = {
-  id?:number;
-  key: number;
-  name: string;
-  progress: number;
-  containers: number;
-  callNumber: number;
-  creator: string;
-  status: string;
-  createdAt: number;
-  memo: string;
-};
-const columns: ProColumns<TableListItem>[] = [
-  {
-    dataIndex: 'id',
-    valueType: 'indexBorder',
-    width: 48,
-  },
-  {
-    title: '题目',
-    dataIndex: 'topic',
-  },
-  {
-    title: '题目类型',
-    dataIndex: 'type',
-
-  },
-  {
-    title: '题目描述',
-    dataIndex: 'description',
-    valueType: 'textarea',
-  },
-  {
-    title: '对学生要求',
-    dataIndex: 'requirement',
-    valueType: 'textarea',
-  },
-  {
-    title: '指导老师',
-    dataIndex: 'teacherName',
-    valueType: 'select',
-  },
-  {
-    title: '操作',
-    valueType: 'option',
-    key: 'option',
-    render: (text, record, _,action) => [
-      <a
-        key="select"
-        onClick={async () => {
-
-          const res = await withdrawUsingPost({id: record.id})
-          if (res.code === 0) {
-            message.success(res.message)
-          } else {
-            message.error(res.message)
-          }
-          action?.reload();
-        }}
-      >
-        退选
-      </a>,
-    ],
-  },
-];
+  getSelectTopicUsingPost,
+  withdrawUsingPost,
+} from '@/services/work-topic-selection/userController';
 
 export default () => {
+  const [loading, setLoading] = useState(true);
+  const [topic, setTopic] = useState<API.Topic | null>(null);
+
+  const fetchTopic = async () => {
+    setLoading(true);
+    try {
+      const res = await getSelectTopicUsingPost();
+      if (res.code === 0 && res.data && res.data.length > 0) {
+        setTopic(res.data[0]); // 只显示第一个选题
+      } else {
+        setTopic(null);
+      }
+    } catch (e) {
+      message.error('加载题目失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleWithdraw = async () => {
+    if (!topic?.id) return;
+    const res = await withdrawUsingPost({ id: topic.id });
+    if (res.code === 0) {
+      message.success(res.message || '退选成功');
+      fetchTopic(); // 刷新数据
+    } else {
+      message.error(res.message || '退选失败');
+    }
+  };
+
+  useEffect(() => {
+    fetchTopic();
+  }, []);
+
   return (
-    <ProTable<TableListItem>
-      columns={columns}
-      //@ts-ignore
-      request={async (params = {}, sort, filter) => {
-        console.log(sort, filter, params);
-        try {
-          const response = await getSelectTopicUsingPost();
-          return {
-            data: response.data || []
-          };
-        } catch (error) {
-          console.error('Error fetching data:', error);
-          return {
-            data: [],
-            total: 0,
-          };
-        }
-      }}
-      scroll={{ x: 1300 }}
-      options={false}
-      search={false}
-      pagination={{
-        pageSize: 30,
-      }}
-      rowKey="key"
-      headerTitle="选择题目"
-    />
+    <Spin spinning={loading}>
+      <Flex justify="center" align="center" style={{ minHeight: 300 }}>
+        {topic ? (
+          <Card
+            title={topic.topic}
+            style={{ width: 800 }}
+            extra={<Button danger onClick={handleWithdraw}>退选</Button>}
+          >
+            <Descriptions column={1} bordered size="small">
+              <Descriptions.Item label="题目类型">{topic.type}</Descriptions.Item>
+              <Descriptions.Item label="题目描述">{topic.description}</Descriptions.Item>
+              <Descriptions.Item label="学生要求">{topic.requirement}</Descriptions.Item>
+              <Descriptions.Item label="指导老师">{topic.teacherName}</Descriptions.Item>
+              <Descriptions.Item label="所属学院">{topic.deptName}</Descriptions.Item>
+            </Descriptions>
+          </Card>
+        ) : (
+          <Empty description="暂无选题数据" />
+        )}
+      </Flex>
+    </Spin>
   );
 };

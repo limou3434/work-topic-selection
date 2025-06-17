@@ -1255,8 +1255,7 @@ public class UserController {
 
             // 修改操作标志位
             opt = +1;
-        }
-        else if (studentTopicSelectionStatusEnum == StudentTopicSelectionStatusEnum.UN_PRESELECT) { // 取消预选题目
+        } else if (studentTopicSelectionStatusEnum == StudentTopicSelectionStatusEnum.UN_PRESELECT) { // 取消预选题目
             // 修改关联记录
             boolean remove = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
             if (!remove) {
@@ -1265,8 +1264,7 @@ public class UserController {
 
             // 修改操作标志位
             opt = -1;
-        }
-        else {
+        } else {
             ThrowUtils.throwIf(true, CodeBindMessageEnums.PARAMS_ERROR, "该接口不允许传递这种状态, 请联系管理员 898738804@qq.com");
         }
 
@@ -1276,7 +1274,7 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topic.getId());
     }
 
-    // 根据题目 id 进行最终提交选题的操作
+    // 根据题目 id 进行提交选题的操作(确认提交选题和取消提交选题)
     /*
     @SaCheckLogin
     @PostMapping("/select/topic/by/id")
@@ -1349,36 +1347,64 @@ public class UserController {
         Date now = new Date();
         ThrowUtils.throwIf(now.before(startTime) || now.after(endTime), CodeBindMessageEnums.NOT_TIME_ERROR, "请等待管理员开放选题");
 
-        Integer surplusQuantity = topic.getSurplusQuantity();
-        ThrowUtils.throwIf(surplusQuantity <= 0, CodeBindMessageEnums.NOT_SURPLUS_ERROR, "");
+        Integer status = selectTopicByIdRequest.getStatus();
+        ThrowUtils.throwIf(status == null, CodeBindMessageEnums.PARAMS_ERROR, "请添加选择操作状态");
+
+        StudentTopicSelectionStatusEnum statusEnums = StudentTopicSelectionStatusEnum.getEnums(status);
+        ThrowUtils.throwIf(statusEnums == null, CodeBindMessageEnums.PARAMS_ERROR, "该操作状态非法");
+
+        // 设置题目剩余数量操作数字
+        int opt = 0;
+
+        // 尝试获取当前登陆学生选题关联表中的记录
+        User loginUser = userService.userGetCurrentLoginUser();
+        int selectedCount = Math.toIntExact(studentTopicSelectionService.count(
+                new QueryWrapper<StudentTopicSelection>()
+                        .eq("userAccount", loginUser.getUserAccount()))
+        );
+        ThrowUtils.throwIf(selectedCount > 1, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "您已经提交了题目, 不能再选新的题目了, 如果需要取消则需要联系导师");
 
         // 尝试获取学生选题关联表中的记录
-        User loginUser = userService.userGetCurrentLoginUser();
-        StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
+        StudentTopicSelection selection = studentTopicSelectionService.getOne(
+                new QueryWrapper<StudentTopicSelection>()
+                        .eq("userAccount", loginUser.getUserAccount())
+                        .eq("topicId", topicId)
+        );
 
-        // TODO: ...
-        if (selectTopicByIdRequest.getStatus() == -1) {
-            final boolean remove = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
-            if (!remove) {
-                throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
-            }
-        } else {
+        // TODO: 替换逻辑, 紧急!!!
+        if (statusEnums == StudentTopicSelectionStatusEnum.EN_SELECT) {
+            ThrowUtils.throwIf(topic.getSurplusQuantity() <= 0, CodeBindMessageEnums.NOT_SURPLUS_ERROR, "余量不足无法选择该题目, 请尝试选择其他题目");
+            ThrowUtils.throwIf(selection == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "您还没有预选无法直接选中");
+
+            // 更新题目状态
             selection.setStatus(selectTopicByIdRequest.getStatus());
-            final boolean update = studentTopicSelectionService.updateById(selection);
-            if (!update) {
-                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
-            }
+            boolean update = studentTopicSelectionService.updateById(selection);
+            ThrowUtils.throwIf(!update, CodeBindMessageEnums.OPERATION_ERROR, "无法提交选题, 请联系管理员 898738804@qq.com");
+
+            // 修改操作标志位
+            opt = -1;
+        } else if (statusEnums == StudentTopicSelectionStatusEnum.UN_SELECT) {
+            boolean remove = studentTopicSelectionService.remove(
+                    new QueryWrapper<StudentTopicSelection>()
+                            .eq("userAccount", loginUser.getUserAccount())
+                            .eq("topicId", selectTopicByIdRequest.getId())
+            );
+            ThrowUtils.throwIf(!remove, CodeBindMessageEnums.NOT_FOUND_ERROR, "您还没有选择题目, 无法取消选择");
+
+            // 修改操作标志位
+            opt = +1;
+        } else {
+            ThrowUtils.throwIf(true, CodeBindMessageEnums.PARAMS_ERROR, "该接口不允许传递这种状态, 请联系管理员 898738804@qq.com");
         }
-        topic.setSurplusQuantity(topic.getSurplusQuantity() - selectTopicByIdRequest.getStatus());
-        topic.setSelectAmount(topic.getSelectAmount() - selectTopicByIdRequest.getStatus());
-        final boolean updateTopic = topicService.updateById(topic);
-        if (!updateTopic) {
-            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
-        }
+
+        // 更新选题
+        topic.setSurplusQuantity(topic.getSurplusQuantity() + opt);
+        boolean updateTopic = topicService.updateById(topic);
+        ThrowUtils.throwIf(!updateTopic, CodeBindMessageEnums.OPERATION_ERROR, "无法更新选题, 请联系管理员");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, selection.getId());
     }
 
-    // 获取当前登陆账号学生的预选题
+    // 获取当前登陆账号学生的预先选题
     /*
     @PostMapping("get/pre/topic")
     public BaseResponse<List<Topic>> getPreTopic(HttpServletRequest request) {
@@ -1400,7 +1426,7 @@ public class UserController {
     */
     @SaCheckLogin
     @SaCheckRole(value = {"student"}, mode = SaMode.OR)
-    @PostMapping("/get/pre/topic")
+    @PostMapping("/get/preselect/topic")
     public BaseResponse<List<Topic>> getPreTopic() {
         // 获取当前登陆用户
         User loginUser = userService.userGetCurrentLoginUser();
@@ -1421,6 +1447,55 @@ public class UserController {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         List<Topic> topicList = topicService.listByIds(topicIds);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, topicList);
+    }
+
+    // 获取当前登陆账号学生的最终选题
+    /*
+    @PostMapping("get/select/topic")
+    public BaseResponse<List<Topic>> getSelectTopic(HttpServletRequest request) {
+        final User loginUser = userService.getLoginUser(request);
+        if (loginUser == null) {
+            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
+        }
+        final String userAccount = loginUser.getUserAccount();
+        final StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount).eq("status", 1));
+        if (studentTopicSelection == null) {
+            throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
+        }
+        final Long topicId = studentTopicSelection.getTopicId();
+        final Topic topic = topicService.getById(topicId);
+        List<Topic> topicList = new ArrayList<>();
+        if (topic == null) {
+            throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
+        }
+        topicList.add(topic);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, topicList);
+    }
+    */
+    @SaCheckRole(value = {"student"}, mode = SaMode.OR)
+    @PostMapping("get/select/topic")
+    public BaseResponse<List<Topic>> getSelectTopic() {
+        // 获取当前登陆用户
+        User loginUser = userService.userGetCurrentLoginUser();
+        String userAccount = loginUser.getUserAccount();
+
+        // 查找确认最终选题的记录
+        StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(
+                new QueryWrapper<StudentTopicSelection>()
+                        .eq("userAccount", userAccount)
+                        .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())
+        );
+        log.info("用户: {} 确认了最终选题", userAccount);
+
+        ThrowUtils.throwIf(studentTopicSelection == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "当前用户没有确认最终的选题");
+
+        // 封装最终的返回值
+        Long topicId = studentTopicSelection.getTopicId();
+        Topic topic = topicService.getById(topicId);
+        List<Topic> topicList = new ArrayList<>();
+        ThrowUtils.throwIf(topic == null, CodeBindMessageEnums.OPERATION_ERROR, "不存在对应的题目, 请联系管理员 898738804@qq.com");
+        topicList.add(topic);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topicList);
     }
 
@@ -1783,30 +1858,6 @@ public class UserController {
             userList.add(user);
         }
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userList);
-    }
-
-    /**
-     * 获取选题by账号
-     */
-    @PostMapping("get/select/topic")
-    public BaseResponse<List<Topic>> getSelectTopic(HttpServletRequest request) {
-        final User loginUser = userService.getLoginUser(request);
-        if (loginUser == null) {
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
-        }
-        final String userAccount = loginUser.getUserAccount();
-        final StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount).eq("status", 1));
-        if (studentTopicSelection == null) {
-            throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
-        }
-        final Long topicId = studentTopicSelection.getTopicId();
-        final Topic topic = topicService.getById(topicId);
-        List<Topic> topicList = new ArrayList<>();
-        if (topic == null) {
-            throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
-        }
-        topicList.add(topic);
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, topicList);
     }
 
     /**
