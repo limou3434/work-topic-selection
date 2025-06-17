@@ -4,9 +4,9 @@
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 
-import { ProColumns, ProTable } from '@ant-design/pro-components';
+import { ProColumns, ProTable, ActionType } from '@ant-design/pro-components';
 import { message } from 'antd';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   getTopicListUsingPost,
   preSelectTopicByIdUsingPost,
@@ -37,7 +37,7 @@ const columns: ProColumns<TableListItem>[] = [
       <a
         key="select"
         onClick={async () => {
-          const res = await preSelectTopicByIdUsingPost({ id: record.id, status: 1 });
+          const res = await preSelectTopicByIdUsingPost({ id: record.id, status: 0 });
           if (res.code === 0) {
             message.success(res.message);
           } else {
@@ -46,7 +46,7 @@ const columns: ProColumns<TableListItem>[] = [
           action?.reload();
         }}
       >
-        预选题
+        预选题目
       </a>,
     ],
   },
@@ -84,8 +84,16 @@ const columns: ProColumns<TableListItem>[] = [
 ];
 
 const TopicTable: React.FC<{ teacherName: string }> = ({ teacherName }) => {
+  const actionRef = useRef<ActionType>();
+
+  // 当 teacherName 变动时，手动触发 reload
+  useEffect(() => {
+    actionRef.current?.reload();
+  }, [teacherName]);
+
   return (
     <ProTable<TableListItem>
+      actionRef={actionRef}
       columns={columns}
       request={async (params = {}) => {
         try {
@@ -97,11 +105,13 @@ const TopicTable: React.FC<{ teacherName: string }> = ({ teacherName }) => {
           return {
             data: res.data?.records || [],
             total: res.data?.total || 0,
+            success: true,
           };
         } catch {
           return {
             data: [],
             total: 0,
+            success: false,
           };
         }
       }}

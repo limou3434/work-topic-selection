@@ -42,16 +42,8 @@ public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic> implements
     public QueryWrapper<Topic> getQueryWrapper(TopicQueryRequest topicQueryRequest) {
         ThrowUtils.throwIf(topicQueryRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求参数为空");
 
-        Long id = userService.userGetCurrentLonginUserId();
-        User loginUser = userService.userGetSessionById(id);
+        User loginUser = userService.userGetCurrentLoginUser();
         Integer userRole = loginUser.getUserRole();
-        if (userRole == 0) {
-            final String userAccount = loginUser.getUserAccount();
-            final StudentTopicSelection topicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount));
-            if (topicSelection != null) {
-                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "已选题目");
-            }
-        }
         Integer status = topicQueryRequest.getStatus();
         String sortField = topicQueryRequest.getSortField();
         String sortOrder = topicQueryRequest.getSortOrder();
@@ -62,6 +54,13 @@ public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic> implements
         }
         if (loginUser.getUserRole() == 1) {
             queryWrapper.eq("teacherName", loginUser.getUserName());
+        }
+        if (loginUser.getUserRole() == 0) {
+            // 如果是学生检查是否有关联过题目, 如果有就不允许显示
+            StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()));
+            if (studentTopicSelection != null) {
+                queryWrapper.ne("id", studentTopicSelection.getTopicId());
+            }
         }
         queryWrapper.like(StringUtils.isNotBlank(topicQueryRequest.getTopic()), "topic", topicQueryRequest.getTopic());
         queryWrapper.like(StringUtils.isNotBlank(topicQueryRequest.getType()), "type", topicQueryRequest.getType());

@@ -1,15 +1,13 @@
-import {ProColumns} from '@ant-design/pro-components';
-import { ProTable } from '@ant-design/pro-components';
-import {message} from 'antd';
-import React from "react";
 import {
   getPreTopicUsingPost,
   preSelectTopicByIdUsingPost,
-  selectTopicByIdUsingPost
-} from "@/services/work-topic-selection/userController";
+  selectTopicByIdUsingPost,
+} from '@/services/work-topic-selection/userController';
+import { ProColumns, ProTable } from '@ant-design/pro-components';
+import { message } from 'antd';
 
 export type TableListItem = {
-  id:number;
+  id: number;
   key: number;
   name: string;
   progress: number;
@@ -22,78 +20,78 @@ export type TableListItem = {
 };
 const columns: ProColumns<TableListItem>[] = [
   {
+    title: '序号',
     dataIndex: 'id',
     valueType: 'indexBorder',
     width: 48,
   },
   {
+    title: '操作',
+    valueType: 'option',
+    key: 'option',
+    render: (text, record, _, action) => [
+      <a
+        key="select"
+        onClick={async () => {
+          const res = await selectTopicByIdUsingPost({ id: record.id, status: 1 });
+          if (res.code === 0) {
+            message.success(res.message);
+          } else {
+            message.error(res.message);
+          }
+          action?.reload();
+        }}
+      >
+        确认选题
+      </a>,
+      <a
+        key="delete"
+        onClick={async () => {
+          const res = await preSelectTopicByIdUsingPost({ id: record.id, status: -1 });
+          if (res.code === 0) {
+            message.success(res.message);
+          } else {
+            message.error(res.message);
+          }
+          action?.reload();
+        }}
+      >
+        取消预选
+      </a>,
+    ],
+  },
+  {
     title: '题目',
     dataIndex: 'topic',
-    search:false
+    search: false,
   },
   {
     title: '指导老师',
     dataIndex: 'teacherName',
     valueType: 'select',
-    search:false
+    search: false,
   },
   {
     title: '预选人数',
     dataIndex: 'selectAmount',
-    search:false
+    search: false,
   },
   {
     title: '剩余数量',
     dataIndex: 'surplusQuantity',
-    search:false
+    search: false,
   },
   {
     title: '开启时间',
     dataIndex: 'startTime',
     valueType: 'dateTime',
-    search:false
+    search: false,
   },
   {
     title: '结束时间',
     dataIndex: 'endTime',
     valueType: 'dateTime',
-    search:false
-  },
-  {
-    title: '操作',
-    valueType: 'option',
-    key: 'option',
-    render: (text, record, _,action) => [
-      <a
-        key="select"
-        onClick={async () => {
-          const res = await selectTopicByIdUsingPost({id: record.id,status:1})
-          if (res.code === 0) {
-            message.success(res.message)
-
-          } else {
-            message.error(res.message)
-          }
-          action?.reload();
-        }}
-      >
-        选题
-      </a>,
-      <a
-        key="delete"
-        onClick={async () => {
-          const res = await preSelectTopicByIdUsingPost({id: record.id,status:-1})
-          if (res.code === 0) {
-            message.success(res.message)
-          } else {
-            message.error(res.message)
-          }
-          action?.reload();
-        }}
-      >
-        退预选题
-      </a>,
-    ],
+    search: false,
   },
 ];
 
@@ -108,7 +106,7 @@ export default () => {
           const response = await getPreTopicUsingPost();
           return {
             // @ts-ignore
-            data: response.data || []
+            data: response.data || [],
           };
         } catch (error) {
           console.error('Error fetching data:', error);
@@ -125,7 +123,7 @@ export default () => {
         pageSize: 30,
       }}
       rowKey="key"
-      headerTitle="选择题目"
+      headerTitle="提交选题"
     />
   );
 };

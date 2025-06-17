@@ -105,7 +105,7 @@
     icon: 'BarChartOutlined',
     routes: [
       {
-        name: '选择选题',
+        name: '预先选题',
         path: '/select/student/select',
         component: './studentSelection',
         access: 'canAccessStudent',

@@ -11,9 +11,12 @@ import lombok.Getter;
 @Getter
 public enum StudentTopicSelectionStatusEnum {
 
-    PRESELECT(0, "预先选择"),
+    UN_PRESELECT(-1, "取消预先选择"),
+
+    EN_PRESELECT(0, "确认预先选择"),
 
     SELECT(1, "确定选择"),
+
     ;
 
     /**

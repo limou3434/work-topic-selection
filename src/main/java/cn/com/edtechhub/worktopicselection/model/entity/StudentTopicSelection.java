@@ -31,7 +31,7 @@ public class StudentTopicSelection implements Serializable {
     private String userAccount;
 
     /**
-     * 题目id
+     * 题目 id
      */
     private Long topicId;
 
