@@ -20,8 +20,11 @@ public interface UserService extends IService<User> {
     // 获取当前登陆用户标识
     Long userGetCurrentLonginUserId();
 
-    // 获取当前登陆用户会话
+    // 获取指定登陆用户会话
     User userGetSessionById(Long id);
+
+    // 获取当前登陆用户会话
+    User userGetCurrentLoginUser();
 
     // 检查一个用户是否存在
     User userIsExist(String userAccount);

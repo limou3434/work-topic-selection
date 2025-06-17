@@ -14,6 +14,9 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class DeptQueryRequest extends PageRequest implements Serializable {
+
     private String deptName;
+
     private static final long serialVersionUID = 1L;
+
 }

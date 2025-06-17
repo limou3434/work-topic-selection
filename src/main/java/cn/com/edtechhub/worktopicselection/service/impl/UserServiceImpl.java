@@ -78,13 +78,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    public User userGetCurrentLoginUser() {
+        Long loginUserId = this.userGetCurrentLonginUserId();
+        return this.userGetSessionById(loginUserId);
+    }
+
+    @Override
     public User userIsExist(String userAccount) {
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper
                 .eq(User::getUserAccount, userAccount)
         ;
-        User user = this.getOne(lambdaQueryWrapper);
-        return user;
+        return this.getOne(lambdaQueryWrapper);
     }
 
     @Override

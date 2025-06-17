@@ -126,7 +126,7 @@ declare namespace API {
   type CheckTopicRequest = {
     id?: number;
     reason?: string;
-    status?: string;
+    status?: number;
   };
 
   type DeleteDeptRequest = {
@@ -369,7 +369,7 @@ declare namespace API {
     requirement?: string;
     selectAmount?: number;
     startTime?: string;
-    status?: string;
+    status?: number;
     surplusQuantity?: number;
     teacherName?: string;
     topic?: string;
@@ -398,7 +398,7 @@ declare namespace API {
     sortField?: string;
     sortOrder?: string;
     startTime?: string;
-    status?: string;
+    status?: number;
     teacherName?: string;
     topic?: string;
     type?: string;

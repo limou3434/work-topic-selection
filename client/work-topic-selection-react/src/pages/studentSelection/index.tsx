@@ -75,7 +75,7 @@ export default () => {
         rowKey="id"
         search={{ labelWidth: 'auto' }}
         pagination={{ pageSize: 10, showSizeChanger: true }}
-        headerTitle="教师列表"
+        headerTitle="预先选题"
       />
 
       <Modal

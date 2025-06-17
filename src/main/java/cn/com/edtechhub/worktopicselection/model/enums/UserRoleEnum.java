@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public enum UserRoleEnum {
 
     USER("student", 0),
-    TEACHER("tercher", 1),
+    TEACHER("teacher", 1),
     DEPT("dept", 2),
     ADMIN("admin",3),
     ;

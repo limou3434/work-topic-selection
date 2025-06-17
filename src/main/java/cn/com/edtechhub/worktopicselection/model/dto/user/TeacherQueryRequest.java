@@ -18,4 +18,5 @@ public class TeacherQueryRequest implements Serializable {
     private int userRole;
 
     private static final long serialVersionUID = 1L;
+
 }

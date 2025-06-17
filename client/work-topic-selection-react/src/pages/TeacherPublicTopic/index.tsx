@@ -100,16 +100,20 @@ export default () => {
       render: (_, record) => {
         let color = 'black';
         let text = '未知状态';
-        if (record.status === "-1") {
+        // @ts-ignore
+        if (record.status === -1) {
           color = 'orange';
           text = '待审核';
-        } else if (record.status === "0") {
+          // @ts-ignore
+        } else if (record.status === 0) {
           color = 'blue';
           text = '没发布（没有设置时间）';
-        } else if (record.status === "1") {
+          // @ts-ignore
+        } else if (record.status === 1) {
           color = 'green';
           text = '已发布';
-        } else if (record.status === "-2") {
+          // @ts-ignore
+        } else if (record.status === -2) {
           color = 'red';
           text = '打回';
         }

@@ -3,6 +3,7 @@ package cn.com.edtechhub.worktopicselection.controller;
 import cn.com.edtechhub.worktopicselection.constant.CommonConstant;
 import cn.com.edtechhub.worktopicselection.constant.TopicConstant;
 import cn.com.edtechhub.worktopicselection.constant.UserConstant;
+import cn.com.edtechhub.worktopicselection.enums.StudentTopicSelectionStatusEnum;
 import cn.com.edtechhub.worktopicselection.enums.TopicStatusEnum;
 import cn.com.edtechhub.worktopicselection.exception.BusinessException;
 import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
@@ -187,6 +188,7 @@ public class UserController {
         ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "添加新的用户失败");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, user.getId());
     }*/
+    @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/add")
     public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest, HttpServletRequest request) {
@@ -252,6 +254,7 @@ public class UserController {
         ThrowUtils.throwIf(!result, CodeBindMessageEnums.NOT_FOUND_ERROR, "删除用户失败");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, result);
     }*/
+    @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
@@ -285,6 +288,7 @@ public class UserController {
         ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "更新失败");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
     }*/
+    @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/update")
     public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
@@ -327,6 +331,7 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, student.getUserAccount());
     }
     */
+    @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/reset/password")
     public BaseResponse<String> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest, HttpServletRequest request) {
@@ -420,6 +425,7 @@ public class UserController {
         // 返回用户信息
         return TheResult.success(CodeBindMessageEnums.SUCCESS, user);
     }*/
+    @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @GetMapping("/get")
     public BaseResponse<User> getUserById(long id) {
@@ -457,6 +463,7 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userPage);
     }
     */
+    @SaCheckLogin
     @SaCheckRole(value = {"admin", "dept", "teacher"}, mode = SaMode.OR)
     @PostMapping("/get/user/page")
     public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest) {
@@ -472,7 +479,47 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userPage);
     }
 
-    // TODO: 这个接口感觉没有使用, 但是竟然给了前端未脱敏的数据...
+    // 根据获取老师姓名
+    /*
+    @PostMapping("get/teacher")
+    public BaseResponse<List<TeacherVO>> getTeacher(@RequestBody TeacherQueryRequest teacherQueryRequest, HttpServletRequest request) {
+        final List<User> userList = userService.list(new QueryWrapper<User>().eq("userRole", teacherQueryRequest.getUserRole()));
+        List<TeacherVO> teacherVOList = new ArrayList<>();
+        for (User user : userList) {
+            TeacherVO teacherVO = new TeacherVO();
+            final String userName = user.getUserName();
+            teacherVO.setLabel(userName);
+            teacherVO.setValue(userName);
+            teacherVOList.add(teacherVO);
+        }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, teacherVOList);
+    }
+    */
+    @SaCheckLogin
+    @PostMapping("get/teacher")
+    public BaseResponse<List<TeacherVO>> getTeacher(@RequestBody TeacherQueryRequest teacherQueryRequest, HttpServletRequest request) {
+        // 检查参数
+        ThrowUtils.throwIf(teacherQueryRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        Integer userRole = teacherQueryRequest.getUserRole();
+        ThrowUtils.throwIf(userRole == null, CodeBindMessageEnums.PARAMS_ERROR, "用户角色不能为空");
+
+        UserRoleEnum userRoleEnum = UserRoleEnum.getEnumByValue(userRole);
+        ThrowUtils.throwIf(userRoleEnum == null, CodeBindMessageEnums.PARAMS_ERROR, "该用户角色不存在");
+
+        // 获取所有的教师数据
+        List<User> userList = userService.list(new QueryWrapper<User>().eq("userRole", userRoleEnum.getValue()));
+        List<TeacherVO> teacherVOList = new ArrayList<>();
+        for (User user : userList) {
+            TeacherVO teacherVO = new TeacherVO();
+            final String userName = user.getUserName();
+            teacherVO.setLabel(userName);
+            teacherVO.setValue(userName);
+            teacherVOList.add(teacherVO);
+        }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, teacherVOList);
+    }
+
     // 根据 id 获取用户包装数据
     /*@GetMapping("/get/vo")
     public BaseResponse<UserVO> getUserVOById(long id) {
@@ -484,23 +531,23 @@ public class UserController {
         User user = response.getData();
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userService.getUserVO(user));
     }*/
-    @SaCheckLogin
+//    @SaCheckLogin
 //    @GetMapping("/get/vo")
-    public BaseResponse<UserVO> getUserVOById(long id) {
-        // 检查参数
-        ThrowUtils.throwIf(id <= 0, CodeBindMessageEnums.PARAMS_ERROR, "用户标识必须是正整数");
+//    public BaseResponse<UserVO> getUserVOById(long id) {
+//        // 检查参数
+//        ThrowUtils.throwIf(id <= 0, CodeBindMessageEnums.PARAMS_ERROR, "用户标识必须是正整数");
+//
+//        // 获取用户数据
+//        BaseResponse<User> response = getUserById(id);
+//        User user = response.getData();
+//
+//        // 获取脱敏后的数据
+//        UserVO userVO = new UserVO();
+//        userVO = userService.getUserVO(user);
+//        return TheResult.success(CodeBindMessageEnums.SUCCESS, userVO);
+//    }
 
-        // 获取用户数据
-        BaseResponse<User> response = getUserById(id);
-        User user = response.getData();
-
-        // 获取脱敏后的数据
-        UserVO userVO = new UserVO();
-        userVO = userService.getUserVO(user);
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, userVO);
-    }
-
-    /// 选题相关接口 ///
+    /// 系部专业相关接口 ///
 
     // 获取系部分页数据
     /*
@@ -526,6 +573,51 @@ public class UserController {
         // 获取系部数据
         Page<Dept> deptPage = deptService.page(new Page<>(current, size), deptService.getQueryWrapper(deptQueryRequest));
         return TheResult.success(CodeBindMessageEnums.SUCCESS, deptPage);
+    }
+
+    // 获取系部列表数据
+    /*
+    @PostMapping("get/dept/list")
+    public BaseResponse<List<DeptVO>> getDeptList(@RequestBody DeptQueryRequest deptQueryRequest) {
+        // 检查参数
+        ThrowUtils.throwIf(deptQueryRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        long current = deptQueryRequest.getCurrent();
+        ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "页号不能小于 1");
+
+        long size = deptQueryRequest.getPageSize();
+        ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "页大小不能小于 1");
+
+        Page<Dept> deptPage = deptService.page(new Page<>(current, size), deptService.getQueryWrapper(deptQueryRequest));
+        List<DeptVO> deptVOList = new ArrayList<>();
+        for (Dept dept : deptPage.getRecords()) {
+            final String deptName = dept.getDeptName();
+            final DeptVO deptVO = new DeptVO();
+            deptVO.setLabel(deptName);
+            deptVO.setValue(deptName);
+            deptVOList.add(deptVO);
+        }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, deptVOList);
+    }
+    */
+    @SaCheckLogin
+    @PostMapping("/get/dept/list")
+    public BaseResponse<List<DeptVO>> getDeptList(@RequestBody DeptQueryRequest deptQueryRequest) {
+        // 检查参数
+        ThrowUtils.throwIf(deptQueryRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        // 查询所有 dept 列表
+        List<Dept> deptList = deptService.list();
+
+        // 脱敏数据
+        List<DeptVO> deptVOList = new ArrayList<>();
+        for (Dept dept : deptList) {
+            DeptVO deptVO = new DeptVO();
+            deptVO.setLabel(dept.getDeptName());
+            deptVO.setValue(dept.getDeptName());
+            deptVOList.add(deptVO);
+        }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, deptVOList);
     }
 
     // 获取专业分页数据
@@ -554,90 +646,6 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, projectPage);
     }
 
-    // 获取选题分页数据
-    @SaCheckLogin
-    @PostMapping("/get/topic/page")
-    public BaseResponse<Page<Topic>> getTopicList(@RequestBody TopicQueryRequest topicQueryRequest) {
-        // 检查参数
-        long current = topicQueryRequest.getCurrent();
-        ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "页码号必须大于 0");
-
-        long size = topicQueryRequest.getPageSize();
-        ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "页大小必须大于 0");
-
-        // 获取选题数据
-        Page<Topic> topicPage = topicService.page(new Page<>(current, size), topicService.getQueryWrapper(topicQueryRequest));
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, topicPage);
-    }
-
-    // 获取当前的选题情况(只能获取和当前登陆用户系部相同的选题)
-    /*
-    @PostMapping("get/select/topic/situation")
-    public BaseResponse<SituationVO> getSelectTopicSituation(HttpServletRequest request) {
-        final User loginUser = userService.getLoginUser(request);
-        if (loginUser == null) {
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
-        }
-
-        // 获取所有学生的总人数和已选题人数
-        final int totalStudents = (int) userService.count(new QueryWrapper<User>().eq("userRole", 0).eq(StringUtils.isNotBlank(loginUser.getDept()), "dept", loginUser.getDept()));
-        final List<User> userList = userService.list(new QueryWrapper<User>().eq("userRole", 0).eq(StringUtils.isNotBlank(loginUser.getDept()), "dept", loginUser.getDept()));
-
-        int selectedStudents = 0;
-        for (User user : userList) {
-            final String userAccount = user.getUserAccount();
-            selectedStudents += (int) studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>().eq("status", 1).eq("userAccount", userAccount));
-        }
-
-        final int unselectedStudents = totalStudents - selectedStudents;
-
-        // 封装返回数据
-        SituationVO situationVO = new SituationVO();
-        situationVO.setSelectAmount(selectedStudents);
-        situationVO.setAmount(totalStudents);
-        situationVO.setUnselectAmount(unselectedStudents);
-
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, situationVO);
-    }
-    */
-    @SaCheckRole(value = {"admin", "dept"}, mode = SaMode.OR)
-    @SaCheckLogin
-    @PostMapping("/get/select/topic/situation")
-    public BaseResponse<SituationVO> getSelectTopicSituation() {
-        // 获取当前登陆用户
-        Long loginUserId = userService.userGetCurrentLonginUserId();
-        User loginUser = userService.userGetSessionById(loginUserId);
-
-        // 获取总人数
-        QueryWrapper<User> queryWrapper = new QueryWrapper<User>()
-                .eq("userRole", UserRoleEnum.USER.getValue()) // 只获取学生记录
-                .eq(!userService.userIsAdmin(loginUser), "dept", loginUser.getDept()) // 获取当前登陆用户系部相同的学生, 但是管理员可以获取所有学生
-                ;
-        int totalStudents = (int) userService.count(queryWrapper);
-        List<User> userList = userService.list(queryWrapper);
-
-        // 获取已选题人数
-        int selectedStudents = 0;
-        for (User user : userList) {
-            final String userAccount = user.getUserAccount();
-            selectedStudents += (int) studentTopicSelectionService.count(
-                    new QueryWrapper<StudentTopicSelection>()
-                            .eq("userAccount", userAccount) // 获取当前用户的记录
-                            .eq("status", 1) // 查询状态为已选题的
-            ); // TODO: 这个查询过程可以被优化, 但是暂时先这样
-        }
-
-        // 获取未选题人数
-        int unselectedStudents = totalStudents - selectedStudents;
-
-        // 封装返回数据
-        SituationVO situationVO = new SituationVO();
-        situationVO.setSelectAmount(selectedStudents);
-        situationVO.setAmount(totalStudents);
-        situationVO.setUnselectAmount(unselectedStudents);
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, situationVO);
-    }
-
     // 添加系部
     /*
     @PostMapping("/add/dept")
@@ -662,6 +670,7 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, newDept.getId());
     }
     */
+    @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/add/dept")
     public BaseResponse<Long> addDept(@RequestBody DeptAddRequest deptAddRequest) {
@@ -710,6 +719,7 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, newProject.getId());
     }
     */
+    @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/add/project")
     public BaseResponse<Long> addProject(@RequestBody ProjectAddRequest projectAddRequest) {
@@ -732,6 +742,24 @@ public class UserController {
         boolean result = projectService.save(newProject);
         ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "无法添加新的专业");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, newProject.getId());
+    }
+
+    /// 选题相关接口 ///
+
+    // 获取选题分页数据
+    @SaCheckLogin
+    @PostMapping("/get/topic/page")
+    public BaseResponse<Page<Topic>> getTopicList(@RequestBody TopicQueryRequest topicQueryRequest) {
+        // 检查参数
+        long current = topicQueryRequest.getCurrent();
+        ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "页码号必须大于 0");
+
+        long size = topicQueryRequest.getPageSize();
+        ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "页大小必须大于 0");
+
+        // 获取选题数据
+        Page<Topic> topicPage = topicService.page(new Page<>(current, size), topicService.getQueryWrapper(topicQueryRequest));
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, topicPage);
     }
 
     // 添加选题
@@ -761,6 +789,7 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topic.getId());
     }
     */
+    @SaCheckLogin
     @SaCheckRole(value = {"teacher"}, mode = SaMode.OR)
     @PostMapping("/add/topic")
     public BaseResponse<Long> addTopic(@RequestBody AddTopicRequest addTopicRequest) {
@@ -771,8 +800,7 @@ public class UserController {
         ThrowUtils.throwIf(oldTopic != null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "该选题已存在, 请不要重复添加");
 
         // 添加新的选题
-        Long loginUserId = userService.userGetCurrentLonginUserId();
-        User loginUser = userService.userGetSessionById(loginUserId);
+        User loginUser = userService.userGetCurrentLoginUser();
         Topic topic = new Topic();
         BeanUtils.copyProperties(addTopicRequest, topic);
         topic.setTeacherName(loginUser.getUserName());
@@ -780,6 +808,73 @@ public class UserController {
         boolean result = topicService.save(topic);
         ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "无法添加新的选题");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topic.getId());
+    }
+
+    // 获取当前的选题情况(只能获取和当前登陆用户系部相同的选题)
+    /*
+    @PostMapping("get/select/topic/situation")
+    public BaseResponse<SituationVO> getSelectTopicSituation(HttpServletRequest request) {
+        final User loginUser = userService.getLoginUser(request);
+        if (loginUser == null) {
+            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
+        }
+
+        // 获取所有学生的总人数和已选题人数
+        final int totalStudents = (int) userService.count(new QueryWrapper<User>().eq("userRole", 0).eq(StringUtils.isNotBlank(loginUser.getDept()), "dept", loginUser.getDept()));
+        final List<User> userList = userService.list(new QueryWrapper<User>().eq("userRole", 0).eq(StringUtils.isNotBlank(loginUser.getDept()), "dept", loginUser.getDept()));
+
+        int selectedStudents = 0;
+        for (User user : userList) {
+            final String userAccount = user.getUserAccount();
+            selectedStudents += (int) studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>().eq("status", 1).eq("userAccount", userAccount));
+        }
+
+        final int unselectedStudents = totalStudents - selectedStudents;
+
+        // 封装返回数据
+        SituationVO situationVO = new SituationVO();
+        situationVO.setSelectAmount(selectedStudents);
+        situationVO.setAmount(totalStudents);
+        situationVO.setUnselectAmount(unselectedStudents);
+
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, situationVO);
+    }
+    */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin", "dept"}, mode = SaMode.OR)
+    @PostMapping("/get/select/topic/situation")
+    public BaseResponse<SituationVO> getSelectTopicSituation() {
+        // 获取当前登陆用户
+        User loginUser = userService.userGetCurrentLoginUser();
+
+        // 获取总人数
+        QueryWrapper<User> queryWrapper = new QueryWrapper<User>()
+                .eq("userRole", UserRoleEnum.USER.getValue()) // 只获取学生记录
+                .eq(!userService.userIsAdmin(loginUser), "dept", loginUser.getDept()) // 获取当前登陆用户系部相同的学生, 但是管理员可以获取所有学生
+                ;
+        int totalStudents = (int) userService.count(queryWrapper);
+        List<User> userList = userService.list(queryWrapper);
+
+        // 获取已选题人数
+        int selectedStudents = 0;
+        for (User user : userList) {
+            final String userAccount = user.getUserAccount();
+            selectedStudents += (int) studentTopicSelectionService.count(
+                    new QueryWrapper<StudentTopicSelection>()
+                            .eq("userAccount", userAccount) // 获取当前用户的记录
+                            .eq("status", 1) // 查询状态为已选题的
+            ); // TODO: 这个查询过程可以被优化, 但是暂时先这样
+        }
+
+        // 获取未选题人数
+        int unselectedStudents = totalStudents - selectedStudents;
+
+        // 封装返回数据
+        SituationVO situationVO = new SituationVO();
+        situationVO.setSelectAmount(selectedStudents);
+        situationVO.setAmount(totalStudents);
+        situationVO.setUnselectAmount(unselectedStudents);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, situationVO);
     }
 
     // 根据题目 id 添加开放的开始时间和结束时间
@@ -813,6 +908,7 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, "");
     }
     */
+    @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/set/time/by/id")
     public BaseResponse<String> setTimeById(@RequestBody SetTimeRequest setTimeRequest) {
@@ -874,6 +970,7 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
     }
     */
+    @SaCheckLogin
     @SaCheckRole(value = {"dept"}, mode = SaMode.OR)
     @PostMapping("/check/topic")
     public BaseResponse<Boolean> checkTopic(@RequestBody CheckTopicRequest checkTopicRequest, HttpServletRequest request) {
@@ -910,9 +1007,7 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
     }
 
-    /**
-     * 获取系部教师数据
-     */
+    // 获取系部教师数据
     /*
     @PostMapping("get/dept/teacher")
     public BaseResponse<Page<DeptTeacherVO>> getTeacher(@RequestBody DeptTeacherQueryRequest deptTeacherQueryRequest, HttpServletRequest request) {
@@ -996,50 +1091,52 @@ public class UserController {
         String sortOrder = deptTeacherQueryRequest.getSortOrder();
 
         // 不允许已经选择过课题的学生进行查看
-        Long loginUserId = userService.userGetCurrentLonginUserId();
-        User loginUser = userService.userGetSessionById(loginUserId);
+        User loginUser = userService.userGetCurrentLoginUser();
         String userAccount = loginUser.getUserAccount();
-        StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount));
-        ThrowUtils.throwIf(studentTopicSelection != null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "您已经选择过课题, 不允许再次查看");
+        StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount)); // 尝试获取选题
+        ThrowUtils.throwIf(studentTopicSelection != null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "您的选题已完成, 无法再次查看");
 
         // 查询用户列表, 但是只查询自己这个系部的教师
         String dept = loginUser.getDept();
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper
-                .eq("dept", dept)
-                .eq("userRole", UserRoleEnum.TEACHER.getValue())
+                .eq("dept", dept) // 同系的
+                .eq("userRole", UserRoleEnum.TEACHER.getValue()) // 是教师的
                 .orderBy(
                         SqlUtils.validSortField(sortField),
                         sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                         sortField
                 )
         ;
-        List<User> users = userMapper.selectList(userQueryWrapper);
+        List<User> users = userMapper.selectList(userQueryWrapper); // 得到所有的教师
 
-        // 创建返回的 Page 对象
+        // 利用教师列表来创建返回的 Page 对象, 填充每位教师的选题情况
         List<DeptTeacherVO> teacherVOList = new ArrayList<>();
         for (User user : users) {
-            final String userName = user.getUserName();
+            // 获得教师的名字
+            String userName = user.getUserName();
 
-            // 查询该用户的课题列表
+            // 获得教师的对应选题
             QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
             topicQueryWrapper
                     .eq("teacherName", userName)
                     .eq("deptName", loginUser.getDept())
-                    .eq("status", TopicStatusEnum.PUBLISHED.getCode())
+                    .eq("status", TopicStatusEnum.PUBLISHED.getCode()) // 学生只能查看已经开放的选题
             ;
             int count = (int) topicService.count(topicQueryWrapper);
             List<Topic> topicList = topicService.list(topicQueryWrapper);
 
             // 计算剩余数量和选择数量
-            Integer surplusQuantity = 0;
             Integer selectAmount = 0;
+            Integer surplusQuantity = 0;
             for (Topic topic : topicList) {
-                surplusQuantity += topic.getSurplusQuantity();
                 selectAmount += topic.getSelectAmount();
+                surplusQuantity += topic.getSurplusQuantity();
             }
+
+
+            // 构建 DeptTeacherVO 对象
             if (count != 0) {
-                // 构建 DeptTeacherVO 对象
                 DeptTeacherVO teacherVO = new DeptTeacherVO();
                 teacherVO.setTeacherName(userName);
                 teacherVO.setSurplusQuantity(surplusQuantity);
@@ -1047,16 +1144,257 @@ public class UserController {
                 teacherVO.setTopicAmount(count);
                 teacherVOList.add(teacherVO);
             }
-            // 添加到列表中
         }
 
         // 构建分页对象
         Page<DeptTeacherVO> teacherPage = new Page<>(current, size);
         teacherPage.setRecords(teacherVOList);
-
         return TheResult.success(CodeBindMessageEnums.SUCCESS, teacherPage);
     }
 
+    // TODO: ...
+
+    // 根据题目 id 进行预先选题的操作
+    /*
+    @PostMapping("pre/select/topic/by/id")
+    public BaseResponse<Long> preSelectTopicById(@RequestBody SelectTopicByIdRequest selectTopicByIdRequest, HttpServletRequest request) {
+        final User loginUser = userService.getLoginUser(request);
+        if (loginUser == null) {
+            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
+        }
+        if (selectTopicByIdRequest == null) {
+            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
+        }
+        final StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
+        final Topic topic = topicService.getById(selectTopicByIdRequest.getId());
+        if (selectTopicByIdRequest.getStatus() == 1) {
+            if (selection != null) {
+                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
+            }
+            final Integer surplusQuantity = topic.getSurplusQuantity();
+            if (surplusQuantity <= 0) {
+                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "选题余量不足");
+            }
+            final StudentTopicSelection studentTopicSelection = new StudentTopicSelection();
+            studentTopicSelection.setUserAccount(loginUser.getUserAccount());
+            studentTopicSelection.setTopicId(selectTopicByIdRequest.getId());
+            final boolean save = studentTopicSelectionService.save(studentTopicSelection);
+            if (!save) {
+                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
+            }
+        } else {
+            if (selection == null) {
+                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
+            }
+            final boolean remove = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
+            if (!remove) {
+                throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
+            }
+        }
+        topic.setSelectAmount(topic.getSelectAmount() + selectTopicByIdRequest.getStatus());
+        final boolean updateTopic = topicService.updateById(topic);
+        if (!updateTopic) {
+            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
+        }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, topic.getId());
+    }
+    */
+    @SaCheckLogin
+    @PostMapping("/preselect/topic/by/id")
+    public BaseResponse<Long> preSelectTopicById(@RequestBody SelectTopicByIdRequest selectTopicByIdRequest) {
+        // 检查参数
+        ThrowUtils.throwIf(selectTopicByIdRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        Long topicId = selectTopicByIdRequest.getId();
+        ThrowUtils.throwIf(topicId == null, CodeBindMessageEnums.PARAMS_ERROR, "题目 id 不能为空");
+
+        Topic topic = topicService.getById(topicId);
+        ThrowUtils.throwIf(topic == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "该题目不存在");
+
+        // 尝试获取学生选题关联表中的记录
+        User loginUser = userService.userGetCurrentLoginUser();
+        StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
+
+        // TODO: ...
+        // 开始预先选题
+        if (selectTopicByIdRequest.getStatus() == 1) {
+            if (selection != null) {
+                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
+            }
+            final Integer surplusQuantity = topic.getSurplusQuantity();
+            if (surplusQuantity <= 0) {
+                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "选题余量不足");
+            }
+            final StudentTopicSelection studentTopicSelection = new StudentTopicSelection();
+            studentTopicSelection.setUserAccount(loginUser.getUserAccount());
+            studentTopicSelection.setTopicId(selectTopicByIdRequest.getId());
+            final boolean save = studentTopicSelectionService.save(studentTopicSelection);
+            if (!save) {
+                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
+            }
+        } else {
+            if (selection == null) {
+                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
+            }
+            final boolean remove = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
+            if (!remove) {
+                throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
+            }
+        }
+        topic.setSelectAmount(topic.getSelectAmount() + selectTopicByIdRequest.getStatus());
+        final boolean updateTopic = topicService.updateById(topic);
+        if (!updateTopic) {
+            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
+        }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, topic.getId());
+    }
+
+    // 根据题目 id 进行确认选题的操作
+    /*
+    @SaCheckLogin
+    @PostMapping("/select/topic/by/id")
+    public BaseResponse<Long> selectTopicById(@RequestBody SelectTopicByIdRequest selectTopicByIdRequest) {
+        // 检查参数
+        ThrowUtils.throwIf(selectTopicByIdRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        Long topicId = selectTopicByIdRequest.getId();
+        ThrowUtils.throwIf(topicId == null, CodeBindMessageEnums.PARAMS_ERROR, "题目 id 不能为空");
+
+        Topic topic = topicService.getById(topicId);
+        ThrowUtils.throwIf(topic == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "该题目不存在");
+
+        Date startTime = topic.getStartTime();
+        ThrowUtils.throwIf(startTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有传递开始时间");
+
+        Date endTime = topic.getEndTime();
+        ThrowUtils.throwIf(endTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有传递结束时间");
+
+        Date now = new Date();
+        ThrowUtils.throwIf(now.before(startTime) || now.after(endTime), CodeBindMessageEnums.NOT_TIME_ERROR, "请等待管理员开放选题");
+
+        Integer surplusQuantity = topic.getSurplusQuantity();
+        ThrowUtils.throwIf(surplusQuantity <= 0, CodeBindMessageEnums.NOT_SURPLUS_ERROR, "");
+
+        // 尝试获取学生选题关联表中的记录
+        User loginUser = userService.userGetCurrentLoginUser();
+        StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
+
+        // TODO: ...
+        if (selectTopicByIdRequest.getStatus() == -1) {
+            final boolean remove = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
+            if (!remove) {
+                throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
+            }
+        } else {
+            selection.setStatus(selectTopicByIdRequest.getStatus());
+            final boolean update = studentTopicSelectionService.updateById(selection);
+            if (!update) {
+                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
+            }
+        }
+        topic.setSurplusQuantity(topic.getSurplusQuantity() - selectTopicByIdRequest.getStatus());
+        topic.setSelectAmount(topic.getSelectAmount() - selectTopicByIdRequest.getStatus());
+        final boolean updateTopic = topicService.updateById(topic);
+        if (!updateTopic) {
+            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
+        }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, selection.getId());
+    }
+    */
+    @SaCheckLogin
+    @PostMapping("/select/topic/by/id")
+    public BaseResponse<Long> selectTopicById(@RequestBody SelectTopicByIdRequest selectTopicByIdRequest) {
+        // 检查参数
+        ThrowUtils.throwIf(selectTopicByIdRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        Long topicId = selectTopicByIdRequest.getId();
+        ThrowUtils.throwIf(topicId == null, CodeBindMessageEnums.PARAMS_ERROR, "题目 id 不能为空");
+
+        Topic topic = topicService.getById(topicId);
+        ThrowUtils.throwIf(topic == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "该题目不存在");
+
+        Date startTime = topic.getStartTime();
+        ThrowUtils.throwIf(startTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有传递开始时间");
+
+        Date endTime = topic.getEndTime();
+        ThrowUtils.throwIf(endTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有传递结束时间");
+
+        Date now = new Date();
+        ThrowUtils.throwIf(now.before(startTime) || now.after(endTime), CodeBindMessageEnums.NOT_TIME_ERROR, "请等待管理员开放选题");
+
+        Integer surplusQuantity = topic.getSurplusQuantity();
+        ThrowUtils.throwIf(surplusQuantity <= 0, CodeBindMessageEnums.NOT_SURPLUS_ERROR, "");
+
+        // 尝试获取学生选题关联表中的记录
+        User loginUser = userService.userGetCurrentLoginUser();
+        StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
+
+        // TODO: ...
+        if (selectTopicByIdRequest.getStatus() == -1) {
+            final boolean remove = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
+            if (!remove) {
+                throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
+            }
+        } else {
+            selection.setStatus(selectTopicByIdRequest.getStatus());
+            final boolean update = studentTopicSelectionService.updateById(selection);
+            if (!update) {
+                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
+            }
+        }
+        topic.setSurplusQuantity(topic.getSurplusQuantity() - selectTopicByIdRequest.getStatus());
+        topic.setSelectAmount(topic.getSelectAmount() - selectTopicByIdRequest.getStatus());
+        final boolean updateTopic = topicService.updateById(topic);
+        if (!updateTopic) {
+            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
+        }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, selection.getId());
+    }
+
+    // 获取当前登陆账号学生的预选题
+    /*
+    @PostMapping("get/pre/topic")
+    public BaseResponse<List<Topic>> getPreTopic(HttpServletRequest request) {
+        final User loginUser = userService.getLoginUser(request);
+        if (loginUser == null) {
+            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
+        }
+        final String userAccount = loginUser.getUserAccount();
+        final StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount).eq("status", 0));
+        if (studentTopicSelection == null) {
+            throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
+        }
+        final Long topicId = studentTopicSelection.getTopicId();
+        final Topic topic = topicService.getById(topicId);
+        List<Topic> topicList = new ArrayList<>();
+        topicList.add(topic);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, topicList);
+    }
+    */
+    @SaCheckLogin
+    @SaCheckRole(value = {"student"}, mode = SaMode.OR)
+    @PostMapping("/get/pre/topic")
+    public BaseResponse<List<Topic>> getPreTopic() {
+        // 获取当前登陆用户
+        User loginUser = userService.userGetCurrentLoginUser();
+
+        // 查询对应的预先选题记录
+        String userAccount = loginUser.getUserAccount();
+        ThrowUtils.throwIf(userAccount == null, CodeBindMessageEnums.OPERATION_ERROR, "参数有问题");
+        StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(
+                new QueryWrapper<StudentTopicSelection>()
+                        .eq("userAccount", userAccount)
+                        .eq("status", StudentTopicSelectionStatusEnum.PRESELECT.getCode())
+        );
+        ThrowUtils.throwIf(studentTopicSelection == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "当前没有预选的题目");
+
+        // 填充完整的返回体
+        Long topicId = studentTopicSelection.getTopicId();
+        Topic topic = topicService.getById(topicId);
+        List<Topic> topicList = new ArrayList<>();
+        topicList.add(topic);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, topicList);
+    }
 
     /// TODO: 下面都是旧代码...并且把所有的权限都去除了
 
@@ -1123,25 +1461,6 @@ public class UserController {
 //            userList = userService.list(new QueryWrapper<User>().eq("userRole", userRole).eq("dept", dept));
 //        }
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userNameVO);
-    }
-
-    /**
-     * 获取系部数据
-     */
-    @PostMapping("get/dept/list")
-    public BaseResponse<List<DeptVO>> getDeptList(@RequestBody DeptQueryRequest deptQueryRequest, HttpServletRequest request) {
-        long current = deptQueryRequest.getCurrent();
-        long size = deptQueryRequest.getPageSize();
-        Page<Dept> deptPage = deptService.page(new Page<>(current, size), deptService.getQueryWrapper(deptQueryRequest));
-        List<DeptVO> deptVOList = new ArrayList<>();
-        for (Dept dept : deptPage.getRecords()) {
-            final String deptName = dept.getDeptName();
-            final DeptVO deptVO = new DeptVO();
-            deptVO.setLabel(deptName);
-            deptVO.setValue(deptName);
-            deptVOList.add(deptVO);
-        }
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, deptVOList);
     }
 
     /**
@@ -1436,138 +1755,6 @@ public class UserController {
             userList.add(user);
         }
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userList);
-    }
-
-    /**
-     * 根据题目id进行预选题
-     */
-    @PostMapping("pre/select/topic/by/id")
-    public BaseResponse<Long> preSelectTopicById(@RequestBody SelectTopicByIdRequest selectTopicByIdRequest, HttpServletRequest request) {
-        final User loginUser = userService.getLoginUser(request);
-        if (loginUser == null) {
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
-        }
-        if (selectTopicByIdRequest == null) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
-        }
-        final StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
-        final Topic topic = topicService.getById(selectTopicByIdRequest.getId());
-        if (selectTopicByIdRequest.getStatus() == 1) {
-            if (selection != null) {
-                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
-            }
-            final Integer surplusQuantity = topic.getSurplusQuantity();
-            if (surplusQuantity <= 0) {
-                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "选题余量不足");
-            }
-            final StudentTopicSelection studentTopicSelection = new StudentTopicSelection();
-            studentTopicSelection.setUserAccount(loginUser.getUserAccount());
-            studentTopicSelection.setTopicId(selectTopicByIdRequest.getId());
-            final boolean save = studentTopicSelectionService.save(studentTopicSelection);
-            if (!save) {
-                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
-            }
-        } else {
-            if (selection == null) {
-                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
-            }
-            final boolean remove = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
-            if (!remove) {
-                throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
-            }
-        }
-        topic.setSelectAmount(topic.getSelectAmount() + selectTopicByIdRequest.getStatus());
-        final boolean updateTopic = topicService.updateById(topic);
-        if (!updateTopic) {
-            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
-        }
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, topic.getId());
-    }
-
-    /**
-     * 根据题目id进行选题
-     */
-    @PostMapping("select/topic/by/id")
-    public BaseResponse<Long> selectTopicById(@RequestBody SelectTopicByIdRequest selectTopicByIdRequest, HttpServletRequest request) {
-        final User loginUser = userService.getLoginUser(request);
-        if (request == null) {
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
-        }
-        if (selectTopicByIdRequest == null) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
-        }
-        final Topic topic = topicService.getById(selectTopicByIdRequest.getId());
-        final Date startTime = topic.getStartTime();
-        final Date endTime = topic.getEndTime();
-        final Date now = new Date();
-        if (now.before(startTime) || now.after(endTime)) {
-            throw new BusinessException(CodeBindMessageEnums.NOT_TIME_ERROR, "");
-        }
-        if (topic.getSurplusQuantity() <= 0) {
-            throw new BusinessException(CodeBindMessageEnums.NOT_SURPLUS_ERROR, "");
-        }
-        final StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
-        if (selectTopicByIdRequest.getStatus() == -1) {
-            final boolean remove = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
-            if (!remove) {
-                throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
-            }
-        } else {
-            selection.setStatus(selectTopicByIdRequest.getStatus());
-            final boolean update = studentTopicSelectionService.updateById(selection);
-            if (!update) {
-                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
-            }
-        }
-        topic.setSurplusQuantity(topic.getSurplusQuantity() - selectTopicByIdRequest.getStatus());
-        topic.setSelectAmount(topic.getSelectAmount() - selectTopicByIdRequest.getStatus());
-        final boolean updateTopic = topicService.updateById(topic);
-        if (!updateTopic) {
-            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "");
-        }
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, selection.getId());
-    }
-
-    /**
-     * 根据获取老师姓名
-     */
-    @PostMapping("get/teacher")
-    public BaseResponse<List<TeacherVO>> getTeacher(@RequestBody TeacherQueryRequest teacherQueryRequest, HttpServletRequest request) {
-        final User loginUser = userService.getLoginUser(request);
-        if (loginUser == null) {
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
-        }
-        final List<User> userList = userService.list(new QueryWrapper<User>().eq("userRole", teacherQueryRequest.getUserRole()));
-        List<TeacherVO> teacherVOList = new ArrayList<>();
-        for (User user : userList) {
-            TeacherVO teacherVO = new TeacherVO();
-            final String userName = user.getUserName();
-            teacherVO.setLabel(userName);
-            teacherVO.setValue(userName);
-            teacherVOList.add(teacherVO);
-        }
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, teacherVOList);
-    }
-
-    /**
-     * 获取预选题by账号
-     */
-    @PostMapping("get/pre/topic")
-    public BaseResponse<List<Topic>> getPreTopic(HttpServletRequest request) {
-        final User loginUser = userService.getLoginUser(request);
-        if (loginUser == null) {
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
-        }
-        final String userAccount = loginUser.getUserAccount();
-        final StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount).eq("status", 0));
-        if (studentTopicSelection == null) {
-            throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
-        }
-        final Long topicId = studentTopicSelection.getTopicId();
-        final Topic topic = topicService.getById(topicId);
-        List<Topic> topicList = new ArrayList<>();
-        topicList.add(topic);
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, topicList);
     }
 
     /**

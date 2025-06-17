@@ -434,12 +434,12 @@ export async function userLogoutUsingPost(options?: { [key: string]: any }) {
   });
 }
 
-/** preSelectTopicById POST /user/pre/select/topic/by/id */
+/** preSelectTopicById POST /user/preselect/topic/by/id */
 export async function preSelectTopicByIdUsingPost(
   body: API.SelectTopicByIdRequest,
   options?: { [key: string]: any },
 ) {
-  return request<API.BaseResponseLong_>('/user/pre/select/topic/by/id', {
+  return request<API.BaseResponseLong_>('/user/preselect/topic/by/id', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
