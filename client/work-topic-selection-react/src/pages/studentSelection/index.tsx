@@ -1,12 +1,11 @@
-// @ts-ignore
-import {
-  getTeacherUsingPost,
-} from '@/services/work-topic-selection/userController';
+import { getTeacherUsingPost } from '@/services/work-topic-selection/userController';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import React, { useRef } from 'react';
-import { useNavigate } from "react-router-dom";
+import { Modal } from 'antd';
+import { useRef, useState } from 'react';
+import TopicTable from '@/components/TopicTable'; // ✅ 改成默认导入
 
 type GithubIssueItem = {
+  id: number;
   topicAmount: number;
   teacherName: string;
   selectAmount: number;
@@ -14,16 +13,18 @@ type GithubIssueItem = {
 
 export default () => {
   const actionRef = useRef<ActionType>();
-  const navigate = useNavigate();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [currentTeacher, setCurrentTeacher] = useState<string>('');
 
   const columns: ProColumns<GithubIssueItem>[] = [
     {
+      title: '序号',
       dataIndex: 'id',
       valueType: 'indexBorder',
       width: 48,
     },
     {
-      title: '姓名',
+      title: '教师姓名',
       dataIndex: 'teacherName',
     },
     {
@@ -37,14 +38,14 @@ export default () => {
       search: false,
     },
     {
-      title: '操作',
+      title: '更多操作',
       valueType: 'option',
-      key: 'option',
       render: (_, record) => [
         <a
-          key="editable"
+          key="view"
           onClick={() => {
-            navigate(`/topic/student/select/${record.teacherName}`);
+            setCurrentTeacher(record.teacherName);
+            setModalVisible(true);
           }}
         >
           查看题目
@@ -54,13 +55,12 @@ export default () => {
   ];
 
   return (
-    <ProTable<GithubIssueItem>
-      columns={columns}
-      actionRef={actionRef}
-      cardBordered
-      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-      request={async (params = {}, sort, filter) => {
-        try {
+    <>
+      <ProTable<GithubIssueItem>
+        columns={columns}
+        actionRef={actionRef}
+        cardBordered
+        request={async (params = {}) => {
           const response = await getTeacherUsingPost({
             ...params,
             pageNumber: params.current,
@@ -71,40 +71,22 @@ export default () => {
             total: response.data?.total || 0,
             success: true,
           };
-        } catch (error) {
-          console.error('Error fetching data:', error);
-          return {
-            data: [],
-            total: 0,
-            success: false,
-          };
-        }
-      }}
-      editable={{
-        type: 'multiple',
-      }}
-      columnsState={{
-        persistenceKey: 'pro-table-singe-demos',
-        persistenceType: 'localStorage',
-      }}
-      rowKey="id"
-      search={{
-        labelWidth: 'auto',
-      }}
-      form={{
-        syncToUrl: (values, type) => {
-          return type === 'get' ? { ...values } : values;
-        },
-      }}
-      pagination={{
-        pageSize: 10, // 默认10条
-        showSizeChanger: true,
-        pageSizeOptions: ['10', '20', '50'],
-        showQuickJumper: true,
-      }}
-      dateFormatter="string"
-      headerTitle="题目"
-      toolBarRender={false}
-    />
+        }}
+        rowKey="id"
+        search={{ labelWidth: 'auto' }}
+        pagination={{ pageSize: 10, showSizeChanger: true }}
+        headerTitle="教师列表"
+      />
+
+      <Modal
+        title={`教师 ${currentTeacher} 的题目列表`}
+        open={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+        width={1000}
+      >
+        <TopicTable teacherName={currentTeacher} />
+      </Modal>
+    </>
   );
 };

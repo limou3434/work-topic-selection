@@ -200,7 +200,7 @@ public class UserController {
         ThrowUtils.throwIf(StringUtils.isBlank(userAccount), CodeBindMessageEnums.PARAMS_ERROR, "缺少用户学号/工号");
 
         User oldUser = userService.userIsExist(userAccount);
-        ThrowUtils.throwIf(oldUser != null, CodeBindMessageEnums.PARAMS_ERROR, "该学号/工号对于的用户已经存在, 无法重复添加");
+        ThrowUtils.throwIf(oldUser != null, CodeBindMessageEnums.PARAMS_ERROR, "该学号/工号对于的用户已经存在, 请不要重复添加");
 
         Integer userRole = userAddRequest.getUserRole();
         ThrowUtils.throwIf(userRole == null, CodeBindMessageEnums.PARAMS_ERROR, "缺少用户角色");

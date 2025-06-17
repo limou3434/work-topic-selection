@@ -1,3 +1,7 @@
+/**
+ * 放弃使用这个页面以优化弹窗避免分页刷新问题...
+ */
+
 import { ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { message } from 'antd';

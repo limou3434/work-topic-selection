@@ -19,6 +19,7 @@ const TopicSelectionTable: React.FC = () => {
 
   const columns: ProColumns<TableListItem>[] = [
     {
+      title: '序号',
       dataIndex: 'id',
       valueType: 'indexBorder',
       width: 48,

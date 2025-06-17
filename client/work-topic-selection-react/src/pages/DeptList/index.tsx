@@ -5,7 +5,7 @@ import {
 } from '@/services/work-topic-selection/userController';
 import { PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
-import { ModalForm } from '@ant-design/pro-form/lib';
+import { ModalForm } from '@ant-design/pro-components';
 import { Button, message } from 'antd';
 import { useRef, useState } from 'react';
 
@@ -18,6 +18,7 @@ export default () => {
   const actionRef = useRef<ActionType>();
   const columns: ProColumns<GithubIssueItem>[] = [
     {
+      title: '序号',
       dataIndex: 'id',
       valueType: 'indexBorder',
       width: 48,

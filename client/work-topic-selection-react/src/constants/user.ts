@@ -10,10 +10,10 @@ export const USER_ROLE_ENUM = {
   MANGER: 3,
 }; // 码值
 export const USER_ROLE_MAP: { [key in 0 | 1 | 2 | 3]: string }  = {
-  0: "学生账号",
-  1: "教师账号",
-  2: "主任账号",
-  3: "系统账号",
+  0: "学生",
+  1: "教师",
+  2: "主任",
+  3: "系统",
 }; // 映射
 export const USER_ROLE_OPTIONS = Object.entries(USER_ROLE_MAP).map(([code, label]) => ({
   label,

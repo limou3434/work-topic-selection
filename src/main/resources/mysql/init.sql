@@ -24,9 +24,7 @@ CREATE TABLE `user`
     `status`       VARCHAR(256)          DEFAULT NULL COMMENT '账号状态',
     `project`      VARCHAR(256)          DEFAULT NULL COMMENT '专业',
     `topicAmount`  INT                   DEFAULT NULL COMMENT '',
-    PRIMARY KEY (`id`,
-                 `userAccount`) USING BTREE COMMENT '主键',
-    UNIQUE KEY `uniUserAccount` (`userAccount`) COMMENT '账号唯一约束',
+    PRIMARY KEY (`id`, `userAccount`) USING BTREE COMMENT '主键',
     INDEX `idxUserName` (`userName`) COMMENT '提升基于用户名称的查询性能'
 )
     ENGINE = InnoDB
@@ -101,7 +99,7 @@ CREATE TABLE `student_topic_selection`
     `createTime`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updateTime`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     `isDelete`    TINYINT      NOT NULL DEFAULT '0' COMMENT '是否删除',
-    `status`      INT          NOT NULL DEFAULT '0' COMMENT '选题状态：0--预选，1--抢到',
+    `status`      INT          NOT NULL DEFAULT '0' COMMENT '选题状态: 0-预选, 1-抢到',
     PRIMARY KEY (`id`) USING BTREE,
     KEY `userAccount` (`userAccount`) USING BTREE
 )

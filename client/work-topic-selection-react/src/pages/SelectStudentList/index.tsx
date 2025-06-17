@@ -19,6 +19,7 @@ export default () => {
   const {id } = useParams();
   const columns: ProColumns<GithubIssueItem>[] = [
     {
+      title: '序号',
       dataIndex: 'id',
       valueType: 'indexBorder',
       width: 48,

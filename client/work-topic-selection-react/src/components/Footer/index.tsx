@@ -1,3 +1,9 @@
+/**
+ * pag - 用于展示网站底部相关备案信息和版权的页面
+ *
+ * @author <a href="https://github.com/limou3434">limou3434</a>
+ */
+
 import { GithubOutlined } from '@ant-design/icons';
 import { DefaultFooter } from '@ant-design/pro-components';
 import React from 'react';
@@ -36,6 +42,7 @@ const Footer: React.FC = () => {
           {
             key: '管理员邮箱 898738804@qq.com',
             title: '管理员邮箱 898738804@qq.com',
+            blankTarget: false,
           },
         ]}
         copyright={`${currentYear} ${filingNumber} ${defaultMessage}`}
