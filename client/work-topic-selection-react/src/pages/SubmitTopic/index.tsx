@@ -5,19 +5,19 @@ import {
 } from '@/services/work-topic-selection/userController';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { message } from 'antd';
+import React, { useState } from 'react';
 
 export type TableListItem = {
   id: number;
   key: number;
-  name: string;
-  progress: number;
-  containers: number;
-  callNumber: number;
-  creator: string;
-  status: string;
-  createdAt: number;
-  memo: string;
+  topic: string;
+  teacherName: string;
+  selectAmount: number;
+  surplusQuantity: number;
+  startTime: string;
+  endTime: string;
 };
+
 const columns: ProColumns<TableListItem>[] = [
   {
     title: '序号',
@@ -68,7 +68,6 @@ const columns: ProColumns<TableListItem>[] = [
   {
     title: '指导老师',
     dataIndex: 'teacherName',
-    valueType: 'select',
     search: false,
   },
   {
@@ -96,23 +95,42 @@ const columns: ProColumns<TableListItem>[] = [
 ];
 
 export default () => {
+  // 分页相关状态
+  const [pageNum, setPageNum] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
+
   return (
     <ProTable<TableListItem>
       columns={columns}
-      //@ts-ignore
-      request={async (params = {}, sort, filter) => {
-        console.log(sort, filter, params);
+      request={async (params = {}) => {
         try {
-          const response = await getPreTopicUsingPost();
+          // 注意：如果你的接口不支持分页参数，需要修改接口，或者前端分页
+          // 这里演示传分页参数，如果接口不支持，需要删掉下面分页参数
+          const response = await getPreTopicUsingPost({
+            pageNumber: params.current || pageNum,
+            pageSize: params.pageSize || pageSize,
+          });
+
+          // 如果接口没有 total，请确认接口或前端处理
+          const data = response.data?.records || response.data || [];
+          const totalCount = response.data?.total || data.length;
+
+          setTotal(totalCount);
+          setPageNum(params.current || pageNum);
+          setPageSize(params.pageSize || pageSize);
+
           return {
-            // @ts-ignore
-            data: response.data || [],
+            data,
+            total: totalCount,
+            success: true,
           };
         } catch (error) {
           console.error('Error fetching data:', error);
           return {
             data: [],
             total: 0,
+            success: false,
           };
         }
       }}
@@ -120,7 +138,19 @@ export default () => {
       options={false}
       search={false}
       pagination={{
-        pageSize: 30,
+        pageSize,
+        current: pageNum,
+        total,
+        showSizeChanger: true,
+        pageSizeOptions: ['10', '20', '30', '50', '100'],
+        onChange: (page, size) => {
+          setPageNum(page);
+          setPageSize(size);
+        },
+        onShowSizeChange: (current, size) => {
+          setPageNum(current);
+          setPageSize(size);
+        },
       }}
       rowKey="key"
       headerTitle="提交选题"

@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Administrator
@@ -56,10 +58,13 @@ public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic> implements
             queryWrapper.eq("teacherName", loginUser.getUserName());
         }
         if (loginUser.getUserRole() == 0) {
-            // 如果是学生检查是否有关联过题目, 如果有就不允许显示
-            StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()));
-            if (studentTopicSelection != null) {
-                queryWrapper.ne("id", studentTopicSelection.getTopicId());
+            // 如果是学生检查是否有关联过题目, 如果有就不允许显示这些被关联的题目
+            List<StudentTopicSelection> selections = studentTopicSelectionService.list(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()));
+            if (!selections.isEmpty()) {
+                List<Long> topicIds = selections.stream()
+                        .map(StudentTopicSelection::getTopicId)
+                        .collect(Collectors.toList());
+                queryWrapper.notIn("id", topicIds);
             }
         }
         queryWrapper.like(StringUtils.isNotBlank(topicQueryRequest.getTopic()), "topic", topicQueryRequest.getTopic());

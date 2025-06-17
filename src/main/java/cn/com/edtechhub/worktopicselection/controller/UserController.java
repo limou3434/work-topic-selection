@@ -1230,17 +1230,17 @@ public class UserController {
         StudentTopicSelectionStatusEnum studentTopicSelectionStatusEnum = StudentTopicSelectionStatusEnum.getEnums(status);
         ThrowUtils.throwIf(studentTopicSelectionStatusEnum == null, CodeBindMessageEnums.PARAMS_ERROR, "不存在这种状态");
 
-        // 尝试获取学生选题关联表中的记录(可能为空)
-        User loginUser = userService.userGetCurrentLoginUser();
-        StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
-
         // 设置题目剩余数量操作数字
         int opt = 0;
 
+        // 获取当前登录用户
+        User loginUser = userService.userGetCurrentLoginUser();
+
         // 处理预先选题的操作
         if (studentTopicSelectionStatusEnum == StudentTopicSelectionStatusEnum.EN_PRESELECT) { // 确认预选题目
-            // 此时必然没有关联记录
-            ThrowUtils.throwIf(selection != null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "不能重复确认预选");
+            // 限制预选数量
+            int selectedCount = Math.toIntExact(studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount())));
+            ThrowUtils.throwIf(selectedCount >= 5, CodeBindMessageEnums.OPERATION_ERROR, "最多只能预选 10 个题目");
 
             // 有选题余量才可以预选
             Integer surplusQuantity = topic.getSurplusQuantity();
@@ -1257,9 +1257,6 @@ public class UserController {
             opt = +1;
         }
         else if (studentTopicSelectionStatusEnum == StudentTopicSelectionStatusEnum.UN_PRESELECT) { // 取消预选题目
-            // 此时必然存在关联记录
-            ThrowUtils.throwIf(selection == null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "不能重复取消预选");
-
             // 修改关联记录
             boolean remove = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
             if (!remove) {
