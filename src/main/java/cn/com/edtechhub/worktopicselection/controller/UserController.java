@@ -869,7 +869,7 @@ public class UserController {
         QueryWrapper<User> queryWrapper = new QueryWrapper<User>()
                 .eq("userRole", UserRoleEnum.USER.getValue()) // 只获取学生记录
                 .eq(!userService.userIsAdmin(loginUser), "dept", loginUser.getDept()) // 获取当前登陆用户系部相同的学生, 但是管理员可以获取所有学生
-                ;
+        ;
         int totalStudents = (int) userService.count(queryWrapper);
         List<User> userList = userService.list(queryWrapper);
 
@@ -880,7 +880,7 @@ public class UserController {
             selectedStudents += (int) studentTopicSelectionService.count(
                     new QueryWrapper<StudentTopicSelection>()
                             .eq("userAccount", userAccount) // 获取当前用户的记录
-                            .eq("status", 1) // 查询状态为已选题的
+                            .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode()) // 查询状态为已选题的
             ); // TODO: 这个查询过程可以被优化, 但是暂时先这样
         }
 

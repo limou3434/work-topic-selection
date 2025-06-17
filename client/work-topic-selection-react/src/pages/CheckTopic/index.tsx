@@ -22,6 +22,9 @@ const TopicReviewTable: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [currentRecord, setCurrentRecord] = useState<TableListItem | null>(null);
   const actionRef = useRef();
+  const [pageNum, setPageNum] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
 
   const columns: ProColumns<TableListItem>[] = [
     {
@@ -88,21 +91,34 @@ const TopicReviewTable: React.FC = () => {
     <>
       <ProTable<TableListItem>
         columns={columns}
-        actionRef={actionRef} // Reference for reloading the table
+        actionRef={actionRef}
         request={async (params = {}, sort, filter) => {
-          console.log(sort, filter, params);
           try {
-            const paramsWithFormName = { ...params, status: '-1' };
+            const current = params.current || 1;
+            const size = params.pageSize || 10;
+            setPageNum(current);
+            setPageSize(size);
+            const paramsWithFormName = {
+              ...params,
+              status: '-1',
+              pageNumber: current,
+              pageSize: size,
+            };
             const response = await getTopicListUsingPost(paramsWithFormName);
+            const data = response.data?.records || [];
+            const total = response.data?.total || 0;
+            setTotal(total);
             return {
-              data: response.data.records,
-              total: response.data.total,
+              data,
+              total,
+              success: true,
             };
           } catch (error) {
             console.error('Error fetching data:', error);
             return {
               data: [],
               total: 0,
+              success: false,
             };
           }
         }}
@@ -112,18 +128,31 @@ const TopicReviewTable: React.FC = () => {
           labelWidth: 'auto',
         }}
         pagination={{
-          pageSize: 30,
+          pageSize,
+          current: pageNum,
+          total,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
+          onChange: (page, size) => {
+            setPageNum(page);
+            setPageSize(size);
+          },
         }}
         rowKey="id"
         headerTitle="审核"
       />
+
       <ModalForm
         title="打回原因"
         visible={modalVisible}
         onVisibleChange={setModalVisible}
         onFinish={async (values) => {
           if (!currentRecord) return false;
-          const res = await checkTopicUsingPost({ id: currentRecord.id, status: -2, reason: values.reason });
+          const res = await checkTopicUsingPost({
+            id: currentRecord.id,
+            status: -2,
+            reason: values.reason,
+          });
           if (res.code === 0) {
             message.success('打回成功');
             setModalVisible(false);

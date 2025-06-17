@@ -61,7 +61,7 @@ export default () => {
       valueType: 'textarea',
     },
     {
-      title: '对学生要求',
+      title: '对学生的要求',
       dataIndex: 'requirement',
       valueType: 'textarea',
     },
@@ -126,6 +126,7 @@ export default () => {
     {
       title: '打回理由',
       dataIndex: 'reason',
+      editable: false,
     },
     {
       title: '操作',

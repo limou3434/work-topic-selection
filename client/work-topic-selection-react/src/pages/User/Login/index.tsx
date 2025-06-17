@@ -113,7 +113,7 @@ const Login: React.FC = () => {
             maxWidth: '75vw',
           }}
           logo={<img alt="logo" src="/logo_256.png" />}
-          title="毕业设计选题系统"
+          title="毕设选题系统"
           subTitle={'智能大数据工作室'}
           onFinish={async (values) => {
             await handleSubmit(values as API.UserLoginRequest);
