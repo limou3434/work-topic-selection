@@ -41,13 +41,13 @@ public enum TopicStatusEnum {
     /**
      * 根据码值获取枚举
      */
-    public static TopicStatusEnum getEnums(int code) { // TODO: 等待改正放回值为枚举
+    public static TopicStatusEnum getEnums(int code) {
         if (ObjUtil.isEmpty(code)) {
             return null;
         }
-        for (TopicStatusEnum role : TopicStatusEnum.values()) {
-            if (role.getCode() == code) {
-                return role;
+        for (TopicStatusEnum enumItem : TopicStatusEnum.values()) {
+            if (enumItem.getCode() == code) {
+                return enumItem;
             }
         }
         return null;

@@ -35,15 +35,16 @@ public enum UserRoleEnum { // 由于效率问题, 这里手动缓存了数据库
      * 系统角色枚举实例
      */
     ADMIN(3, "admin"),
+
     ;
 
     /**
-     * 角色码值
+     * 码值
      */
     private final int code;
 
     /**
-     * 角色描述
+     * 描述
      */
     private final String description;
 
@@ -58,13 +59,13 @@ public enum UserRoleEnum { // 由于效率问题, 这里手动缓存了数据库
     /**
      * 根据角色码值获取角色枚举
      */
-    public static UserRoleEnum getEnums(int code) { // TODO: 等待改正放回值为枚举
+    public static UserRoleEnum getEnums(int code) {
         if (ObjUtil.isEmpty(code)) {
             return null;
         }
-        for (UserRoleEnum role : UserRoleEnum.values()) {
-            if (role.getCode() == code) {
-                return role;
+        for (UserRoleEnum enumItem : UserRoleEnum.values()) {
+            if (enumItem.getCode() == code) {
+                return enumItem;
             }
         }
         return null;
