@@ -9,13 +9,19 @@ import org.springframework.stereotype.Component;
 /**
  * Spring 上下文获取工具
  *
- *  
+ * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 @Component
 public class SpringContextUtils implements ApplicationContextAware {
 
+    /**
+     * 存储 Spring 上下文的变量
+     */
     private static ApplicationContext applicationContext;
 
+    /**
+     * 设置 Spring 上下文
+     */
     @Override
     public void setApplicationContext(@NotNull ApplicationContext applicationContext) throws BeansException {
         SpringContextUtils.applicationContext = applicationContext;
@@ -23,20 +29,13 @@ public class SpringContextUtils implements ApplicationContextAware {
 
     /**
      * 通过名称获取 Bean
-     *
-     * @param beanName
-     * @return
      */
     public static Object getBean(String beanName) {
         return applicationContext.getBean(beanName);
     }
 
     /**
-     * 通过 class 获取 Bean
-     *
-     * @param beanClass
-     * @param <T>
-     * @return
+     * 通过类型获取 Bean
      */
     public static <T> T getBean(Class<T> beanClass) {
         return applicationContext.getBean(beanClass);
@@ -44,13 +43,9 @@ public class SpringContextUtils implements ApplicationContextAware {
 
     /**
      * 通过名称和类型获取 Bean
-     *
-     * @param beanName
-     * @param beanClass
-     * @param <T>
-     * @return
      */
     public static <T> T getBean(String beanName, Class<T> beanClass) {
         return applicationContext.getBean(beanName, beanClass);
     }
+
 }

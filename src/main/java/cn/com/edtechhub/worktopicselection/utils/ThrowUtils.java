@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 异常处理工具类
+ *
+ * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 @Slf4j
 public class ThrowUtils {
