@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * 请求日志拦截切面
+ * 请求日志拦截切面, 允许在客户端请求后不断快速获取日志
  *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
@@ -19,11 +19,11 @@ import javax.servlet.http.HttpServletResponse;
 public class RequestLogAOP implements HandlerInterceptor {
 
     /**
-     * 每次网络接口被调用都会执行这个方法
+     * 每次网络接口被调用都会执行这个方法, 进而打印日志
      */
     @Override
     public boolean preHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) {
-        log.debug("拦截到请求: {}", "来自 " + IpUtils.getIpAddress(request) + " - " + request.getMethod() + " " + request.getRequestURI());
+        log.debug("[RequestLogAOP] 拦截到请求, 来自: {} - {} {}", IpUtils.getIpAddress(request), request.getMethod(), request.getRequestURI());
         return true; // 返回 false 会终止请求, 可以利用这一点进行 IP 屏蔽
     }
 
