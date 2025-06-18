@@ -6,8 +6,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 通用响应体描述类
- * 确保所有的接口返回都按照下面的类型结构进行返回, 用户只需要定义这个类型在接口返回值即可, 在接口中使用 ThResult 工具来放回响应即可
+ * 通用响应体描述类, 确保所有的接口返回都按照下面的类型结构进行返回, 用户只需要定义这个类型在接口返回值即可, 在接口中使用 ThResult 工具来放回响应即可
  *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
