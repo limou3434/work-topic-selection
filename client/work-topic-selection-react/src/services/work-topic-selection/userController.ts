@@ -358,9 +358,9 @@ export async function getTopicListUsingPost(
   });
 }
 
-/** getUnSelectTopicStudentList POST /user/get/un/select/topic/student/list */
+/** getUnSelectTopicStudentList POST /user/get/unselect/topic/student/list */
 export async function getUnSelectTopicStudentListUsingPost(options?: { [key: string]: any }) {
-  return request<API.BaseResponseListUser_>('/user/get/un/select/topic/student/list', {
+  return request<API.BaseResponseListUser_>('/user/get/unselect/topic/student/list', {
     method: 'POST',
     ...(options || {}),
   });
@@ -392,6 +392,21 @@ export async function listUserByPageUsingPost(
       'Content-Type': 'application/json',
     },
     data: body,
+    ...(options || {}),
+  });
+}
+
+/** getUserVOById GET /user/get/vo */
+export async function getUserVoByIdUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getUserVOByIdUsingGETParams,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseUserVO_>('/user/get/vo', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
     ...(options || {}),
   });
 }
@@ -539,21 +554,6 @@ export async function updateUserUsingPost(
   });
 }
 
-/** updateMyUser POST /user/update/my */
-export async function updateMyUserUsingPost(
-  body: API.UserUpdateMyRequest,
-  options?: { [key: string]: any },
-) {
-  return request<API.BaseResponseBoolean_>('/user/update/my', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: body,
-    ...(options || {}),
-  });
-}
-
 /** updateTopic POST /user/update/topic */
 export async function updateTopicUsingPost(
   body: API.UpdateTopicRequest,
@@ -569,7 +569,7 @@ export async function updateTopicUsingPost(
   });
 }
 
-/** Withdraw POST /user/withdraw */
+/** withdraw POST /user/withdraw */
 export async function withdrawUsingPost(
   body: API.DeleteTopicRequest,
   options?: { [key: string]: any },

@@ -78,17 +78,14 @@ public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic> implements
     }
 
     @Override
-    public QueryWrapper<Topic> getTopicQueryByAdminWrapper(TopicQueryByAdminRequest topicQueryByAdminRequest, HttpServletRequest request) {
+    public QueryWrapper<Topic> getTopicQueryByAdminWrapper(TopicQueryByAdminRequest topicQueryByAdminRequest) {
         // 检查请求参数是否为空
         if (topicQueryByAdminRequest == null) {
             throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "请求参数为空");
         }
 
         // 检查用户是否登录
-        final User loginUser = userService.getLoginUser(request);
-        if (loginUser == null) {
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "没登录");
-        }
+        final User loginUser = userService.userGetCurrentLoginUser();
 
         // 获取排序字段和排序顺序
         String sortField = topicQueryByAdminRequest.getSortField();

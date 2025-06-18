@@ -18,7 +18,7 @@ public interface TopicService extends IService<Topic> {
     // 获取查询条件
     QueryWrapper<Topic> getQueryWrapper(TopicQueryRequest topicQueryRequest);
 
-    // TODO: 下面是旧的代码
-    QueryWrapper<Topic> getTopicQueryByAdminWrapper(TopicQueryByAdminRequest topicQueryByAdminRequest, HttpServletRequest request);
+    // TODO: 廖写的查询条件都有问题...就不应该这么传递参数的, 头疼真的, 我也不敢删除
+    QueryWrapper<Topic> getTopicQueryByAdminWrapper(TopicQueryByAdminRequest topicQueryByAdminRequest);
 
 }
