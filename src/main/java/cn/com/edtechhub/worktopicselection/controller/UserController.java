@@ -1,5 +1,6 @@
 package cn.com.edtechhub.worktopicselection.controller;
 
+import cn.com.edtechhub.worktopicselection.annotation.CacheSearchOptimization;
 import cn.com.edtechhub.worktopicselection.constant.CommonConstant;
 import cn.com.edtechhub.worktopicselection.constant.TopicConstant;
 import cn.com.edtechhub.worktopicselection.constant.UserConstant;
@@ -798,9 +799,9 @@ public class UserController {
         // 尝试获取当前登陆学生选题关联表中的记录
         User loginUser = userService.userGetCurrentLoginUser();
         int selectedCount = Math.toIntExact(studentTopicSelectionService.count(
-                new QueryWrapper<StudentTopicSelection>()
-                        .eq("userAccount", loginUser.getUserAccount())
-                        .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())
+                        new QueryWrapper<StudentTopicSelection>()
+                                .eq("userAccount", loginUser.getUserAccount())
+                                .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())
                 )
         );
         ThrowUtils.throwIf(selectedCount != 0, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "您已经提交了题目, 不能再选新的题目了, 如果需要取消则需要联系导师");
@@ -1062,6 +1063,7 @@ public class UserController {
 
     // 获取选题分页数据
     @SaCheckLogin
+    @CacheSearchOptimization(ttl = 15, modelClass = Topic.class)
     @PostMapping("/get/topic/page")
     public BaseResponse<Page<Topic>> getTopicList(@RequestBody TopicQueryRequest topicQueryRequest) {
         // 检查参数
@@ -1118,6 +1120,7 @@ public class UserController {
 
     // 获取系部教师数据
     @SaCheckLogin
+    @CacheSearchOptimization(ttl = 30, modelClass = DeptTeacherVO.class)
     @PostMapping("/get/dept/teacher")
     public BaseResponse<Page<DeptTeacherVO>> getTeacher(@RequestBody DeptTeacherQueryRequest deptTeacherQueryRequest) {
         // 检查参数
