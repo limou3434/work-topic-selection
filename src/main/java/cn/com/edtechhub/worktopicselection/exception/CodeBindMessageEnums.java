@@ -38,8 +38,7 @@ public enum CodeBindMessageEnums {
     DEGRADE_RULES(50003, "触发熔断降级规则"),
     PARAM_RULES(50004, "触发热点参数规则"),
     SYSTEM_RULES(50005, "触发系统保护规则"),
-    NOT_SURPLUS_ERROR(50006, "余量不足"),
-    NOT_TIME_ERROR(50007, "不在时间范围内"),
+
     ;
 
     /**

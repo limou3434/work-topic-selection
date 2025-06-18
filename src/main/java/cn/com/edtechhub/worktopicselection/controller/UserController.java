@@ -1345,7 +1345,7 @@ public class UserController {
         ThrowUtils.throwIf(endTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有传递结束时间");
 
         Date now = new Date();
-        ThrowUtils.throwIf(now.before(startTime) || now.after(endTime), CodeBindMessageEnums.NOT_TIME_ERROR, "请等待管理员开放选题");
+        ThrowUtils.throwIf(now.before(startTime) || now.after(endTime), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前不在选题开放范围内, 请等待管理员开放选题");
 
         Integer status = selectTopicByIdRequest.getStatus();
         ThrowUtils.throwIf(status == null, CodeBindMessageEnums.PARAMS_ERROR, "请添加选择操作状态");
@@ -1373,7 +1373,7 @@ public class UserController {
 
         // TODO: 替换逻辑, 紧急!!!
         if (statusEnums == StudentTopicSelectionStatusEnum.EN_SELECT) {
-            ThrowUtils.throwIf(topic.getSurplusQuantity() <= 0, CodeBindMessageEnums.NOT_SURPLUS_ERROR, "余量不足无法选择该题目, 请尝试选择其他题目");
+            ThrowUtils.throwIf(topic.getSurplusQuantity() <= 0, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "余量不足无法选择该题目, 请尝试选择其他题目");
             ThrowUtils.throwIf(selection == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "您还没有预选无法直接选中");
 
             // 更新题目状态
