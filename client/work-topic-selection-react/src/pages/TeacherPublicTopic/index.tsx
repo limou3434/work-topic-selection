@@ -30,7 +30,8 @@ type GithubIssueItem = {
   topic?: string;
   type?: string;
   surplusQuantity?: number;
-  status?: string;
+  status?: number;
+  reason?: string;
 };
 
 export default () => {
@@ -148,7 +149,16 @@ export default () => {
           <a
             key="editable"
             onClick={() => {
+              if (isPublished) {
+                message.warning('已发布的题目不允许编辑');
+                return;
+              }
               action?.startEditable?.(record.id);
+            }}
+            style={{
+              color: isPublished ? 'gray' : undefined,
+              textDecoration: isPublished ? 'line-through' : undefined,
+              cursor: isPublished ? 'not-allowed' : 'pointer',
             }}
           >
             编辑
@@ -156,15 +166,16 @@ export default () => {
           <a
             key="resubmit"
             onClick={async () => {
-              if (isPublished) return; // 已发布不允许点击
+              if (isPublished) {
+                message.warning('已发布的题目不允许重新提交审核');
+                return;
+              }
               const res = await checkTopicUsingPost({ id: record.id, status: -1 });
               if (res.code === 0) {
                 message.success('提交成功');
                 action?.reload();
-                return true;
               } else {
                 message.error(res.message);
-                return false;
               }
             }}
             style={{
@@ -184,16 +195,6 @@ export default () => {
     <ProTable<GithubIssueItem>
       columns={columns}
       actionRef={actionRef}
-      onDataSourceChange={async (dataSource: GithubIssueItem[]) => {
-        const res = await updateTopicUsingPost({ updateTopicListRequests: dataSource });
-        if (res.code === 0) {
-          message.success(res.message);
-          return true;
-        } else {
-          message.error(res.message);
-          return false;
-        }
-      }}
       cardBordered
       request={async (params = {}) => {
         try {
@@ -222,7 +223,26 @@ export default () => {
           };
         }
       }}
-      editable={{ type: 'multiple' }}
+      editable={{
+        type: 'multiple',
+        onSave: async (key, record) => {
+          if (record.status === 1) {
+            message.warning('已发布的题目不允许编辑');
+            return false;
+          }
+          const res = await updateTopicUsingPost({ updateTopicListRequests: [record] });
+          if (res.code === 0) {
+            message.success(res.message);
+            return true;
+          } else {
+            message.error(res.message);
+            return false;
+          }
+        },
+        onChange: (editableKeys, editableRows) => {
+          // 可选：你可以限制哪些可以编辑
+        },
+      }}
       columnsState={{
         persistenceKey: 'pro-table-singe-demos',
         persistenceType: 'localStorage',

@@ -13,7 +13,7 @@ const env = {
 };
 
 
-const host = env['develop'];
+const host = env['production'];
 
 const isDev = false;
 

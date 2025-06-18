@@ -168,7 +168,7 @@ const TopicReviewTable: React.FC = () => {
         <ProFormText
           width="md"
           name="reason"
-          label="打回原因"
+          label="请尽可能详细写明原因"
           placeholder="请输入打回原因"
         />
       </ModalForm>

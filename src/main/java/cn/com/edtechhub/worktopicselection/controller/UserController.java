@@ -931,6 +931,69 @@ public class UserController {
         }
     }
 
+    // 获取选择了自己题目的学生
+    @SaCheckRole(value = {"teacher"}, mode = SaMode.OR)
+    @PostMapping("/get/select/topic/by/id")
+    public BaseResponse<List<User>> getSelectTopicById(@RequestBody GetSelectTopicById getSelectTopicById) {
+        // 检查参数
+        ThrowUtils.throwIf(getSelectTopicById == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        Long id = getSelectTopicById.getId();
+        ThrowUtils.throwIf(id == null, CodeBindMessageEnums.PARAMS_ERROR, "id 不能为空");
+        ThrowUtils.throwIf(id <= 0, CodeBindMessageEnums.PARAMS_ERROR, "id 必须是正整数");
+
+        // 找到对应的学生题目关联记录
+        List<StudentTopicSelection> list = studentTopicSelectionService.list(
+                new QueryWrapper<StudentTopicSelection>()
+                        .eq("topicId", getSelectTopicById.getId())
+                        .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())
+        );
+
+        // 获取用户数据
+        List<User> userList = new ArrayList<>();
+        for (StudentTopicSelection student : list) {
+            final String userAccount = student.getUserAccount();
+            final User user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
+            if (user == null) {
+                continue;
+            }
+            userList.add(user);
+        }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, userList);
+    }
+
+    // 教师退选学生选择自己的题目
+    @SaCheckRole(value = {"teacher"}, mode = SaMode.OR)
+    @PostMapping("/withdraw")
+    public BaseResponse<Boolean> Withdraw(@RequestBody DeleteTopicRequest deleteTopicRequest) {
+        // 检查参数
+        ThrowUtils.throwIf(deleteTopicRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+
+        Long topicId = deleteTopicRequest.getId();
+        ThrowUtils.throwIf(topicId == null, CodeBindMessageEnums.PARAMS_ERROR, "id 不能为空");
+        ThrowUtils.throwIf(topicId <= 0, CodeBindMessageEnums.PARAMS_ERROR, "id 必须是正整数");
+
+        // 退选题目
+        synchronized (topicId) {
+            // 根据 ID 获取课题
+            Topic topic = topicService.getById(topicId);
+            ThrowUtils.throwIf(topic == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "未找到对应的课题, 无需退选");
+
+            // 更新课题的剩余数量
+            ThrowUtils.throwIf(!topic.getSurplusQuantity().equals(1), CodeBindMessageEnums.OPERATION_ERROR, "该课题无人选过无需退选");
+            topic.setSurplusQuantity(1); // 退选就增加一个剩余数量
+            boolean updateSuccess = topicService.updateById(topic);
+            ThrowUtils.throwIf(!updateSuccess, CodeBindMessageEnums.OPERATION_ERROR, "无法退选");
+
+            // 删除学生的选题记录
+            boolean removeSuccess = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("topicId", topicId));
+            ThrowUtils.throwIf(!removeSuccess, CodeBindMessageEnums.OPERATION_ERROR, "删除学生选题记录失败");
+
+            // 返回成功信息
+            return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
+        }
+    }
+
     // 获取选题分页数据
     @SaCheckLogin
     @PostMapping("/get/topic/page")
@@ -1187,48 +1250,6 @@ public class UserController {
     }
 
     /**
-     * 退选
-     */
-    @PostMapping("/withdraw")
-    public BaseResponse<Boolean> Withdraw(@RequestBody DeleteTopicRequest deleteTopicRequest, HttpServletRequest request) {
-        // 检查请求参数是否为空
-        if (deleteTopicRequest == null) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "退选请求参数不能为空");
-        }
-
-        // 获取当前登录用户
-        User loginUser = userService.getLoginUser(request);
-
-        // 获取退选的课题ID
-        Long topicId = deleteTopicRequest.getId();
-
-        // 同步代码块，确保退选操作的线程安全
-        synchronized (topicId) {
-            // 根据ID获取课题
-            Topic topic = topicService.getById(topicId);
-            if (topic == null) {
-                throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "未找到对应的课题");
-            }
-
-            // 更新课题的剩余数量
-            topic.setSurplusQuantity(1); // 假设每次退选增加一个剩余数量
-            boolean updateSuccess = topicService.updateById(topic);
-            if (!updateSuccess) {
-                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "更新课题信息失败");
-            }
-
-            // 删除学生的选题记录
-            boolean removeSuccess = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("topicId", topicId));
-            if (!removeSuccess) {
-                throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "删除学生选题记录失败");
-            }
-
-            // 返回成功信息
-            return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
-        }
-    }
-
-    /**
      * 添加数量
      */
     @PostMapping("add/count")
@@ -1271,31 +1292,6 @@ public class UserController {
         final List<StudentTopicSelection> studentList = studentTopicSelectionService.list(new QueryWrapper<StudentTopicSelection>().eq("topicId", getStudentByTopicId.getId()));
         final ArrayList<User> userList = new ArrayList<>();
         for (StudentTopicSelection student : studentList) {
-            final String userAccount = student.getUserAccount();
-            final User user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
-            if (user == null) {
-                continue;
-            }
-            userList.add(user);
-        }
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, userList);
-    }
-
-    /**
-     * 获取选题by题目id
-     */
-    @PostMapping("get/select/topic/by/id")
-    public BaseResponse<List<User>> getSelectTopicById(@RequestBody GetSelectTopicById getSelectTopicById, HttpServletRequest request) {
-        final User loginUser = userService.getLoginUser(request);
-        if (loginUser == null) {
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
-        }
-        final List<StudentTopicSelection> list = studentTopicSelectionService.list(new QueryWrapper<StudentTopicSelection>().eq("topicId", getSelectTopicById.getId()).eq("status", 1));
-        if (list == null) {
-            throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
-        }
-        final List<User> userList = new ArrayList<>();
-        for (StudentTopicSelection student : list) {
             final String userAccount = student.getUserAccount();
             final User user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
             if (user == null) {

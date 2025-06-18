@@ -72,10 +72,6 @@ export default () => {
       },
     },
     {
-      title: '打回理由',
-      dataIndex: 'reason',
-    },
-    {
       title: '操作',
       valueType: 'option',
       key: 'option',
