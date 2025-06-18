@@ -4,17 +4,19 @@ package cn.com.edtechhub.worktopicselection.model.dto.user;
 import java.io.Serializable;
 
 import cn.com.edtechhub.worktopicselection.model.dto.PageRequest;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
  * 用户查询请求
  *
- *  
+ * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class UserQueryRequest extends PageRequest implements Serializable {
+
     /**
      * 账号
      */
@@ -33,5 +35,8 @@ public class UserQueryRequest extends PageRequest implements Serializable {
      */
     private Integer userRole;
 
+    /// 序列化字段 ///
+    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
 }

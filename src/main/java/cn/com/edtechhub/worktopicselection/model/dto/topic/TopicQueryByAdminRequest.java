@@ -1,6 +1,7 @@
 package cn.com.edtechhub.worktopicselection.model.dto.topic;
 
 import cn.com.edtechhub.worktopicselection.model.dto.PageRequest;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -10,12 +11,12 @@ import java.util.Date;
 /**
  * 用户查询请求
  *
- *
- * @author Lzh
+ * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TopicQueryByAdminRequest extends PageRequest implements Serializable {
+
     /**
      * 题目
      */
@@ -42,8 +43,12 @@ public class TopicQueryByAdminRequest extends PageRequest implements Serializabl
     private Date startTime;
 
     /**
-     *
+     * 结束时间
      */
     private Date endTime;
+
+    /// 序列化字段 ///
+    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
 }

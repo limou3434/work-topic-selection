@@ -3,7 +3,7 @@ package cn.com.edtechhub.worktopicselection.model.vo;
 import lombok.Data;
 
 /**
- * 选题情况
+ * 选题情况脱敏类
  *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */

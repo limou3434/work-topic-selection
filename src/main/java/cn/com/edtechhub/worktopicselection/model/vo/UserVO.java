@@ -1,14 +1,14 @@
 package cn.com.edtechhub.worktopicselection.model.vo;
 
-import java.io.Serializable;
-import java.util.Date;
 import lombok.Data;
 
+import java.io.Serializable;
+import java.util.Date;
+
 /**
- * 用户视图（脱敏）
+ * 用户脱敏类
  *
- *
- * @author Lzh
+ * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 @Data
 public class UserVO implements Serializable {
@@ -37,7 +37,10 @@ public class UserVO implements Serializable {
      * 创建时间
      */
     private Date createTime;
+
+    /**
+     * 状态
+     */
     private String status;
 
-    private static final long serialVersionUID = 1L;
 }

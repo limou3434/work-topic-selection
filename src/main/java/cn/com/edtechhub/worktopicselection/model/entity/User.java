@@ -1,26 +1,24 @@
 package cn.com.edtechhub.worktopicselection.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import lombok.Data;
-
 /**
- * 用户
+ * 用户表
+ *
  * @TableName user
  */
-@TableName(value ="user")
+@TableName(value = "user")
 @Data
 public class User implements Serializable {
 
     /**
      * id
      */
-    @TableId(type = IdType.ASSIGN_ID)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -43,7 +41,7 @@ public class User implements Serializable {
     private Date createTime;
 
     /**
-     * 
+     * 更新时间
      */
     private Date updateTime;
 
@@ -54,7 +52,7 @@ public class User implements Serializable {
     private Integer isDelete;
 
     /**
-     * 用户角色 0 - 普通用户 1 - 教师 2 - 系部 3 - 管理员
+     * 用户角色
      */
     private Integer userRole;
 
@@ -62,10 +60,23 @@ public class User implements Serializable {
      * 系部
      */
     private String dept;
+
+    /**
+     * 状态
+     */
     private String status;
 
+    /**
+     * 课题
+     */
     private String project;
+
+    /**
+     * 已选课题数量
+     */
     private Integer topicAmount;
+
+    /// 序列化字段 ///
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 

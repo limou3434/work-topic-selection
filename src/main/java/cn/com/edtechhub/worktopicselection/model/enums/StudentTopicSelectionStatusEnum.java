@@ -1,23 +1,24 @@
-package cn.com.edtechhub.worktopicselection.enums;
+package cn.com.edtechhub.worktopicselection.model.enums;
 
 import cn.hutool.core.util.ObjUtil;
 import lombok.Getter;
 
 /**
- * 选题审核状态枚举
+ * 学生专题选择状态枚举体
  *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 @Getter
-public enum TopicStatusEnum {
+public enum StudentTopicSelectionStatusEnum {
 
-    NOT_PUBLISHED(0, "未发布"),
+    UN_PRESELECT(-1, "取消预先选择"),
 
-    PUBLISHED(1, "已发布"),
+    EN_PRESELECT(0, "确认预先选择"),
 
-    PENDING_REVIEW(-1, "待审核"),
+    UN_SELECT(1, "取消确认选择"),
 
-    REJECTED(-2, "被打回"),
+    EN_SELECT(2, "确定确认选择"),
+
     ;
 
     /**
@@ -33,7 +34,7 @@ public enum TopicStatusEnum {
     /**
      * 内部构造方法
      */
-    TopicStatusEnum(int code, String description) {
+    StudentTopicSelectionStatusEnum(int code, String description) {
         this.code = code;
         this.description = description;
     }
@@ -41,11 +42,11 @@ public enum TopicStatusEnum {
     /**
      * 根据码值获取枚举
      */
-    public static TopicStatusEnum getEnums(int code) {
+    public static StudentTopicSelectionStatusEnum getEnums(int code) { // TODO: 等待改正放回值为枚举
         if (ObjUtil.isEmpty(code)) {
             return null;
         }
-        for (TopicStatusEnum enumItem : TopicStatusEnum.values()) {
+        for (StudentTopicSelectionStatusEnum enumItem : StudentTopicSelectionStatusEnum.values()) {
             if (enumItem.getCode() == code) {
                 return enumItem;
             }

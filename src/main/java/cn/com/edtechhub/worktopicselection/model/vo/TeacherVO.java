@@ -3,7 +3,9 @@ package cn.com.edtechhub.worktopicselection.model.vo;
 import lombok.Data;
 
 /**
- * @author Lzh
+ * 教师脱敏类
+ *
+ * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 @Data
 public class TeacherVO {

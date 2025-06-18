@@ -30,11 +30,11 @@ public class SaTokenManager implements StpInterface {
 
         // 获取当前登录用户信息
         User user = (User) StpUtil.getSessionByLoginId(loginId).get(UserConstant.USER_LOGIN_STATE); // 直接从会话缓存中获取用户的所有信息
-        UserRoleEnum userRole = UserRoleEnum.getEnumByValue(user.getUserRole()); // 由于在本数据库中为了拓展性使用数字来标识身份, 因此需要做一层转化
+        UserRoleEnum userRole = UserRoleEnum.getEnums(user.getUserRole()); // 由于在本数据库中为了拓展性使用数字来标识身份, 因此需要做一层转化
 
         // 返回角色标识集合
         if (userRole != null) {
-            list.add(userRole.getText());
+            list.add(userRole.getDescription());
         }
         log.debug("本次调用用户携带的角色标识集合为: {}", list);
         return list;

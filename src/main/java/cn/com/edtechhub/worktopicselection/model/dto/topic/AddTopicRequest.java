@@ -1,13 +1,14 @@
 package cn.com.edtechhub.worktopicselection.model.dto.topic;
 
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 
- * @author Lzh
- * @TableName topic
+ * 添加题目请求体
+ *
+ * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 @Data
 public class AddTopicRequest implements Serializable {
@@ -51,5 +52,9 @@ public class AddTopicRequest implements Serializable {
      * 总数
      */
     private Integer amount;
+
+    /// 序列化字段 ///
+    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
 }

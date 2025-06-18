@@ -5,9 +5,10 @@ import java.util.Date;
 import lombok.Data;
 
 /**
- * 已登录用户视图（脱敏）
+ * 登录用户脱敏类
  *
- * @author Lzh*/
+ * @author <a href="https://github.com/limou3434">limou3434</a>
+ */
 @Data
 public class LoginUserVO implements Serializable {
 

@@ -1,5 +1,6 @@
 package cn.com.edtechhub.worktopicselection.model.dto.topic;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -28,6 +29,7 @@ public class CheckTopicRequest implements Serializable {
     private String reason;
 
     /// 序列化字段 ///
+    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
 }

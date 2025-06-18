@@ -185,7 +185,7 @@ const Welcome: React.FC = () => {
             <Text strong>
               <ul>
                 <li>
-                  <Text code>发布题目</Text> 或 <Text code>修改题目</Text>
+                  <Text code>发布题目 或 修改题目</Text>
                 </li>
                 <li>
                   <Text code>查看题目状态</Text>
@@ -203,7 +203,7 @@ const Welcome: React.FC = () => {
             <Text strong>
               <ul>
                 <li>
-                  <Text code>审核题目（通过 或 打回）</Text>
+                  <Text code>审核题目（通过题目 或 打回题目）</Text>
                 </li>
                 <li>
                   <Text code>查看本系部学生的选题情况</Text>
@@ -221,9 +221,13 @@ const Welcome: React.FC = () => {
             <Text code>898738804@qq.com</Text>
           </Paragraph>
           <Paragraph>
-            <ul>
-              <li>忘记密码、没有账号、无故封号？</li>
-            </ul>
+            <Text strong>
+              <ul>
+                <li>
+                  <Text code>忘记密码、没有账号、无故封号？</Text>
+                </li>
+              </ul>
+            </Text>
           </Paragraph>
         </Typography>
       </Card>

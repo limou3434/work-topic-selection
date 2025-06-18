@@ -1,64 +1,74 @@
 package cn.com.edtechhub.worktopicselection.model.enums;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import cn.hutool.core.util.ObjUtil;
+import lombok.Getter;
 
 /**
  * 用户角色枚举
  *
- *  
+ * @author <a href="https://github.com/limou3434">limou3434</a>
  */
+@Getter
 public enum UserRoleEnum {
 
-    USER("student", 0),
-    TEACHER("teacher", 1),
-    DEPT("dept", 2),
-    ADMIN("admin",3),
+    /**
+     * 封号角色枚举实例
+     */
+    BAN_ROLE(-1, "ban"),
+
+    /**
+     * 学生角色枚举实例
+     */
+    STUDENT(0, "student"),
+
+    /**
+     * 教师角色枚举实例
+     */
+    TEACHER(1, "teacher"),
+
+    /**
+     * 主任角色枚举实例
+     */
+    DEPT(2, "dept"),
+
+    /**
+     * 系统角色枚举实例
+     */
+    ADMIN(3, "admin"),
+
     ;
 
-    private final String text;
+    /**
+     * 码值
+     */
+    private final int code;
 
-    private final int value;
+    /**
+     * 描述
+     */
+    private final String description;
 
-    UserRoleEnum(String text, int value) {
-        this.text = text;
-        this.value = value;
+    /**
+     * 内部角色构造方法
+     */
+    UserRoleEnum(int code, String description) {
+        this.code = code;
+        this.description = description;
     }
 
     /**
-     * 获取值列表
-     *
-     * @return
+     * 根据码值获取枚举
      */
-    public static List<Integer> getValues() {
-        return Arrays.stream(values()).map(item -> item.value).collect(Collectors.toList());
-    }
-
-    /**
-     * 根据 value 获取枚举
-     *
-     * @param value
-     * @return
-     */
-    public static UserRoleEnum getEnumByValue(int value) {
-        if (value==-1) {
+    public static UserRoleEnum getEnums(int code) {
+        if (ObjUtil.isEmpty(code)) {
             return null;
         }
-        for (UserRoleEnum anEnum : UserRoleEnum.values()) {
-            if (anEnum.value==value) {
-                return anEnum;
+        for (UserRoleEnum enumItem : UserRoleEnum.values()) {
+            if (enumItem.getCode() == code) {
+                return enumItem;
             }
         }
         return null;
-    }
-
-    public Integer getValue() {
-        return value;
-    }
-
-    public String getText() {
-        return text;
     }
 
 }

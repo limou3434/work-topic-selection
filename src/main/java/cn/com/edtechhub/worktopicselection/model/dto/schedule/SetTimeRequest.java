@@ -1,6 +1,7 @@
 package cn.com.edtechhub.worktopicselection.model.dto.schedule;
 
 import cn.com.edtechhub.worktopicselection.model.entity.Topic;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -34,6 +35,7 @@ public class SetTimeRequest implements Serializable {
     private Date endTime;
 
     /// 序列化字段 ///
+    @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
 }

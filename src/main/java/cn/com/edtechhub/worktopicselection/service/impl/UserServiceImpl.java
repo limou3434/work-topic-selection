@@ -94,7 +94,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Boolean userIsAdmin(User user) {
-        return Objects.equals(user.getUserRole(), UserRoleEnum.ADMIN.getValue());
+        return Objects.equals(user.getUserRole(), UserRoleEnum.ADMIN.getCode());
     }
 
     // TODO: 下面是旧代码

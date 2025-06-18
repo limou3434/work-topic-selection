@@ -1,11 +1,9 @@
 package cn.com.edtechhub.worktopicselection.service;
 
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeptQueryRequest;
-import cn.com.edtechhub.worktopicselection.model.enums.Dept;
+import cn.com.edtechhub.worktopicselection.model.entity.Dept;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
 * @author Administrator

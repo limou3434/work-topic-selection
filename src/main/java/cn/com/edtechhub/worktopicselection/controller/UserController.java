@@ -3,8 +3,8 @@ package cn.com.edtechhub.worktopicselection.controller;
 import cn.com.edtechhub.worktopicselection.constant.CommonConstant;
 import cn.com.edtechhub.worktopicselection.constant.TopicConstant;
 import cn.com.edtechhub.worktopicselection.constant.UserConstant;
-import cn.com.edtechhub.worktopicselection.enums.StudentTopicSelectionStatusEnum;
-import cn.com.edtechhub.worktopicselection.enums.TopicStatusEnum;
+import cn.com.edtechhub.worktopicselection.model.enums.StudentTopicSelectionStatusEnum;
+import cn.com.edtechhub.worktopicselection.model.enums.TopicStatusEnum;
 import cn.com.edtechhub.worktopicselection.exception.BusinessException;
 import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
 import cn.com.edtechhub.worktopicselection.mapper.UserMapper;
@@ -23,7 +23,7 @@ import cn.com.edtechhub.worktopicselection.model.entity.Project;
 import cn.com.edtechhub.worktopicselection.model.entity.StudentTopicSelection;
 import cn.com.edtechhub.worktopicselection.model.entity.Topic;
 import cn.com.edtechhub.worktopicselection.model.entity.User;
-import cn.com.edtechhub.worktopicselection.model.enums.Dept;
+import cn.com.edtechhub.worktopicselection.model.entity.Dept;
 import cn.com.edtechhub.worktopicselection.model.enums.UserRoleEnum;
 import cn.com.edtechhub.worktopicselection.model.vo.*;
 import cn.com.edtechhub.worktopicselection.response.BaseResponse;
@@ -168,7 +168,7 @@ public class UserController {
         ThrowUtils.throwIf(loginUser == null, CodeBindMessageEnums.PARAMS_ERROR, "没有登陆无法使用该接口");
 
 //        Integer userRole = loginUser.getUserRole();
-//        ThrowUtils.throwIf(!Objects.equals(userRole, UserRoleEnum.ADMIN.getValue()), CodeBindMessageEnums.NO_AUTH_ERROR, "只有管理员才能动用该接口");
+//        ThrowUtils.throwIf(!Objects.equals(userRole, UserRoleEnumssd.ADMIN.getValue()), CodeBindMessageEnums.NO_AUTH_ERROR, "只有管理员才能动用该接口");
 
         String userAccount = userAddRequest.getUserAccount();
         User oldUser = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
@@ -207,11 +207,11 @@ public class UserController {
         Integer userRole = userAddRequest.getUserRole();
         ThrowUtils.throwIf(userRole == null, CodeBindMessageEnums.PARAMS_ERROR, "缺少用户角色");
 
-        UserRoleEnum userRoleEnum = UserRoleEnum.getEnumByValue(userRole);
+        UserRoleEnum userRoleEnum = UserRoleEnum.getEnums(userRole);
         ThrowUtils.throwIf(userRoleEnum == null, CodeBindMessageEnums.PARAMS_ERROR, "不存在该用户角色");
 
         // 如果是添加学生则需要检查是否设置了系部和专业
-        if (userRoleEnum == UserRoleEnum.USER) {
+        if (userRoleEnum == UserRoleEnum.STUDENT) {
             String userDeptName = userAddRequest.getDeptName();
             ThrowUtils.throwIf(StringUtils.isBlank(userDeptName), CodeBindMessageEnums.PARAMS_ERROR, "缺少系部名称");
 
@@ -504,11 +504,11 @@ public class UserController {
         Integer userRole = teacherQueryRequest.getUserRole();
         ThrowUtils.throwIf(userRole == null, CodeBindMessageEnums.PARAMS_ERROR, "用户角色不能为空");
 
-        UserRoleEnum userRoleEnum = UserRoleEnum.getEnumByValue(userRole);
+        UserRoleEnum userRoleEnum = UserRoleEnum.getEnums(userRole);
         ThrowUtils.throwIf(userRoleEnum == null, CodeBindMessageEnums.PARAMS_ERROR, "该用户角色不存在");
 
         // 获取所有的教师数据
-        List<User> userList = userService.list(new QueryWrapper<User>().eq("userRole", userRoleEnum.getValue()));
+        List<User> userList = userService.list(new QueryWrapper<User>().eq("userRole", userRoleEnum.getCode()));
         List<TeacherVO> teacherVOList = new ArrayList<>();
         for (User user : userList) {
             TeacherVO teacherVO = new TeacherVO();
@@ -867,7 +867,7 @@ public class UserController {
 
         // 获取总人数
         QueryWrapper<User> queryWrapper = new QueryWrapper<User>()
-                .eq("userRole", UserRoleEnum.USER.getValue()) // 只获取学生记录
+                .eq("userRole", UserRoleEnum.STUDENT.getCode()) // 只获取学生记录
                 .eq(!userService.userIsAdmin(loginUser), "dept", loginUser.getDept()) // 获取当前登陆用户系部相同的学生, 但是管理员可以获取所有学生
         ;
         int totalStudents = (int) userService.count(queryWrapper);
@@ -1114,7 +1114,7 @@ public class UserController {
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper
                 .eq("dept", dept) // 同系的
-                .eq("userRole", UserRoleEnum.TEACHER.getValue()) // 是教师的
+                .eq("userRole", UserRoleEnum.TEACHER.getCode()) // 是教师的
                 .orderBy(
                         SqlUtils.validSortField(sortField),
                         sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
