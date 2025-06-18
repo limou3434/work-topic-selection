@@ -14,13 +14,15 @@ import java.util.List;
 
 /**
  * 全局跨域配置
+ *
+ * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 @Configuration
 @Slf4j
 public class CrossDomainConfig implements WebMvcConfigurer {
 
     /**
-     * 注入请求日志拦截切面依赖
+     * 注入请求日志拦截切面依赖, 用于打印接口访问日志
      */
     @Resource
     private RequestLogAOP requestLogAOP;

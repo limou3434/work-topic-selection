@@ -10,21 +10,19 @@ import org.springframework.context.annotation.Configuration;
 /**
  * MyBatis Plus 配置
  *
+ * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 @Configuration
 @MapperScan("cn.com.edtechhub.worktopicselection.mapper")
 public class MyBatisPlusConfig {
 
     /**
-     * 拦截器配置
-     *
-     * @return
+     * 拦截器配置分页插件
      */
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
-        // 分页插件
-        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL)); // 分页插件
         return interceptor;
     }
 
