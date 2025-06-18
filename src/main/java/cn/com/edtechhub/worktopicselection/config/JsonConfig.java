@@ -3,9 +3,12 @@ package cn.com.edtechhub.worktopicselection.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+
+import javax.annotation.PostConstruct;
 
 /**
  * Spring MVC Json 配置
@@ -13,6 +16,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 @JsonComponent
+@Slf4j
 public class JsonConfig {
 
     /**
@@ -26,6 +30,14 @@ public class JsonConfig {
         module.addSerializer(Long.TYPE, ToStringSerializer.instance);
         objectMapper.registerModule(module);
         return objectMapper;
+    }
+
+    /**
+     * 打印配置
+     */
+    @PostConstruct
+    public void printConfig() {
+        log.debug("[JsonConfig] 当前项目自动解决了 Long 在前后端传递过程中的精度问题");
     }
 
 }
