@@ -8,7 +8,7 @@ package cn.com.edtechhub.worktopicselection.constant;
 public interface UserConstant {
 
     /**
-     * 盐值
+     * 加密盐值
      */
     String SALT = "edtechhub";
 

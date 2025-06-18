@@ -7,6 +7,9 @@ package cn.com.edtechhub.worktopicselection.constant;
  */
 public interface TopicConstant {
 
-    Integer DEFAULT_REASON_SIZE = 1024;
+    /**
+     * 默认审核打回理由的最大长度
+     */
+    Integer MAX_REASON_SIZE = 1024;
 
 }

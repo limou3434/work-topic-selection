@@ -3,7 +3,7 @@ package cn.com.edtechhub.worktopicselection.constant;
 /**
  * 通用常量
  *
- *  
+ * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 public interface CommonConstant {
 
@@ -15,6 +15,6 @@ public interface CommonConstant {
     /**
      * 降序
      */
-    String SORT_ORDER_DESC = " descend";
-    
+    String SORT_ORDER_DESC = "descend";
+
 }

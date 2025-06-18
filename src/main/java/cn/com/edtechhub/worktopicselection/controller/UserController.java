@@ -1006,7 +1006,7 @@ public class UserController {
         ThrowUtils.throwIf(statusEnum == null, CodeBindMessageEnums.PARAMS_ERROR, "未知的选题状态");
 
         String reason = checkTopicRequest.getReason();
-        ThrowUtils.throwIf(reason != null && reason.length() > TopicConstant.DEFAULT_REASON_SIZE, CodeBindMessageEnums.PARAMS_ERROR, "理由不能超过 1024 个字符");
+        ThrowUtils.throwIf(reason != null && reason.length() > TopicConstant.MAX_REASON_SIZE, CodeBindMessageEnums.PARAMS_ERROR, "理由不能超过 1024 个字符");
 
         Topic topic = topicService.getById(id);
         ThrowUtils.throwIf(topic == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "对应的选题不存在, 无需进行审核");
