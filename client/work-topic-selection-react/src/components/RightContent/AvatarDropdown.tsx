@@ -1,6 +1,6 @@
 import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { history, useModel } from '@umijs/max';
-import { Spin } from 'antd';
+import { Spin, message } from 'antd';
 import { createStyles } from 'antd-style';
 import { stringify } from 'querystring';
 import type { MenuInfo } from 'rc-menu/lib/interface';
@@ -8,6 +8,7 @@ import React, { useCallback } from 'react';
 import { flushSync } from 'react-dom';
 import HeaderDropdown from '../HeaderDropdown';
 import { USER_ROLE_MAP } from '@/constants/user';
+import { userLogoutUsingPost } from '@/services/work-topic-selection/userController';
 
 export type GlobalHeaderRightProps = {
   menu?: boolean;
@@ -62,9 +63,17 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
   const { initialState, setInitialState } = useModel('@@initialState');
 
   const onMenuClick = useCallback(
-    (event: MenuInfo) => {
+    async (event: MenuInfo) => {
       const { key } = event;
       if (key === 'logout') {
+        try {
+          const res = await userLogoutUsingPost();
+          message.success(res.message)
+        } catch (error) {
+          message.error('退出请求失败');
+          return;
+        }
+
         flushSync(() => {
           setInitialState((s: any) => ({ ...s, currentUser: undefined }));
         });
