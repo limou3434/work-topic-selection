@@ -23,11 +23,6 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.DigestUtils;
@@ -44,7 +39,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -78,7 +72,7 @@ public class FileController {
     @Resource
     private StudentTopicSelectionService studentTopicSelectionService;
 
-    // 上传批量添加账号文件(可选择是学生账号或教师账号)
+    // 上传批量添加账号模板文件(可选择是学生账号或教师账号)
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/upload")
@@ -131,6 +125,7 @@ public class FileController {
         });
     }
 
+    // 上传批量添加教师题目的模板文件
     @SaCheckLogin
     @SaCheckRole(value = {"teacher"}, mode = SaMode.OR)
     @PostMapping("/upload/topic")
@@ -180,53 +175,15 @@ public class FileController {
         });
     }
 
+    // 获取已经选择的学生题目列表
     @SaCheckLogin
-    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
-    @PostMapping("/get/unselect/topic/student/list")
-    public void getUnSelectTopicStudentListCsv(HttpServletRequest request, HttpServletResponse response) {
-        final User loginUser = userService.getLoginUser(request);
-        if (loginUser == null) {
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
-        }
-        final String dept = loginUser.getDept();
-        final List<User> userList = userService.list(new QueryWrapper<User>().eq("userRole", 0).eq("dept", dept));
-        final List<StudentTopicSelection> selectedList = studentTopicSelectionService.list(new QueryWrapper<StudentTopicSelection>().eq("status", 1));
-        Set<String> selectedUserAccounts = selectedList.stream()
-                .map(StudentTopicSelection::getUserAccount)
-                .collect(Collectors.toSet());
-        List<User> unselectedUsers = userList.stream()
-                .filter(user -> !selectedUserAccounts.contains(user.getUserAccount()))
-                .collect(Collectors.toList());
-
-        response.setContentType("text/csv");
-        response.setHeader("Content-Disposition", "attachment; filename=没有选题学生列表.csv");
-
-        try (ServletOutputStream outputStream = response.getOutputStream();
-             Writer writer = new OutputStreamWriter(outputStream);
-             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("用户账号", "用户名", "专业", "系部"))) {
-
-            for (User user : unselectedUsers) {
-                csvPrinter.printRecord(user.getUserAccount(), user.getUserName(), user.getProject(), user.getDept());
-            }
-
-            csvPrinter.flush();
-        } catch (
-                IOException e) {
-            e.printStackTrace();
-            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "导出CSV失败");
-        }
-    }
-
-    @SaCheckLogin
-    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @SaCheckRole(value = {"admin", "dept"}, mode = SaMode.OR)
     @PostMapping("/get/select/topic/student/list")
     public void getSelectTopicStudentListCsv(HttpServletRequest request, HttpServletResponse response) {
-        final User loginUser = userService.getLoginUser(request);
-        if (loginUser == null) {
-            throw new BusinessException(CodeBindMessageEnums.NO_LOGIN_ERROR, "");
-        }
-        final String dept = loginUser.getDept();
-        final List<StudentTopicSelection> selectedList = studentTopicSelectionService.list();
+        User loginUser = userService.userGetCurrentLoginUser();
+        String dept = loginUser.getDept();
+
+        List<StudentTopicSelection> selectedList = studentTopicSelectionService.list();
         List<User> userList = new ArrayList<>();
         List<Topic> topicList = new ArrayList<>();
 
@@ -258,28 +215,44 @@ public class FileController {
             }
 
             csvPrinter.flush(); // 刷新CSV打印器
-        } catch (
-                IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "导出CSV失败");
         }
     }
 
-    private String getCellStringValue(Cell cell) {
-        if (cell == null) {
-            return null;
-        }
-        switch (cell.getCellType()) {
-            case STRING:
-                return cell.getStringCellValue();
-            case NUMERIC:
-                return String.valueOf((int) cell.getNumericCellValue());
-            case BOOLEAN:
-                return String.valueOf(cell.getBooleanCellValue());
-            case FORMULA:
-                return cell.getCellFormula();
-            default:
-                return null;
+    // 获取尚未选择的学生题目列表
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin", "dept"}, mode = SaMode.OR)
+    @PostMapping("/get/unselect/topic/student/list")
+    public void getUnSelectTopicStudentListCsv(HttpServletRequest request, HttpServletResponse response) {
+        User loginUser = userService.userGetCurrentLoginUser();
+        String dept = loginUser.getDept();
+
+        List<User> userList = userService.list(new QueryWrapper<User>().eq("userRole", 0).eq("dept", dept));
+        List<StudentTopicSelection> selectedList = studentTopicSelectionService.list(new QueryWrapper<StudentTopicSelection>().eq("status", 1));
+        Set<String> selectedUserAccounts = selectedList.stream()
+                .map(StudentTopicSelection::getUserAccount)
+                .collect(Collectors.toSet());
+        List<User> unselectedUsers = userList.stream()
+                .filter(user -> !selectedUserAccounts.contains(user.getUserAccount()))
+                .collect(Collectors.toList());
+
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=没有选题学生列表.csv");
+
+        try (ServletOutputStream outputStream = response.getOutputStream();
+             Writer writer = new OutputStreamWriter(outputStream);
+             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("用户账号", "用户名", "专业", "系部"))) {
+
+            for (User user : unselectedUsers) {
+                csvPrinter.printRecord(user.getUserAccount(), user.getUserName(), user.getProject(), user.getDept());
+            }
+
+            csvPrinter.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "导出CSV失败");
         }
     }
 
