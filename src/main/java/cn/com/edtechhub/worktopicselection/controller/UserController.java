@@ -600,11 +600,8 @@ public class UserController {
         // 删除选题的同时删除该选题对应的某位学生的最终选题关联记录
         return transactionTemplate.execute(transactionStatus -> {
             boolean topicRemoveResalt = topicService.removeById(id);
-            boolean studentTopicSelectionServiceResalt = studentTopicSelectionService.remove(
-                    new QueryWrapper<StudentTopicSelection>()
-                            .eq("topicId", id)
-            );
-            ThrowUtils.throwIf(!topicRemoveResalt || !studentTopicSelectionServiceResalt, CodeBindMessageEnums.OPERATION_ERROR, "无法删除, 出现未知的错误");
+            studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("topicId", id)); // 直接把对应题目删除即可, 不用管是那一个学生选择了这个题目
+            ThrowUtils.throwIf(!topicRemoveResalt, CodeBindMessageEnums.OPERATION_ERROR, "无法删除, 出现未知的错误");
             return TheResult.success(CodeBindMessageEnums.SUCCESS, topicRemoveResalt);
         });
     }
@@ -710,6 +707,12 @@ public class UserController {
 
                 // 确认预选题目
                 if (studentTopicSelectionStatusEnum == StudentTopicSelectionStatusEnum.EN_PRESELECT) {
+                    // 不允许重复确认预选
+                    long count = studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>()
+                            .eq("userAccount", loginUser.getUserAccount())
+                            .eq("topicId", topicId));
+                    ThrowUtils.throwIf(count > 0, CodeBindMessageEnums.OPERATION_ERROR, "不能重复预选该题目");
+
                     // 不允许已经获取选题的人进行预选
                     int isOk = Math.toIntExact(studentTopicSelectionService.count(
                                     new QueryWrapper<StudentTopicSelection>()

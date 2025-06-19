@@ -7,6 +7,7 @@ import cn.com.edtechhub.worktopicselection.model.dto.file.UploadFileRequest;
 import cn.com.edtechhub.worktopicselection.model.entity.StudentTopicSelection;
 import cn.com.edtechhub.worktopicselection.model.entity.Topic;
 import cn.com.edtechhub.worktopicselection.model.entity.User;
+import cn.com.edtechhub.worktopicselection.model.enums.TopicStatusEnum;
 import cn.com.edtechhub.worktopicselection.response.BaseResponse;
 import cn.com.edtechhub.worktopicselection.response.TheResult;
 import cn.com.edtechhub.worktopicselection.service.StudentTopicSelectionService;
@@ -27,6 +28,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,6 +44,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -65,6 +68,7 @@ public class FileController {
     /**
      * 引入选题服务依赖
      */
+    @Autowired
     @Resource
     private TopicService topicService;
 
@@ -74,19 +78,19 @@ public class FileController {
     @Resource
     private StudentTopicSelectionService studentTopicSelectionService;
 
-    // 上传批量添加账号文件
+    // 上传批量添加账号文件(可选择是学生账号或教师账号)
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/upload")
-    public BaseResponse<String> uploadFile(@RequestPart("file") MultipartFile multipartFile, UploadFileRequest uploadFileRequest, HttpServletRequest request) {
+    public BaseResponse<String> uploadFile(@RequestPart("file") MultipartFile multipartFile, UploadFileRequest uploadFileRequest) {
         // 检查参数
         ThrowUtils.throwIf(uploadFileRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
         ThrowUtils.throwIf(multipartFile == null || multipartFile.isEmpty(), CodeBindMessageEnums.PARAMS_ERROR, "不能上传空的文件");
 
         String filename = multipartFile.getOriginalFilename();
-        ThrowUtils.throwIf(filename == null || !filename.toLowerCase().endsWith(".csv"),
-                CodeBindMessageEnums.PARAMS_ERROR, "只允许上传 CSV 文件");
+        ThrowUtils.throwIf(filename == null || !filename.toLowerCase().endsWith(".csv"), CodeBindMessageEnums.PARAMS_ERROR, "只允许上传 CSV 文件");
 
+        // 批量添加用户账号
         return transactionTemplate.execute(transactionStatus -> {
             try (
                     Reader reader = new InputStreamReader(multipartFile.getInputStream(), StandardCharsets.UTF_8);
@@ -128,79 +132,52 @@ public class FileController {
     }
 
     @SaCheckLogin
-    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
-    @PostMapping("/uploadTopic")
-    public BaseResponse<String> uploadFileTopic(@RequestPart("file") MultipartFile multipartFile, HttpServletRequest request) {
-        try (InputStream inputStream = multipartFile.getInputStream();
-             Workbook workbook = new XSSFWorkbook(inputStream)) {
+    @SaCheckRole(value = {"teacher"}, mode = SaMode.OR)
+    @PostMapping("/upload/topic")
+    public BaseResponse<String> uploadFileTopic(@RequestPart("file") MultipartFile multipartFile) {
+        // 检查参数
+        ThrowUtils.throwIf(multipartFile == null || multipartFile.isEmpty(), CodeBindMessageEnums.PARAMS_ERROR, "不能上传空的文件");
 
-            Sheet sheet = workbook.getSheetAt(0);
-            boolean firstRow = true;
+        String filename = multipartFile.getOriginalFilename();
+        ThrowUtils.throwIf(filename == null || !filename.toLowerCase().endsWith(".csv"), CodeBindMessageEnums.PARAMS_ERROR, "只允许上传 CSV 文件");
 
-            for (Row row : sheet) {
-                if (firstRow) {
-                    firstRow = false;
-                    continue; // 跳过表头
+        // 批量添加教师题目
+        return transactionTemplate.execute(transactionStatus -> {
+            try (
+                    Reader reader = new InputStreamReader(multipartFile.getInputStream(), StandardCharsets.UTF_8);
+                    CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader)
+            ) {
+                for (CSVRecord record : csvParser) {
+                    String topicName = record.get(0).trim();
+                    String topicType = record.get(1).trim();
+                    String topicDescription = record.get(2).trim();
+                    String topicRequirement = record.get(3).trim();
+                    String topicDeptName = record.get(4).trim();
+                    String topicDeptTeacher = record.get(5).trim();
+
+                    // 创建题目
+                    Topic topic = new Topic();
+
+                    topic.setTopic(topicName);
+                    topic.setType(topicType);
+                    topic.setDescription(topicDescription);
+                    topic.setRequirement(topicRequirement);
+                    topic.setDeptName(topicDeptName);
+                    topic.setDeptTeacher(topicDeptTeacher);
+                    topic.setTeacherName(userService.userGetCurrentLoginUser().getUserName());
+                    topic.setSurplusQuantity(1);
+                    topic.setSelectAmount(0);
+                    topic.setStatus(TopicStatusEnum.PENDING_REVIEW.getCode());
+
+                    topicService.save(topic);
                 }
-
-                String topic = null;
-                String type = null;
-                String description = null;
-                String requirement = null;
-                String teacherName = null;
-                String deptName = null;
-                String deptTeacher = null;
-
-                for (Cell cell : row) {
-                    int columnIndex = cell.getColumnIndex();
-                    switch (columnIndex) {
-                        case 0:
-                            topic = getCellStringValue(cell);
-                            break;
-                        case 1:
-                            type = getCellStringValue(cell);
-                            break;
-                        case 2:
-                            description = getCellStringValue(cell);
-                            break;
-                        case 3:
-                            requirement = getCellStringValue(cell);
-                            break;
-                        case 4:
-                            teacherName = getCellStringValue(cell);
-                            break;
-                        case 5:
-                            deptName = getCellStringValue(cell);
-                            break;
-                        case 6:
-                            deptTeacher = getCellStringValue(cell);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                final Topic oldTopic = topicService.getOne(new QueryWrapper<Topic>().eq("topic", topic));
-                if (oldTopic != null) {
-                    throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "批量添加失败,有重复的题目,题目为" + topic);
-                }
-                Topic topic1 = new Topic();
-                topic1.setTopic(topic);
-                topic1.setType(type);
-                topic1.setDescription(description);
-                topic1.setRequirement(requirement);
-                topic1.setTeacherName(teacherName);
-                topic1.setDeptName(deptName);
-                topic1.setDeptTeacher(deptTeacher);
-                topicService.saveOrUpdate(topic1);
+            } catch (IOException e) {
+                transactionStatus.setRollbackOnly(); // 确保失败回滚
+                ThrowUtils.throwIf(true, CodeBindMessageEnums.OPERATION_ERROR, "批量添加失败");
             }
 
-        } catch (
-                IOException e) {
-            e.printStackTrace();
-            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "批量添加失败");
-        }
-
-        return new BaseResponse<>(0, "成功", "批量添加成功");
+            return new BaseResponse<>(0, "成功", "批量添加成功");
+        });
     }
 
     @SaCheckLogin

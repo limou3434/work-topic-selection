@@ -2,17 +2,17 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
-/** getSelectTopicStudentListCsv POST /file/getSelectTopicStudentList */
+/** getSelectTopicStudentListCsv POST /file/get/select/topic/student/list */
 export async function getSelectTopicStudentListCsvUsingPost(options?: { [key: string]: any }) {
-  return request<any>('/file/getSelectTopicStudentList', {
+  return request<any>('/file/get/select/topic/student/list', {
     method: 'POST',
     ...(options || {}),
   });
 }
 
-/** getUnSelectTopicStudentListCsv POST /file/getUnSelectTopicStudentList */
+/** getUnSelectTopicStudentListCsv POST /file/get/unselect/topic/student/list */
 export async function getUnSelectTopicStudentListCsvUsingPost(options?: { [key: string]: any }) {
-  return request<any>('/file/getUnSelectTopicStudentList', {
+  return request<any>('/file/get/unselect/topic/student/list', {
     method: 'POST',
     ...(options || {}),
   });
@@ -59,7 +59,7 @@ export async function uploadFileUsingPost(
   });
 }
 
-/** uploadFileTopic POST /file/uploadTopic */
+/** uploadFileTopic POST /file/upload/topic */
 export async function uploadFileTopicUsingPost(
   body: {},
   file?: File,
@@ -87,7 +87,7 @@ export async function uploadFileTopicUsingPost(
     }
   });
 
-  return request<API.BaseResponseString_>('/file/uploadTopic', {
+  return request<API.BaseResponseString_>('/file/upload/topic', {
     method: 'POST',
     data: formData,
     requestType: 'form',

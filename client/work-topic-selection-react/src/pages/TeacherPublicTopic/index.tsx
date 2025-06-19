@@ -1,7 +1,7 @@
 import { uploadFileTopicUsingPost } from '@/services/work-topic-selection/fileController';
 import {
   addTopicUsingPost,
-  checkTopicUsingPost,
+  checkTopicUsingPost, deleteTopicUsingPost,
   getDeptListUsingPost,
   getTeacherUsingPost1,
   getTopicListUsingPost,
@@ -18,6 +18,8 @@ import {
 import { Button, message } from 'antd';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import * as async_hooks from 'node:async_hooks';
+import { record } from '@umijs/utils/compiled/zod';
 
 type GithubIssueItem = {
   id: number;
@@ -239,6 +241,17 @@ export default () => {
             return false;
           }
         },
+        onDelete: async (key, record) => {
+          const res = await deleteTopicUsingPost({ id: record?.id });
+          if (res.code === 0) {
+            message.success(res.message);
+            return true;
+          }
+          else {
+            message.error(res.message);
+            return false;
+          }
+        },
         onChange: (editableKeys, editableRows) => {
           // 可选：你可以限制哪些可以编辑
         },
@@ -269,7 +282,7 @@ export default () => {
         <>
           <Button type="primary" key="download-template">
             <a
-              href="https://template-thrive-1322597786.cos.ap-guangzhou.myqcloud.com/%E9%A2%98%E7%9B%AE%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF%20.xlsx"
+              href="https://wci-1318277926.cos.ap-guangzhou.myqcloud.com/work-topic-selection/%E9%A2%98%E7%9B%AE%E6%89%B9%E9%87%8F%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF%20.csv"
               download
             >
               下载模板
@@ -303,8 +316,8 @@ export default () => {
             <ProFormUploadButton
               width="md"
               name="file"
-              label="上传xlsx文件"
-              accept=".xlsx"
+              label="上传 CSV 文件"
+              accept=".csv"
               max={1}
               required
             >
