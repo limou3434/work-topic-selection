@@ -4,8 +4,11 @@ import cn.com.edtechhub.worktopicselection.annotation.CacheSearchOptimization;
 import cn.com.edtechhub.worktopicselection.constant.RedisConstant;
 import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
 import cn.com.edtechhub.worktopicselection.manager.caffeine.CaffeineManager;
+import cn.com.edtechhub.worktopicselection.model.entity.User;
+import cn.com.edtechhub.worktopicselection.model.enums.UserRoleEnum;
 import cn.com.edtechhub.worktopicselection.response.BaseResponse;
 import cn.com.edtechhub.worktopicselection.response.TheResult;
+import cn.com.edtechhub.worktopicselection.service.UserService;
 import cn.com.edtechhub.worktopicselection.utils.TypeBuilder;
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.json.JSONUtil;
@@ -37,8 +40,17 @@ public class CacheSearchOptimizationAOP {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
+    @Resource
+    private UserService userService;
+
     @Around("@annotation(cacheSearchOptimization)")
     public Object around(ProceedingJoinPoint joinPoint, CacheSearchOptimization cacheSearchOptimization) throws Throwable {
+        // 如果是教师则跳过缓存, 只对学生进行缓存
+        User loginUser = userService.userGetCurrentLoginUser();
+        if (loginUser.getUserRole() == UserRoleEnum.TEACHER.getCode()) {
+            return joinPoint.proceed();
+        }
+
         // 获取方法签名
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Object[] args = joinPoint.getArgs();
