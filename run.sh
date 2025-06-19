@@ -25,13 +25,13 @@ wait
 # 部署服务
 (
   echo "后端部署..."
-  sudo docker compose up -d --build work-topic-selection | sudo tee server.log > /dev/null
+  sudo docker compose up -d --build work-topic-selection > /dev/null
   echo "后端部署完成 ✅"
 ) &
 
 (
   echo "前端部署..."
-  sudo docker compose up -d --build work-topic-selection-client | sudo tee client.log > /dev/null
+  sudo docker compose up -d --build work-topic-selection-client > /dev/null
   echo "前端部署完成 ✅"
 ) &
 
