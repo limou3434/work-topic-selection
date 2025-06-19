@@ -1,5 +1,6 @@
 package cn.com.edtechhub.worktopicselection.controller;
 
+import cn.com.edtechhub.worktopicselection.constant.UserConstant;
 import cn.com.edtechhub.worktopicselection.exception.BusinessException;
 import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
 import cn.com.edtechhub.worktopicselection.model.dto.file.UploadFileRequest;
@@ -11,16 +12,23 @@ import cn.com.edtechhub.worktopicselection.response.TheResult;
 import cn.com.edtechhub.worktopicselection.service.StudentTopicSelectionService;
 import cn.com.edtechhub.worktopicselection.service.TopicService;
 import cn.com.edtechhub.worktopicselection.service.UserService;
+import cn.com.edtechhub.worktopicselection.utils.ThrowUtils;
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.annotation.SaMode;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -31,91 +39,96 @@ import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Transactional
 @RestController
 @RequestMapping("/file")
 public class FileController {
 
+    /**
+     * 注入事务管理依赖
+     */
+    @Resource
+    TransactionTemplate transactionTemplate;
+
+    /**
+     * 引入用户服务依赖
+     */
     @Resource
     private UserService userService;
 
+    /**
+     * 引入选题服务依赖
+     */
     @Resource
     private TopicService topicService;
 
+    /**
+     * 引入学生关联关联服务依赖
+     */
     @Resource
     private StudentTopicSelectionService studentTopicSelectionService;
 
+    // 上传批量添加账号文件
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/upload")
     public BaseResponse<String> uploadFile(@RequestPart("file") MultipartFile multipartFile, UploadFileRequest uploadFileRequest, HttpServletRequest request) {
-        try (InputStream inputStream = multipartFile.getInputStream();
-             Workbook workbook = new XSSFWorkbook(inputStream)) {
+        // 检查参数
+        ThrowUtils.throwIf(uploadFileRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        ThrowUtils.throwIf(multipartFile == null || multipartFile.isEmpty(), CodeBindMessageEnums.PARAMS_ERROR, "不能上传空的文件");
 
-            Sheet sheet = workbook.getSheetAt(0);
-            boolean firstRow = true;
+        String filename = multipartFile.getOriginalFilename();
+        ThrowUtils.throwIf(filename == null || !filename.toLowerCase().endsWith(".csv"),
+                CodeBindMessageEnums.PARAMS_ERROR, "只允许上传 CSV 文件");
 
-            for (Row row : sheet) {
-                if (firstRow) {
-                    firstRow = false;
-                    continue; // 跳过表头
-                }
+        return transactionTemplate.execute(transactionStatus -> {
+            try (
+                    Reader reader = new InputStreamReader(multipartFile.getInputStream(), StandardCharsets.UTF_8);
+                    CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader)
+            ) {
+                for (CSVRecord record : csvParser) {
+                    String userAccount = record.get(0).trim();
+                    String name = record.get(1).trim();
+                    String department = record.get(2).trim();
+                    String project = "";
 
-                String userAccount = null;
-                String name = null;
-                String department = null;
-                String project = null;
-
-                for (Cell cell : row) {
-                    int columnIndex = cell.getColumnIndex();
-                    switch (columnIndex) {
-                        case 0:
-                            userAccount = getCellStringValue(cell);
-                            break;
-                        case 1:
-                            name = getCellStringValue(cell);
-                            break;
-                        case 2:
-                            department = getCellStringValue(cell);
-                            break;
-                        case 3:
-                            project = getCellStringValue(cell);
-                            break;
-                        default:
-                            break;
+                    // 如果是学生就会多一些
+                    if (record.size() == 4) {
+                        project = record.get(3).trim();
                     }
-                }
 
-                User user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
-                if (user == null) {
-                    user = new User();
-                    user.setUserAccount(userAccount);
-                    user.setUserPassword("b0dd3697a192885d7c055db46155b26a"); // 默认密码
+                    // 获取或创建用户
+                    User user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
+                    if (user == null) {
+                        user = new User();
+                        user.setUserAccount(userAccount);
+                        String encryptPassword = DigestUtils.md5DigestAsHex((UserConstant.SALT + UserConstant.DEFAULT_PASSWD).getBytes());
+                        user.setUserPassword(encryptPassword);
+                    }
+
+                    user.setUserName(name);
+                    user.setDept(department);
+                    user.setUserRole(uploadFileRequest.getStatus());
+                    user.setProject(project);
+                    userService.saveOrUpdate(user);
                 }
-                user.setUserName(name);
-                user.setDept(department);
-                user.setUserRole(uploadFileRequest.getStatus()); // 设置角色
-                user.setProject(project);
-                userService.saveOrUpdate(user);
+            } catch (Exception e) {
+                transactionStatus.setRollbackOnly(); // 确保失败回滚
+                ThrowUtils.throwIf(true, CodeBindMessageEnums.OPERATION_ERROR, "批量添加失败");
             }
 
-        } catch (
-                IOException e) {
-            e.printStackTrace();
-            throw new BusinessException(CodeBindMessageEnums.OPERATION_ERROR, "批量添加失败");
-        }
-
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, "批量添加成功");
+            return TheResult.success(CodeBindMessageEnums.SUCCESS, "批量添加成功");
+        });
     }
 
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/uploadTopic")
     public BaseResponse<String> uploadFileTopic(@RequestPart("file") MultipartFile multipartFile, HttpServletRequest request) {
         try (InputStream inputStream = multipartFile.getInputStream();
@@ -190,7 +203,9 @@ public class FileController {
         return new BaseResponse<>(0, "成功", "批量添加成功");
     }
 
-    @PostMapping("/getUnSelectTopicStudentList")
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/get/unselect/topic/student/list")
     public void getUnSelectTopicStudentListCsv(HttpServletRequest request, HttpServletResponse response) {
         final User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {
@@ -225,7 +240,9 @@ public class FileController {
         }
     }
 
-    @PostMapping("/getSelectTopicStudentList")
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/get/select/topic/student/list")
     public void getSelectTopicStudentListCsv(HttpServletRequest request, HttpServletResponse response) {
         final User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {

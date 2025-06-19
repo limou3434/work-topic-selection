@@ -371,7 +371,7 @@ const Welcome: React.FC = () => {
 
           <Title level={2}>2.遇到问题?</Title>
           <Paragraph>
-            如果您在使用的过程中遇到问题，先尝试自己是否能够解决，如果实在遇到解决不了的问题可以发送邮箱到 <Text code>898738804@qq.com</Text>，格式如下：。
+            如果您在使用的过程中遇到问题，先尝试自己是否能够解决，如果实在遇到解决不了的问题可以发送邮箱到 <Text code>898738804@qq.com</Text> 中，邮件格式如下：
           </Paragraph>
           <Paragraph>
             <pre>{blockContent}</pre>

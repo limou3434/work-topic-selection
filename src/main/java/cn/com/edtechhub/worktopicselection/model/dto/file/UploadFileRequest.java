@@ -16,6 +16,7 @@ public class UploadFileRequest implements Serializable {
 
     private MultipartFile file;
 
+    // 这个字段其实是角色字段, 但是我懒得修改了前端...
     private Integer status;
 
     /// 序列化字段 ///

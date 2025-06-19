@@ -83,8 +83,8 @@ export default () => {
     if (e.key === 'downloadTemplate') {
       const link = document.createElement('a');
       link.href =
-        'https://template-thrive-1322597786.cos.ap-guangzhou.myqcloud.com/%E6%95%99%E5%B8%88%E6%A8%A1%E6%9D%BF.xlsx';
-      link.download = '教师账号导入模板.xlsx';
+        'https://wci-1318277926.cos.ap-guangzhou.myqcloud.com/work-topic-selection/%E6%95%99%E5%B8%88%E8%B4%A6%E5%8F%B7%E6%89%B9%E9%87%8F%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF.csv';
+      link.download = '教师账号导入模板.csv';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -180,8 +180,8 @@ export default () => {
             <ProFormUploadButton
               width="md"
               name="file"
-              label="上传xlsx文件"
-              accept=".xlsx"
+              label="上传 CSV 文件"
+              accept=".csv"
               max={1}
               required
             >
