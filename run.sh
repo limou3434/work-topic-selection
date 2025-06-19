@@ -2,6 +2,9 @@
 # 出错终止
 set -e
 
+# 拉取代码
+git fetch origin && git reset --hard origin/main
+
 # 编译后端
 (
   ./mvnw clean package
