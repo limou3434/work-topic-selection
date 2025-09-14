@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+sudo docker pull caddy:2.10.0
+sudo docker pull mysql:8.0.41
+sudo docker pull redis:7.4.2
+sudo docker pull curlimages/curl
+sudo docker pull openjdk:8-jdk-slim
+
 # 拉取代码
 git fetch origin && git reset --hard origin/main
 
