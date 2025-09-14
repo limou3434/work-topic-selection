@@ -1,3 +1,4 @@
+# >>> 2025-09-12-ljp-项目通用屏蔽文件 >>>
 **.idea/
 **.next/
 **node_modules/
@@ -7,6 +8,7 @@
 **.umi-production/
 **.env
 **access.log
+# <<< 2025-09-12-ljp-项目通用屏蔽文件 <<<
 
 ### STS ###
 .apt_generated
