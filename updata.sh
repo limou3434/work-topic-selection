@@ -16,17 +16,15 @@ set -e
 (
   echo "后端编译..."
   cd ./work-topic-selection-backend/ 
-  mvnw clean package > server.log 2>&1
-  cd -
+  ./mvnw clean package > backend.log 2>&1
   echo "后端编译完成 ✅"
 ) &
 
 # 编译前端
 (
   echo "前端编译..."
-  cd ./work-topic-selection-frontend/ || exit 1
-  num run build > client.log 2>&1
-  cd -
+  cd ../work-topic-selection-frontend/
+  num run build > frontend.log 2>&1
   echo "前端编译完成 ✅"
 ) &
 
