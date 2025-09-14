@@ -20,7 +20,7 @@ echo "后端编译完成 ✅"
 
 # 编译前端
 echo "前端编译..."
-cd ./work-topic-selection-frontend/
+cd ../work-topic-selection-frontend/
 npm i && npm run build > frontend.log 2>&1
 echo "前端编译完成 ✅"
 
