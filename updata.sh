@@ -1,14 +1,16 @@
 #!/bin/bash
-set -e
-
-sudo docker pull caddy:2.10.0
-sudo docker pull mysql:8.0.41
-sudo docker pull redis:7.4.2
-sudo docker pull curlimages/curl
-sudo docker pull openjdk:8-jdk-slim
-
-# 拉取代码
+# 前置条件
+# sudo docker pull caddy:2.10.0
+# sudo docker pull mysql:8.0.41
+# sudo docker pull redis:7.4.2
+# sudo docker pull curlimages/curl
+# sudo docker pull openjdk:8-jdk-slim
 # git fetch origin && git reset --hard origin/main
+# sudo apt update && sudo apt install -y openjdk-17-jdk
+# curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+# \. "$HOME/.nvm/nvm.sh"
+# nvm install 22
+set -e
 
 # 编译后端
 (
