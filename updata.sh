@@ -8,7 +8,7 @@ sudo docker pull curlimages/curl
 sudo docker pull openjdk:8-jdk-slim
 
 # 拉取代码
-git fetch origin && git reset --hard origin/main
+# git fetch origin && git reset --hard origin/main
 
 # 编译后端
 (
