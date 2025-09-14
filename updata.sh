@@ -24,7 +24,7 @@ set -e
 (
   echo "前端编译..."
   cd ./work-topic-selection-frontend/
-  num run build > frontend.log 2>&1
+  npm i && npm run build > frontend.log 2>&1
   echo "前端编译完成 ✅"
 ) &
 
