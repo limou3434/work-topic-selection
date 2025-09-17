@@ -39,6 +39,7 @@ const Footer: React.FC = () => {
             href: 'https://mail.qq.com/',
             blankTarget: true,
           },
+          // @ts-ignore
           {
             key: '管理员邮箱 898738804@qq.com',
             title: '管理员邮箱 898738804@qq.com',
