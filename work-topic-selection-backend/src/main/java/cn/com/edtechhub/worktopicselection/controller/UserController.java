@@ -1451,4 +1451,10 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, teacherPage);
     }
 
+    // TODO: 添加两个原子事务接口
+
+    // 查看指定教师的选题上限
+
+    // 设置指定教师的选题上限
+
 }

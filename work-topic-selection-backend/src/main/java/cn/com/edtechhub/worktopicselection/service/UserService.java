@@ -35,27 +35,7 @@ public interface UserService extends IService<User> {
     // 获取查询条件
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
-    // TODO: 下面是旧代码
-
-    /**
-     * 用户登录
-     */
-    LoginUserVO userLogin(String userAccount, String userPassword, HttpServletRequest request);
-
-    /**
-     * 用户修改密码
-     */
-    long userUpdatePassword(String userAccount, String userPassword, String updatePassword);
-
-    /**
-     * 获取当前登录用户
-     */
-    User getLoginUser(HttpServletRequest request);
-
-    /**
-     * 用户注销
-     */
-    boolean userLogout(HttpServletRequest request);
+    // TODO: 下面是旧代码可以被迁移到 UserVO 中
 
     /**
      * 获取脱敏的当前登录用户信息
