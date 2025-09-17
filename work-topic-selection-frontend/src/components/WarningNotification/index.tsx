@@ -3,6 +3,7 @@ import React, {useEffect} from 'react';
 
 const WarningNotification: React.FC = () => {
   useEffect(() => {
+    if (window.location.pathname !== '/home') return;
     notification.warning({
       message: '本站警告',
       description: (

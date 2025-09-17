@@ -219,9 +219,10 @@ public class UserController {
         // 获取用户数据
         Page<User> userPage = userService.page(new Page<>(current, size), userService.getQueryWrapper(userQueryRequest));
 
-        // 过滤 id 为 1-56 的用户（这些都是测试用户）
-        if (userService.userGetCurrentLoginUser().getId() != 1) {
+        // 非超级管理员过滤掉测试数据
+        if (userService.userGetCurrentLoginUser().getId() != 1L) {
             userPage.getRecords().removeIf(user -> user.getId() <= 56);
+            userPage.setTotal(userPage.getTotal() - 56);
         }
 
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userPage);
@@ -1081,6 +1082,13 @@ public class UserController {
 
         // 获取选题数据
         Page<Topic> topicPage = topicService.page(new Page<>(current, size), topicService.getQueryWrapper(topicQueryRequest));
+
+        // 非超级管理员过滤掉测试数据
+        if (!userService.userGetCurrentLoginUser().getId().equals(1L)) {
+            topicPage.getRecords().removeIf(topic -> topic.getId() <= 17);
+            topicPage.setTotal(topicPage.getTotal() - 17);
+        }
+
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topicPage);
     }
 
@@ -1114,11 +1122,17 @@ public class UserController {
         // 获取未选题人数
         int unselectedStudents = totalStudents - selectedStudents;
 
+        // 非超级管理员则过滤掉测试学生
+        if (!loginUser.getId().equals(1L)) {
+            unselectedStudents = unselectedStudents - 14;
+            totalStudents = totalStudents - 14;
+        }
+
         // 封装返回数据
         SituationVO situationVO = new SituationVO();
         situationVO.setSelectAmount(selectedStudents);
-        situationVO.setAmount(totalStudents);
         situationVO.setUnselectAmount(unselectedStudents);
+        situationVO.setAmount(totalStudents);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, situationVO);
     }
 
