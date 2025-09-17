@@ -7,7 +7,7 @@ import {
 import { PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
 import { ModalForm } from '@ant-design/pro-form';
-import { Button, message } from 'antd';
+import { Button, Popconfirm, message } from 'antd';
 import React, { useRef } from 'react';
 
 type GithubIssueItem = {
@@ -39,21 +39,23 @@ export default () => {
       valueType: 'option',
       key: 'option',
       render: (text, record, _, action) => [
-        <a
-          style={{ color: '#ff4d4f' }}
+        <Popconfirm
           key="delete"
-          onClick={async () => {
+          title="确定要删除该用户吗？"
+          onConfirm={async () => {
             const res = await deleteUserUsingPost({ userAccount: record.userAccount });
             if (res.code === 0) {
               message.success(res.message);
-              action?.reload();
+              action?.reload?.();
             } else {
               message.error(res.message);
             }
           }}
+          okText="确定"
+          cancelText="取消"
         >
-          删除
-        </a>,
+          <a style={{ color: '#ff4d4f' }}>删除</a>
+        </Popconfirm>,
       ],
     },
   ];
@@ -63,6 +65,7 @@ export default () => {
       columns={columns}
       actionRef={actionRef}
       cardBordered
+      // @ts-ignore
       request={async (params = {}, sort, filter) => {
         console.log(sort, filter, params);
         try {

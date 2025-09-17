@@ -6,7 +6,7 @@ import {
 import { PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
 import { ModalForm } from '@ant-design/pro-components';
-import { Button, message } from 'antd';
+import {Button, message, Popconfirm} from 'antd';
 import { useRef, useState } from 'react';
 
 type GithubIssueItem = {
@@ -32,21 +32,23 @@ export default () => {
       valueType: 'option',
       key: 'option',
       render: (text, record, _, action) => [
-        <a
-          style={{ color: '#ff4d4f' }}
+        <Popconfirm
           key="delete"
-          onClick={async () => {
+          title="确定要删除该院系系部吗？"
+          onConfirm={async () => {
             const res = await deleteDeptUsingPost({ deptName: record.deptName });
             if (res.code === 0) {
               message.success(res.message);
-              action?.reload();
+              action?.reload?.();
             } else {
               message.error(res.message);
             }
           }}
+          okText="确定"
+          cancelText="取消"
         >
-          删除
-        </a>,
+          <a style={{ color: '#ff4d4f' }}>删除</a>
+        </Popconfirm>,
       ],
     },
   ];
@@ -60,7 +62,8 @@ export default () => {
       actionRef={actionRef}
       cardBordered
       /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-      request={async (params = {}, sort, filter) => {
+      // @ts-ignore
+      request={async (params = {}) => {
         try {
           const response = await getDeptUsingPost(params);
           const data = response.data || {};

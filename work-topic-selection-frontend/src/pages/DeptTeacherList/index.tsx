@@ -5,17 +5,11 @@ import {
   listUserByPageUsingPost,
   resetPasswordUsingPost,
 } from '@/services/work-topic-selection/userController';
-import { PlusOutlined } from '@ant-design/icons';
-import {
-  ActionType,
-  ProColumns,
-  ProFormSelect,
-  ProFormText,
-  ProTable,
-} from '@ant-design/pro-components';
-import { ModalForm } from '@ant-design/pro-form';
-import { Button, message } from 'antd';
-import React, { useRef } from 'react';
+import {PlusOutlined} from '@ant-design/icons';
+import {ActionType, ProColumns, ProFormSelect, ProFormText, ProTable,} from '@ant-design/pro-components';
+import {ModalForm} from '@ant-design/pro-form';
+import {Button, message, Popconfirm} from 'antd';
+import React, {useRef} from 'react';
 
 type GithubIssueItem = {
   userAccount: string;
@@ -50,21 +44,23 @@ export default () => {
       valueType: 'option',
       key: 'option',
       render: (text, record, _, action) => [
-        <a
-          style={{ color: '#ff4d4f' }}
+        <Popconfirm
           key="delete"
-          onClick={async () => {
-            const res = await deleteUserUsingPost({ userAccount: record.userAccount });
+          title="确定要删除该用户吗？"
+          onConfirm={async () => {
+            const res = await deleteUserUsingPost({userAccount: record.userAccount});
             if (res.code === 0) {
               message.success(res.message);
-              action?.reload();
+              action?.reload?.();
             } else {
               message.error(res.message);
             }
           }}
+          okText="确定"
+          cancelText="取消"
         >
-          删除
-        </a>,
+          <a style={{color: '#ff4d4f'}}>删除</a>
+        </Popconfirm>,
       ],
     },
   ];
@@ -75,9 +71,10 @@ export default () => {
       actionRef={actionRef}
       cardBordered
       /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-      request={async (params = {}, sort, filter) => {
+      // @ts-ignore
+      request={async (params = {}) => {
         try {
-          const { current = 1, pageSize = 10, ...rest } = params;
+          const {current = 1, pageSize = 10, ...rest} = params;
           const requestParams = {
             ...rest,
             userRole: 2,
@@ -111,7 +108,7 @@ export default () => {
         labelWidth: 'auto',
       }}
       form={{
-        syncToUrl: (values, type) => (type === 'get' ? { ...values } : values),
+        syncToUrl: (values, type) => (type === 'get' ? {...values} : values),
       }}
       pagination={{
         defaultPageSize: 10,
@@ -129,7 +126,7 @@ export default () => {
           title="添加主任账号"
           trigger={
             <Button type="primary">
-              <PlusOutlined /> 添加主任账号
+              <PlusOutlined/> 添加主任账号
             </Button>
           }
           autoFocusFirstInput
@@ -139,7 +136,7 @@ export default () => {
           }}
           submitTimeout={2000}
           onFinish={async (values) => {
-            const addDeptTeacher = { ...values, userRole: 2 };
+            const addDeptTeacher = {...values, userRole: 2};
             const res = await addUserUsingPost(addDeptTeacher);
             if (res.code === 0) {
               message.success(res.message);
@@ -151,8 +148,8 @@ export default () => {
             }
           }}
         >
-          <ProFormText width="md" name="userAccount" label="工号" required />
-          <ProFormText width="md" name="userName" label="姓名" required />
+          <ProFormText width="md" name="userAccount" label="工号" required/>
+          <ProFormText width="md" name="userName" label="姓名" required/>
           <ProFormSelect
             request={async () => {
               const response = await getDeptListUsingPost({});
@@ -178,7 +175,7 @@ export default () => {
           title="重置账号密码"
           trigger={
             <Button type="primary" ghost>
-              <PlusOutlined /> 重置账号密码
+              <PlusOutlined/> 重置账号密码
             </Button>
           }
           autoFocusFirstInput
@@ -199,8 +196,8 @@ export default () => {
             }
           }}
         >
-          <ProFormText width="md" name="userAccount" label="账号" required />
-          <ProFormText width="md" name="userName" label="姓名" required />
+          <ProFormText width="md" name="userAccount" label="账号" required/>
+          <ProFormText width="md" name="userName" label="姓名" required/>
         </ModalForm>,
       ]}
     />

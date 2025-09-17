@@ -13,7 +13,7 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { ModalForm } from '@ant-design/pro-form';
-import { Button, message } from 'antd';
+import {Button, message, Popconfirm} from 'antd';
 import { useRef } from 'react';
 
 type GithubIssueItem = {
@@ -45,22 +45,25 @@ export default () => {
       valueType: 'option',
       key: 'option',
       render: (text, record, _, action) => [
-        <a
-          style={{ color: '#ff4d4f' }}
+        <Popconfirm
           key="delete"
-          onClick={async () => {
+          title="确定要删除该系部专业吗？"
+          onConfirm={async () => {
             const res = await deleteProjectUsingPost({ projectName: record.projectName });
             if (res.code === 0) {
               message.success(res.message);
-              action?.reload();
+              action?.reload?.();
             } else {
               message.error(res.message);
             }
           }}
+          okText="确定"
+          cancelText="取消"
         >
-          删除
-        </a>,
+          <a style={{ color: '#ff4d4f' }}>删除</a>
+        </Popconfirm>,
       ],
+
     },
   ];
 
@@ -69,6 +72,7 @@ export default () => {
       columns={columns}
       actionRef={actionRef}
       cardBordered
+      // @ts-ignore
       request={async (params = {}, sort, filter) => {
         console.log('params:', params, 'sort:', sort, 'filter:', filter);
         try {
@@ -113,6 +117,7 @@ export default () => {
       dateFormatter="string"
       headerTitle="系部专业管理"
       toolBarRender={() => [
+        // eslint-disable-next-line react/jsx-key
         <ModalForm<{
           projectName: string;
           deptName: string;

@@ -218,6 +218,12 @@ public class UserController {
 
         // 获取用户数据
         Page<User> userPage = userService.page(new Page<>(current, size), userService.getQueryWrapper(userQueryRequest));
+
+        // 过滤 id 为 1-56 的用户（这些都是测试用户）
+        if (userService.userGetCurrentLoginUser().getId() != 1) {
+            userPage.getRecords().removeIf(user -> user.getId() <= 56);
+        }
+
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userPage);
     }
 

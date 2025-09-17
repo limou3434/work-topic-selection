@@ -2,6 +2,7 @@ import { PageContainer } from '@ant-design/pro-components';
 import { useModel } from '@umijs/max';
 import {Card, Carousel, Collapse, Divider, Image, theme, Typography} from 'antd';
 import React from 'react';
+import WarningNotification from "@/components/WarningNotification";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -96,6 +97,7 @@ const Welcome: React.FC = () => {
 
   return (
     <PageContainer>
+      <WarningNotification/>
       <Card
         style={{
           borderRadius: 8,

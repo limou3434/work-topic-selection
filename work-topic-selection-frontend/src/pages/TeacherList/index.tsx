@@ -1,5 +1,5 @@
 // @ts-ignore
-import { uploadFileUsingPost } from '@/services/work-topic-selection/fileController';
+import {uploadFileUsingPost} from '@/services/work-topic-selection/fileController';
 import {
   addUserUsingPost,
   deleteUserUsingPost,
@@ -7,12 +7,13 @@ import {
   listUserByPageUsingPost,
   resetPasswordUsingPost,
 } from '@/services/work-topic-selection/userController';
-import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import { ActionType, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
-import { ProFormUploadButton } from '@ant-design/pro-form';
-import { ModalForm, ProFormSelect } from '@ant-design/pro-form/lib';
-import { Button, Dropdown, MenuProps, message } from 'antd';
-import { useRef, useState } from 'react';
+import {PlusOutlined, UploadOutlined} from '@ant-design/icons';
+import {ActionType, ProColumns, ProFormText, ProTable} from '@ant-design/pro-components';
+import {ProFormUploadButton} from '@ant-design/pro-form';
+import {ModalForm, ProFormSelect} from '@ant-design/pro-form/lib';
+import {Button, Dropdown, MenuProps, message} from 'antd';
+import {useRef, useState} from 'react';
+import {AdjustLimitButton} from "@/components/AdjustLimitButton";
 
 type GithubIssueItem = {
   userAccount: string;
@@ -47,21 +48,7 @@ export default () => {
       valueType: 'option',
       key: 'option',
       render: (text, record, _, action) => [
-        <a
-          style={{ color: '#ff4d4f' }}
-          key="delete"
-          onClick={async () => {
-            const res = await deleteUserUsingPost({ userAccount: record.userAccount });
-            if (res.code === 0) {
-              message.success(res.message);
-              action?.reload();
-            } else {
-              message.error(res.message);
-            }
-          }}
-        >
-          删除
-        </a>,
+        <AdjustLimitButton key={`adjust-${record.userAccount}`} record={record} action={action}/>
       ],
     },
   ];
@@ -101,7 +88,8 @@ export default () => {
       rowKey="id"
       // 不要自己管理data和total，交给ProTable处理分页
       /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-      request={async (params = {}, sort, filter) => {
+      // @ts-ignore
+      request={async (params = {}) => {
         try {
           // 确保分页参数转换正确，比如 current -> pageNum 或 page
           const requestParams = {
@@ -113,7 +101,9 @@ export default () => {
           };
           const response = await listUserByPageUsingPost(requestParams);
           return {
+            // @ts-ignore
             data: response.data.records,
+            // @ts-ignore
             total: response.data.total,
             success: true,
           };
@@ -147,7 +137,7 @@ export default () => {
       headerTitle="教师账号管理"
       toolBarRender={() => [
         <>
-          <Dropdown menu={{ items, onClick: onMenuClick }}>
+          <Dropdown menu={{items, onClick: onMenuClick}}>
             <Button type="dashed">批量操作</Button>
           </Dropdown>
           <ModalForm<{
@@ -163,7 +153,7 @@ export default () => {
             submitTimeout={2000}
             onFinish={async (values) => {
               const res = await uploadFileUsingPost(
-                { status: 1 },
+                {status: 1},
                 {},
                 values.file[0].originFileObj,
               );
@@ -185,7 +175,7 @@ export default () => {
               max={1}
               required
             >
-              <Button icon={<UploadOutlined />}>选择文件</Button>
+              <Button icon={<UploadOutlined/>}>选择文件</Button>
             </ProFormUploadButton>
           </ModalForm>
           <ModalForm<{
@@ -196,7 +186,7 @@ export default () => {
             title="添加教师账号"
             trigger={
               <Button type="primary">
-                <PlusOutlined />
+                <PlusOutlined/>
                 添加教师账号
               </Button>
             }
@@ -206,7 +196,7 @@ export default () => {
             }}
             submitTimeout={2000}
             onFinish={async (values) => {
-              const addTeacher = { ...values, userRole: 1 };
+              const addTeacher = {...values, userRole: 1};
               const res = await addUserUsingPost(addTeacher);
               if (res.code === 0) {
                 message.success(res.message);
@@ -218,8 +208,8 @@ export default () => {
               }
             }}
           >
-            <ProFormText width="md" name="userAccount" label="工号" required />
-            <ProFormText width="md" name="userName" label="姓名" required />
+            <ProFormText width="md" name="userAccount" label="工号" required/>
+            <ProFormText width="md" name="userName" label="姓名" required/>
             <ProFormSelect
               request={async () => {
                 const response = await getDeptListUsingPost({});
@@ -244,7 +234,7 @@ export default () => {
             title="重置账号密码"
             trigger={
               <Button type="primary" ghost>
-                <PlusOutlined />
+                <PlusOutlined/>
                 重置账号密码
               </Button>
             }
@@ -265,8 +255,8 @@ export default () => {
               }
             }}
           >
-            <ProFormText width="md" name="userAccount" label="账号" required />
-            <ProFormText width="md" name="userName" label="姓名" required />
+            <ProFormText width="md" name="userAccount" label="账号" required/>
+            <ProFormText width="md" name="userName" label="姓名" required/>
           </ModalForm>
         </>,
       ]}

@@ -1,4 +1,4 @@
-import { uploadFileUsingPost } from '@/services/work-topic-selection/fileController';
+import {uploadFileUsingPost} from '@/services/work-topic-selection/fileController';
 import {
   addUserUsingPost,
   deleteUserUsingPost,
@@ -7,11 +7,11 @@ import {
   listUserByPageUsingPost,
   resetPasswordUsingPost,
 } from '@/services/work-topic-selection/userController';
-import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import { ActionType, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
-import { ModalForm, ProFormSelect, ProFormUploadButton } from '@ant-design/pro-form';
-import { Button, Dropdown, MenuProps, message } from 'antd';
-import { useRef, useState } from 'react';
+import {PlusOutlined, UploadOutlined} from '@ant-design/icons';
+import {ActionType, ProColumns, ProFormText, ProTable} from '@ant-design/pro-components';
+import {ModalForm, ProFormSelect, ProFormUploadButton} from '@ant-design/pro-form';
+import {Button, Dropdown, MenuProps, message, Popconfirm} from 'antd';
+import {useRef, useState} from 'react';
 
 type GithubIssueItem = {
   id: number;
@@ -55,22 +55,25 @@ export default () => {
       valueType: 'option',
       key: 'option',
       render: (text, record, _, action) => [
-        <a
-          style={{ color: '#ff4d4f' }}
+        <Popconfirm
           key="delete"
-          onClick={async () => {
-            const res = await deleteUserUsingPost({ userAccount: record.userAccount });
+          title="确定要删除该用户吗？"
+          onConfirm={async () => {
+            const res = await deleteUserUsingPost({userAccount: record.userAccount});
             if (res.code === 0) {
               message.success(res.message);
-              action?.reload();
+              action?.reload?.();
             } else {
               message.error(res.message);
             }
           }}
+          okText="确定"
+          cancelText="取消"
         >
-          删除
-        </a>,
+          <a style={{color: '#ff4d4f'}}>删除</a>
+        </Popconfirm>,
       ],
+
     },
   ];
 
@@ -107,12 +110,13 @@ export default () => {
       actionRef={actionRef}
       cardBordered
       /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-      request={async (params = {}, sort, filter) => {
+      // @ts-ignore
+      request={async (params = {}) => {
         // 取params里的分页参数，默认1和10
         const currentPage = params.current || 1;
         const currentPageSize = params.pageSize || 10;
         try {
-          const paramsWithPagination = { ...params, userRole: 0, pageNum: currentPage, pageSize: currentPageSize };
+          const paramsWithPagination = {...params, userRole: 0, pageNum: currentPage, pageSize: currentPageSize};
           const response = await listUserByPageUsingPost(paramsWithPagination);
           const records = response?.data?.records || [];
           const total = response?.data?.total || 0;
@@ -133,15 +137,15 @@ export default () => {
           };
         }
       }}
-      editable={{ type: 'multiple' }}
+      editable={{type: 'multiple'}}
       columnsState={{
         persistenceKey: 'pro-table-singe-demos',
         persistenceType: 'localStorage',
       }}
       rowKey="id"
-      search={{ labelWidth: 'auto' }}
+      search={{labelWidth: 'auto'}}
       form={{
-        syncToUrl: (values, type) => (type === 'get' ? { ...values } : values),
+        syncToUrl: (values, type) => (type === 'get' ? {...values} : values),
       }}
       pagination={{
         pageSize,
@@ -158,7 +162,7 @@ export default () => {
       headerTitle="学生账号管理"
       toolBarRender={() => [
         <>
-          <Dropdown menu={{ items, onClick: onMenuClick }}>
+          <Dropdown menu={{items, onClick: onMenuClick}}>
             <Button type="dashed">批量操作</Button>
           </Dropdown>
           <ModalForm<{ file: any }>
@@ -166,10 +170,10 @@ export default () => {
             open={importModalOpen}
             onOpenChange={setImportModalOpen}
             autoFocusFirstInput
-            modalProps={{ destroyOnClose: true, onCancel: () => console.log('cancel') }}
+            modalProps={{destroyOnClose: true, onCancel: () => console.log('cancel')}}
             submitTimeout={2000}
             onFinish={async (values) => {
-              const res = await uploadFileUsingPost({ status: 0 }, {}, values.file[0].originFileObj);
+              const res = await uploadFileUsingPost({status: 0}, {}, values.file[0].originFileObj);
               if (res.code === 0) {
                 message.success(res.message);
                 actionRef.current?.reload();
@@ -188,7 +192,7 @@ export default () => {
               max={1}
               required
             >
-              <Button icon={<UploadOutlined />}>选择文件</Button>
+              <Button icon={<UploadOutlined/>}>选择文件</Button>
             </ProFormUploadButton>
           </ModalForm>
           <ModalForm<{
@@ -200,15 +204,15 @@ export default () => {
             title="添加学生账号"
             trigger={
               <Button type="primary">
-                <PlusOutlined />
+                <PlusOutlined/>
                 添加学生账号
               </Button>
             }
             autoFocusFirstInput
-            modalProps={{ destroyOnClose: true, onCancel: () => console.log('cancel') }}
+            modalProps={{destroyOnClose: true, onCancel: () => console.log('cancel')}}
             submitTimeout={2000}
             onFinish={async (values) => {
-              const res = await addUserUsingPost({ ...values, userRole: 0 });
+              const res = await addUserUsingPost({...values, userRole: 0});
               if (res.code === 0) {
                 message.success(res.message);
                 actionRef.current?.reload();
@@ -219,8 +223,8 @@ export default () => {
               }
             }}
           >
-            <ProFormText width="md" name="userAccount" label="学号" required />
-            <ProFormText width="md" name="userName" label="学生姓名" required />
+            <ProFormText width="md" name="userAccount" label="学号" required/>
+            <ProFormText width="md" name="userName" label="学生姓名" required/>
             <ProFormSelect
               request={async () => {
                 const response = await getDeptListUsingPost({});
@@ -258,12 +262,12 @@ export default () => {
             title="重置账号密码"
             trigger={
               <Button type="primary" ghost>
-                <PlusOutlined />
+                <PlusOutlined/>
                 重置账号密码
               </Button>
             }
             autoFocusFirstInput
-            modalProps={{ destroyOnClose: true, onCancel: () => console.log('cancel') }}
+            modalProps={{destroyOnClose: true, onCancel: () => console.log('cancel')}}
             submitTimeout={2000}
             onFinish={async (values) => {
               const res = await resetPasswordUsingPost(values);
@@ -277,8 +281,8 @@ export default () => {
               }
             }}
           >
-            <ProFormText width="md" name="userAccount" label="学号" required />
-            <ProFormText width="md" name="userName" label="学生姓名" required />
+            <ProFormText width="md" name="userAccount" label="学号" required/>
+            <ProFormText width="md" name="userName" label="学生姓名" required/>
           </ModalForm>
         </>,
       ]}
