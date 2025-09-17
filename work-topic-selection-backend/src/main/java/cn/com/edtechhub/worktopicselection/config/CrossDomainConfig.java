@@ -54,7 +54,7 @@ public class CrossDomainConfig implements WebMvcConfigurer {
     private List<String> getCorsRule() {
         return Arrays.asList(
                 "http://127.0.0.1:3000",
-                "http://10.10.174.232",
+                "http://192.168.0.44:3000",
                 "https://wts.edtechhub.com.cn"
         );
     }

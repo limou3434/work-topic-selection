@@ -139,6 +139,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
         onClick: onMenuClick,
         items: menuItems,
       }}
+      overlayStyle={{ maxWidth: '200px', minWidth: 'auto' }} // 限制宽度
     >
       {children}
     </HeaderDropdown>

@@ -3,5 +3,6 @@ spring:
     url: jdbc:mysql://work-mysql:3306/work_topic_selection
   redis:
     host: work-redis
+    database: 1
 server:
   address: 0.0.0.0
