@@ -353,11 +353,12 @@ export default () => {
                 message.error(res.message);
               }
             }}
+            grid
           >
-            <ProFormText width="md" name="topic" label="题目" required />
-            <ProFormText width="md" name="type" label="题目类型" required />
-            <ProFormTextArea width="md" name="description" label="题目描述" required />
-            <ProFormTextArea width="md" name="requirement" label="题目要求" required />
+            <ProFormText width="md" name="topic" label="题目标题" colProps={{ xs: 24, sm: 12 }} required />
+            <ProFormText width="md" name="type" label="题目类型" colProps={{ xs: 24, sm: 12 }} required />
+            <ProFormTextArea width="md" name="description" label="题目描述" colProps={{ xs: 24, sm: 12 }} required />
+            <ProFormTextArea width="md" name="requirement" label="题目要求" colProps={{ xs: 24, sm: 12 }} required />
             <ProFormSelect
               request={async () => {
                 const res = await getDeptListUsingPost({});
