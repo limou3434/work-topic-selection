@@ -95,6 +95,12 @@ public class UserController {
     @Resource
     private StudentTopicSelectionService studentTopicSelectionService;
 
+    /**
+     * 引入邮箱服务依赖
+     */
+    @Resource
+    private MailService mailService;
+
     /// 用户相关接口 ///
 
     /**
@@ -435,6 +441,27 @@ public class UserController {
             return TheResult.success(CodeBindMessageEnums.SUCCESS, user.getId());
         });
     }
+
+    /**
+     * 发送邮件的接口
+     * TODO: 用户修改密码的时候需要绑定 QQ 邮箱
+     * TODO: 生成的验证码需要做 redis 和用户绑定
+     */
+    @PostMapping("/send/code")
+    public BaseResponse<String> sendCode() {
+        // 获取 6 位随机验证码
+        Random random = new Random();
+        int code = 100000 + random.nextInt(900000);
+
+        try {
+            mailService.sendCodeMail("1346965749@qq.com", "验证码认证 - 广州南方学院毕业设计选题系统", Integer.toString(code));
+        } catch (Exception e) {
+            ThrowUtils.throwIf(true, CodeBindMessageEnums.SYSTEM_ERROR, "邮件发送失败, 请联系管理员 898738804@qq.com");
+        }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, "发送成功, 请在您的 QQ 邮箱中查收!");
+    }
+
+    // TODO: 添加用户封禁接口（还有自动检测用户在一分钟内是否多次恶意请求，如果是就自动封禁 1 分钟，并且上报 qq 邮箱）
 
     /// 系部专业相关接口 ///
 

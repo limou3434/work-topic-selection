@@ -28,7 +28,7 @@ public enum CodeBindMessageEnums {
     USER_DISABLE_ERROR(40103, "账号封禁错误"),
     FORBIDDEN_ERROR(40300, "禁止访问的资源"),
     ILLEGAL_OPERATION_ERROR(40301, "您做了非法操作"),
-    NOT_FOUND_ERROR(40400, "请求不存在资源"), //
+    NOT_FOUND_ERROR(40400, "请求不存在资源"),
     TIMEOUT_ERROR(40800, "请求超时"),
 
     // 5xxxx 服务端错误类型
