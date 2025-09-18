@@ -17,6 +17,14 @@ import javax.servlet.http.HttpServletRequest;
  */
 public interface UserService extends IService<User> {
 
+    /**
+     * 更具 userAccount 来检查一个用户在数据库中是否存在（已支持逻辑删除后的查询）
+     *
+     * @param userAccount 用户账号
+     * @return User
+     */
+    User userIsExist(String userAccount);
+
     // 获取当前登陆用户标识
     Long userGetCurrentLonginUserId();
 
@@ -26,8 +34,6 @@ public interface UserService extends IService<User> {
     // 获取当前登陆用户会话
     User userGetCurrentLoginUser();
 
-    // 检查一个用户是否存在
-    User userIsExist(String userAccount);
 
     // 检查用户是否是管理员
     Boolean userIsAdmin(User user);

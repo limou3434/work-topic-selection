@@ -1,6 +1,7 @@
 package cn.com.edtechhub.worktopicselection.controller;
 
-import cn.com.edtechhub.worktopicselection.annotation.CacheSearchOptimization;
+// import cn.com.edtechhub.worktopicselection.annotation.CacheSearchOptimization;
+
 import cn.com.edtechhub.worktopicselection.constant.CommonConstant;
 import cn.com.edtechhub.worktopicselection.constant.TopicConstant;
 import cn.com.edtechhub.worktopicselection.constant.UserConstant;
@@ -39,7 +40,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
@@ -97,150 +97,180 @@ public class UserController {
 
     /// 用户相关接口 ///
 
-    // 创建用户
+    /**
+     * 创建用户接口 [事务/admin]
+     *
+     * @param request 请求结构
+     */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/add")
-    public BaseResponse<Long> addUser(@RequestBody UserAddRequest userAddRequest) {
+    public BaseResponse<Long> addUser(@RequestBody UserAddRequest request) {
         // 参数检查
-        ThrowUtils.throwIf(userAddRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
-        String userName = userAddRequest.getUserName();
+        String userAccount = request.getUserAccount();
+        ThrowUtils.throwIf(StringUtils.isBlank(userAccount), CodeBindMessageEnums.PARAMS_ERROR, "缺少用户的学号/工号");
+
+        String userName = request.getUserName();
         ThrowUtils.throwIf(StringUtils.isBlank(userName), CodeBindMessageEnums.PARAMS_ERROR, "缺少用户名字");
 
-        String userAccount = userAddRequest.getUserAccount();
-        ThrowUtils.throwIf(StringUtils.isBlank(userAccount), CodeBindMessageEnums.PARAMS_ERROR, "缺少用户学号/工号");
-
         User oldUser = userService.userIsExist(userAccount);
-        ThrowUtils.throwIf(oldUser != null, CodeBindMessageEnums.PARAMS_ERROR, "该学号/工号对于的用户已经存在, 请不要重复添加");
+        ThrowUtils.throwIf(oldUser != null, CodeBindMessageEnums.PARAMS_ERROR, "该学号/工号对应的用户已经存在, 请不要重复添加, 如果需要更改用户信息可以先删除用户再重新添加");
 
-        Integer userRole = userAddRequest.getUserRole();
+        Integer userRole = request.getUserRole();
         ThrowUtils.throwIf(userRole == null, CodeBindMessageEnums.PARAMS_ERROR, "缺少用户角色");
+        assert userRole != null;
 
         UserRoleEnum userRoleEnum = UserRoleEnum.getEnums(userRole);
-        ThrowUtils.throwIf(userRoleEnum == null, CodeBindMessageEnums.PARAMS_ERROR, "不存在该用户角色");
+        ThrowUtils.throwIf(userRoleEnum == null, CodeBindMessageEnums.PARAMS_ERROR, "本系统不存在该用户角色");
+
+        String userDeptName = request.getDeptName();
+        String userProject = request.getProject();
 
         // 如果是添加学生则需要检查是否设置了系部和专业
         if (userRoleEnum == UserRoleEnum.STUDENT) {
-            String userDeptName = userAddRequest.getDeptName();
             ThrowUtils.throwIf(StringUtils.isBlank(userDeptName), CodeBindMessageEnums.PARAMS_ERROR, "缺少系部名称");
-
-            String userProject = userAddRequest.getProject();
             ThrowUtils.throwIf(StringUtils.isBlank(userProject), CodeBindMessageEnums.PARAMS_ERROR, "缺少专业名称");
         }
-
         // 如果是添加主任或教师则需要检查是否设置了系部和专业
-        if (userRoleEnum == UserRoleEnum.DEPT || userRoleEnum == UserRoleEnum.TEACHER) {
-            String userDeptName = userAddRequest.getDeptName();
+        else if (userRoleEnum == UserRoleEnum.DEPT || userRoleEnum == UserRoleEnum.TEACHER) {
             ThrowUtils.throwIf(StringUtils.isBlank(userDeptName), CodeBindMessageEnums.PARAMS_ERROR, "缺少系部名称");
+        } else if (userRoleEnum == UserRoleEnum.ADMIN) {
+            log.info("添加管理员");
+        }
+        // 兜底情况
+        else {
+            ThrowUtils.throwIf(true, CodeBindMessageEnums.SYSTEM_ERROR, "系统发生未知情况, 请及时联系管理员 898738804@qq.com");
         }
 
         // 创建新的用户实例
         return transactionTemplate.execute(transactionStatus -> {
             User user = new User();
-            BeanUtils.copyProperties(userAddRequest, user);
-            user.setDept(userAddRequest.getDeptName());
-            user.setProject(userAddRequest.getProject());
-            user.setUserRole(userAddRequest.getUserRole());
-            String encryptPassword = DigestUtils.md5DigestAsHex((UserConstant.SALT + UserConstant.DEFAULT_PASSWD).getBytes());
-            user.setUserPassword(encryptPassword); // 设置默认密码
+            BeanUtils.copyProperties(request, user); // 数据库中的 userAccount 是主键
+            user.setDept(userDeptName);
+            user.setProject(userProject);
+            user.setUserRole(userRole);
+            user.setUserPassword(DigestUtils.md5DigestAsHex((UserConstant.SALT + UserConstant.DEFAULT_PASSWD).getBytes()));
 
-            // 添加新的用户
             boolean result = userService.save(user);
             ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "添加新的用户失败");
             return TheResult.success(CodeBindMessageEnums.SUCCESS, user.getId());
         });
     }
 
-    // 删除用户
+    /**
+     * 删除用户接口 [事务/admin]
+     * TODO: 虽然删除其他实体带来的问题被修复, 但是删除用户带来的选题影响还没有被修复
+     *
+     * @param request 请求结构
+     */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/delete")
-    public BaseResponse<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest) {
+    public BaseResponse<Boolean> deleteUser(@RequestBody DeleteRequest request) {
         // 参数检查
-        ThrowUtils.throwIf(deleteRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
-        String userAccount = deleteRequest.getUserAccount();
-        ThrowUtils.throwIf(StringUtils.isBlank(userAccount), CodeBindMessageEnums.PARAMS_ERROR, "用户账号不能为空");
+        String userAccount = request.getUserAccount();
+        ThrowUtils.throwIf(StringUtils.isBlank(userAccount), CodeBindMessageEnums.PARAMS_ERROR, "指定删除的用户账号不能为空");
 
         User user = userService.userIsExist(userAccount);
         ThrowUtils.throwIf(user == null, CodeBindMessageEnums.PARAMS_ERROR, "用户不存在无需删除");
+        assert user != null;
 
         // 删除用户
         return transactionTemplate.execute(transactionStatus -> {
+            Long id = user.getId();
+            ThrowUtils.throwIf(id == 1L, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "无法删除超级管理员");
             boolean result = userService.removeById(user.getId());
             ThrowUtils.throwIf(!result, CodeBindMessageEnums.SYSTEM_ERROR, "删除用户失败");
             return TheResult.success(CodeBindMessageEnums.SUCCESS, result);
         });
     }
 
-    // 更新用户
+    /**
+     * 更新用户借口 [事务/admin]
+     * TODO: 不过这个没有在前端中使用, 因为比较麻烦
+     *
+     * @param request 请求结构
+     */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/update")
-    public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest) {
+    public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest request) {
         // 检查参数
-        ThrowUtils.throwIf(userUpdateRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
-        Long id = userUpdateRequest.getId();
+        Long id = request.getId();
         ThrowUtils.throwIf(id < 0, CodeBindMessageEnums.PARAMS_ERROR, "用户标识不合法, 必须为正整数");
 
         // 创建更新后的新用户实例
         return transactionTemplate.execute(transactionStatus -> {
             User user = new User();
-            BeanUtils.copyProperties(userUpdateRequest, user);
+            BeanUtils.copyProperties(request, user);
+
             boolean result = userService.updateById(user);
             ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "更新失败");
             return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
         });
     }
 
-    // 获取当前登录用户数据
+    /**
+     * 获取当前登录用户数据 [nothing]
+     */
     @SaCheckLogin
     @GetMapping("/get/login")
     public BaseResponse<LoginUserVO> getLoginUser() {
-        Long LoginUserId = userService.userGetCurrentLonginUserId();
-        User user = userService.userGetSessionById(LoginUserId);
+        Long loginUserId = userService.userGetCurrentLonginUserId();
+        User user = userService.userGetSessionById(loginUserId);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userService.getLoginUserVO(user));
     }
 
-    // 获取用户分页数据
+    /**
+     * 获取用户分页数据 [admin,dept,teacher]
+     *
+     * @param request 请求结构
+     */
     @SaCheckLogin
     @SaCheckRole(value = {"admin", "dept", "teacher"}, mode = SaMode.OR)
     @PostMapping("/get/user/page")
-    public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest) {
+    public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest request) {
         // 检查参数
-        long current = userQueryRequest.getCurrent();
+        long current = request.getCurrent();
         ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "页码号必须大于 0");
 
-        long size = userQueryRequest.getPageSize();
+        long size = request.getPageSize();
         ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "页大小必须大于 0");
 
         // 获取用户数据
-        Page<User> userPage = userService.page(new Page<>(current, size), userService.getQueryWrapper(userQueryRequest));
-
-        // 非超级管理员过滤掉测试数据
-        if (userService.userGetCurrentLoginUser().getId() != 1L) {
-            userPage.getRecords().removeIf(user -> user.getId() <= 56);
-            userPage.setTotal(userPage.getTotal() - 56);
-        }
+        Page<User> userPage = userService.page(new Page<>(current, size), userService.getQueryWrapper(request));
 
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userPage);
     }
 
-    // 获取所有教师的脱敏列表数据
-    @SuppressWarnings({"DataFlowIssue", "ConstantValue"})
+    /**
+     * 获取所有教师的脱敏列表数据接口(给教师单独设置的详细查询接口) [teacher]
+     *
+     * @param request 请求结构
+     */
     @SaCheckLogin
-    @PostMapping("get/teacher")
-    public BaseResponse<List<TeacherVO>> getTeacher(@RequestBody TeacherQueryRequest teacherQueryRequest) {
+    @SaCheckRole(value = {"teacher"}, mode = SaMode.OR)
+    @PostMapping("/get/teacher")
+    public BaseResponse<List<TeacherVO>> getTeacher(@RequestBody TeacherQueryRequest request) {
         // 检查参数
-        ThrowUtils.throwIf(teacherQueryRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
-        Integer userRole = teacherQueryRequest.getUserRole();
+        Integer userRole = request.getUserRole();
         ThrowUtils.throwIf(userRole == null, CodeBindMessageEnums.PARAMS_ERROR, "用户角色不能为空");
 
         UserRoleEnum userRoleEnum = UserRoleEnum.getEnums(userRole);
         ThrowUtils.throwIf(userRoleEnum == null, CodeBindMessageEnums.PARAMS_ERROR, "该用户角色不存在");
+        assert userRoleEnum != null;
 
         // 获取所有的教师数据
         List<User> userList = userService.list(new QueryWrapper<User>().eq("userRole", userRoleEnum.getCode()));
@@ -255,7 +285,11 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, teacherVOList);
     }
 
-    // 根据 id 获取用户数据
+    /**
+     * 根据 id 获取用户数据
+     *
+     * @param id 用户标识
+     */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @GetMapping("/get")
@@ -269,7 +303,12 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, user);
     }
 
-    // 根据 id 获取用户包装数据
+    /**
+     * 根据 id 获取用户包装数据(但是获取的是脱敏后的数据)
+     *
+     * @param id 用户标识
+     */
+    @SuppressWarnings("AlibabaLowerCamelCaseVariableNaming")
     @SaCheckLogin
     @GetMapping("/get/vo")
     public BaseResponse<UserVO> getUserVOById(long id) {
@@ -451,15 +490,42 @@ public class UserController {
         });
     }
 
-    // 删除系部
+    /**
+     * 删除系部
+     *
+     * @param request 请求结构
+     */
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/delete/dept")
-    public BaseResponse<Boolean> deleteDept(@RequestBody DeleteDeptRequest deleteDeptRequest) {
+    public BaseResponse<Boolean> deleteDept(@RequestBody DeleteDeptRequest request) {
         // 检查参数
-        ThrowUtils.throwIf(deleteDeptRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
-        String deptName = deleteDeptRequest.getDeptName();
+        String deptName = request.getDeptName();
         ThrowUtils.throwIf(deptName == null, CodeBindMessageEnums.PARAMS_ERROR, "系部名称不能为空");
+
+        // 保证先删除专业才能删除系部
+        List<Project> projectList = projectService.list(new QueryWrapper<Project>().eq("deptName", deptName));
+        if (!projectList.isEmpty()) {
+            String projectNames = projectList.stream()
+                    .map(Project::getProjectName)
+                    .collect(Collectors.joining(", "));
+            ThrowUtils.throwIf(true, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "先删除属于该系部的所有专业（" + projectNames + "）后才能删除该系部");
+        }
+
+        // 保证先删除主任才能删除系部
+        List<User> userList = userService.list(new QueryWrapper<User>().eq("dept", deptName));
+        if (!userList.isEmpty()) {
+            String userNames = userList.stream()
+                    .limit(5)
+                    .map(User::getUserName)
+                    .collect(Collectors.joining(", "));
+            if (userList.size() > 5) {
+                userNames += "...";
+            }
+            ThrowUtils.throwIf(true, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "先删除属于该系部的所有主任或教师（" + userNames + "）后才能删除该系部");
+        }
 
         // 删除系部
         return transactionTemplate.execute(transactionStatus -> {
@@ -469,15 +535,33 @@ public class UserController {
         });
     }
 
-    // 删除专业
+    /**
+     * 删除专业
+     *
+     * @param request 请求结构
+     */
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/delete/project")
-    public BaseResponse<Boolean> deleteProject(@RequestBody DeleteProjectRequest deleteProjectRequest) {
+    public BaseResponse<Boolean> deleteProject(@RequestBody DeleteProjectRequest request) {
         // 检查参数
-        ThrowUtils.throwIf(deleteProjectRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
-        String projectName = deleteProjectRequest.getProjectName();
+        String projectName = request.getProjectName();
         ThrowUtils.throwIf(projectName == null, CodeBindMessageEnums.PARAMS_ERROR, "专业名称不能为空");
+
+        // 保证先删除学生后才能删除专业
+        List<User> userList = userService.list(new QueryWrapper<User>().eq("project", projectName));
+        if (!userList.isEmpty()) {
+            String userNames = userList.stream()
+                    .limit(5)
+                    .map(User::getUserName)
+                    .collect(Collectors.joining(", "));
+            if (userList.size() > 5) {
+                userNames += "...";
+            }
+            ThrowUtils.throwIf(true, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "先删除属于该专业的所有学生（" + userNames + "）后才能删除该专业");
+        }
 
         // 删除专业
         return transactionTemplate.execute(transactionStatus -> {
@@ -568,6 +652,7 @@ public class UserController {
 
     /// 选题相关接口 ///
 
+    // TODO: 这里只使用了名字来查重，但是建议接入 AI 给出重复率和描述
     // 添加选题
     @SaCheckLogin
     @SaCheckRole(value = {"teacher"}, mode = SaMode.OR)
@@ -1068,7 +1153,7 @@ public class UserController {
 
     // 获取选题分页数据
     @SaCheckLogin
-    @CacheSearchOptimization(ttl = 15, modelClass = Topic.class)
+    // @CacheSearchOptimization(ttl = 15, modelClass = Topic.class)
     @PostMapping("/get/topic/page")
     public BaseResponse<Page<Topic>> getTopicList(@RequestBody TopicQueryRequest topicQueryRequest) {
         // 检查参数
@@ -1082,12 +1167,6 @@ public class UserController {
 
         // 获取选题数据
         Page<Topic> topicPage = topicService.page(new Page<>(current, size), topicService.getQueryWrapper(topicQueryRequest));
-
-        // 非超级管理员过滤掉测试数据
-        if (!userService.userGetCurrentLoginUser().getId().equals(1L)) {
-            topicPage.getRecords().removeIf(topic -> topic.getId() <= 17);
-            topicPage.setTotal(topicPage.getTotal() - 17);
-        }
 
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topicPage);
     }
@@ -1138,7 +1217,7 @@ public class UserController {
 
     // 获取系部教师数据
     @SaCheckLogin
-    @CacheSearchOptimization(ttl = 30, modelClass = DeptTeacherVO.class)
+    // @CacheSearchOptimization(ttl = 30, modelClass = DeptTeacherVO.class)
     @PostMapping("/get/dept/teacher")
     public BaseResponse<Page<DeptTeacherVO>> getTeacher(@RequestBody DeptTeacherQueryRequest deptTeacherQueryRequest) {
         // 检查参数
@@ -1192,7 +1271,6 @@ public class UserController {
                 selectAmount += topic.getSelectAmount();
                 surplusQuantity += topic.getSurplusQuantity();
             }
-
 
             // 构建 DeptTeacherVO 对象
             if (count != 0) {
@@ -1466,9 +1544,7 @@ public class UserController {
     }
 
     // TODO: 添加两个原子事务接口
-
-    // 查看指定教师的选题上限
-
-    // 设置指定教师的选题上限
+    // TODO: 查看指定教师的选题上限
+    // TODO: 设置指定教师的选题上限
 
 }
