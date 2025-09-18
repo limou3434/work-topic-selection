@@ -1,25 +1,20 @@
-import { uploadFileTopicUsingPost } from '@/services/work-topic-selection/fileController';
+import {uploadFileTopicUsingPost} from '@/services/work-topic-selection/fileController';
 import {
   addTopicUsingPost,
-  checkTopicUsingPost, deleteTopicUsingPost,
+  checkTopicUsingPost,
+  deleteTopicUsingPost,
   getDeptListUsingPost,
   getTeacherUsingPost1,
   getTopicListUsingPost,
   updateTopicUsingPost,
 } from '@/services/work-topic-selection/userController';
-import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import { ActionType, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
-import {
-  ModalForm,
-  ProFormSelect,
-  ProFormTextArea,
-  ProFormUploadButton,
-} from '@ant-design/pro-form';
-import { Button, message } from 'antd';
-import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import * as async_hooks from 'node:async_hooks';
-import { record } from '@umijs/utils/compiled/zod';
+import {ExclamationCircleOutlined, PlusOutlined, UploadOutlined} from '@ant-design/icons';
+import {ActionType, ProColumns, ProFormText, ProTable} from '@ant-design/pro-components';
+import {ModalForm, ProFormSelect, ProFormTextArea, ProFormUploadButton,} from '@ant-design/pro-form';
+import {Button, message, Modal, Tooltip} from 'antd';
+import {useRef, useState} from 'react';
+// @ts-ignore
+import {useNavigate} from 'react-router-dom';
 
 type GithubIssueItem = {
   id: number;
@@ -93,7 +88,7 @@ export default () => {
       dataIndex: 'deptTeacher',
       valueType: 'select',
       request: async () => {
-        const response = await getTeacherUsingPost1({ userRole: 2 });
+        const response = await getTeacherUsingPost1({userRole: 2});
         return (
           response?.data?.map((item) => ({
             label: item.label,
@@ -123,7 +118,7 @@ export default () => {
           color = 'red';
           text = '打回';
         }
-        return <span style={{ color }}>{text}</span>;
+        return <span style={{color}}>{text}</span>;
       },
     },
     {
@@ -172,7 +167,7 @@ export default () => {
                 message.warning('已发布的题目不允许重新提交审核');
                 return;
               }
-              const res = await checkTopicUsingPost({ id: record.id, status: -1 });
+              const res = await checkTopicUsingPost({id: record.id, status: -1});
               if (res.code === 0) {
                 message.success('提交成功');
                 action?.reload();
@@ -193,11 +188,46 @@ export default () => {
     },
   ];
 
+  const DownloadButton = () => {
+    const handleClick = () => {
+      let second = 5;
+
+      const modal = Modal.confirm({
+        title: "提示",
+        icon: <ExclamationCircleOutlined />,
+        content: "请严格按照格式填写模板文件，同时去除模板中的示例内容，并且注意文件是 .csv 格式，不是 .xlsx 格式或者 .xls 格式，可以把表格文件中的数据复制到 .csv 文件中，也可以直接填写 .csv 文件。",
+        okText: `下载 (${second}s)`,
+        okButtonProps: { disabled: true },
+        cancelText: "取消",
+        onOk: () => {
+          window.open(
+            "https://wci-1318277926.cos.ap-guangzhou.myqcloud.com/work-topic-selection/%E9%A2%98%E7%9B%AE%E6%89%B9%E9%87%8F%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF%20.csv",
+            "_blank"
+          );
+        },
+      });
+
+      const timer = setInterval(() => {
+        second -= 1;
+
+        modal.update({
+          okText: second > 0 ? `下载 (${second}s)` : "下载",
+          okButtonProps: { disabled: second > 0 },
+        });
+
+        if (second <= 0) clearInterval(timer);
+      }, 1000);
+    };
+
+    return <Button type="primary" onClick={handleClick}>下载模板</Button>;
+  };
+
   return (
     <ProTable<GithubIssueItem>
       columns={columns}
       actionRef={actionRef}
       cardBordered
+      // @ts-ignore
       request={async (params = {}) => {
         try {
           const current = params.current || 1;
@@ -206,6 +236,7 @@ export default () => {
           setPageSize(size);
           const res = await getTopicListUsingPost({
             ...params,
+            // @ts-ignore
             userRole: 1,
             current,
             pageSize: size,
@@ -232,7 +263,7 @@ export default () => {
             message.warning('已发布的题目不允许编辑');
             return false;
           }
-          const res = await updateTopicUsingPost({ updateTopicListRequests: [record] });
+          const res = await updateTopicUsingPost({updateTopicListRequests: [record]});
           if (res.code === 0) {
             message.success(res.message);
             return true;
@@ -242,16 +273,16 @@ export default () => {
           }
         },
         onDelete: async (key, record) => {
-          const res = await deleteTopicUsingPost({ id: record?.id });
+          const res = await deleteTopicUsingPost({id: record?.id});
           if (res.code === 0) {
             message.success(res.message);
             return true;
-          }
-          else {
+          } else {
             message.error(res.message);
             return false;
           }
         },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onChange: (editableKeys, editableRows) => {
           // 可选：你可以限制哪些可以编辑
         },
@@ -261,9 +292,9 @@ export default () => {
         persistenceType: 'localStorage',
       }}
       rowKey="id"
-      search={{ labelWidth: 'auto' }}
+      search={{labelWidth: 'auto'}}
       form={{
-        syncToUrl: (values, type) => (type === 'get' ? { ...values } : values),
+        syncToUrl: (values, type) => (type === 'get' ? {...values} : values),
       }}
       pagination={{
         current: pageNum,
@@ -280,27 +311,24 @@ export default () => {
       headerTitle="发布题目和修改题目"
       toolBarRender={() => [
         <>
-          <Button type="primary" key="download-template">
-            <a
-              href="https://wci-1318277926.cos.ap-guangzhou.myqcloud.com/work-topic-selection/%E9%A2%98%E7%9B%AE%E6%89%B9%E9%87%8F%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF%20.csv"
-              download
-            >
-              下载模板
-            </a>
-          </Button>
+          <Tooltip title="请严格按照格式填写模板文件，并且去除模板中的示例内容" placement="left">
+ <DownloadButton/>
+          </Tooltip>
           <ModalForm<{ file: any }>
             title="批量添加题目"
             trigger={
               <Button type="primary">
-                <PlusOutlined /> 批量添加题目
+                <Tooltip title="默认最多导入 5 条，最高上限 30 条">
+                  <PlusOutlined/> 批量添加题目
+                </Tooltip>
               </Button>
             }
             autoFocusFirstInput
-            modalProps={{ destroyOnClose: true }}
+            modalProps={{destroyOnClose: true}}
             submitTimeout={2000}
             onFinish={async (values) => {
               const res = await uploadFileTopicUsingPost(
-                { status: 0 },
+                {status: 0},
                 values.file[0].originFileObj,
               );
               if (res.code === 0) {
@@ -321,7 +349,7 @@ export default () => {
               max={1}
               required
             >
-              <Button icon={<UploadOutlined />}>选择文件</Button>
+              <Button icon={<UploadOutlined/>}>选择文件</Button>
             </ProFormUploadButton>
           </ModalForm>
 
@@ -337,28 +365,35 @@ export default () => {
             title="添加题目"
             trigger={
               <Button type="primary">
-                <PlusOutlined /> 添加题目
+                <Tooltip title="默认最多导入 5 条，最高上限 30 条">
+                  <PlusOutlined/> 添加题目
+                </Tooltip>
               </Button>
             }
             autoFocusFirstInput
-            modalProps={{ destroyOnClose: true }}
+            modalProps={{destroyOnClose: true}}
             submitTimeout={2000}
             onFinish={async (values) => {
               const res = await addTopicUsingPost(values);
               if (res.code === 0) {
                 message.success(res.message);
                 actionRef?.current?.reload();
+                localStorage.removeItem("addTopicForm"); // 提交成功后清掉缓存
                 return true;
               } else {
                 message.error(res.message);
               }
             }}
             grid
+            initialValues={JSON.parse(localStorage.getItem("addTopicForm") || "{}")}
+            onValuesChange={(_, allValues) => {
+              localStorage.setItem("addTopicForm", JSON.stringify(allValues));
+            }}
           >
-            <ProFormText width="md" name="topic" label="题目标题" colProps={{ xs: 24, sm: 12 }} required />
-            <ProFormText width="md" name="type" label="题目类型" colProps={{ xs: 24, sm: 12 }} required />
-            <ProFormTextArea width="md" name="description" label="题目描述" colProps={{ xs: 24, sm: 12 }} required />
-            <ProFormTextArea width="md" name="requirement" label="题目要求" colProps={{ xs: 24, sm: 12 }} required />
+            <ProFormText width="md" name="topic" label="题目标题" colProps={{xs: 24, sm: 12}} required/>
+            <ProFormText width="md" name="type" label="题目类型" colProps={{xs: 24, sm: 12}} required/>
+            <ProFormTextArea width="md" name="description" label="题目描述" colProps={{xs: 24, sm: 12}} required/>
+            <ProFormTextArea width="md" name="requirement" label="题目要求" colProps={{xs: 24, sm: 12}} required/>
             <ProFormSelect
               request={async () => {
                 const res = await getDeptListUsingPost({});
@@ -376,7 +411,7 @@ export default () => {
             />
             <ProFormSelect
               request={async () => {
-                const res = await getTeacherUsingPost1({ userRole: 2 });
+                const res = await getTeacherUsingPost1({userRole: 2});
                 return (
                   res?.data?.map((item) => ({
                     label: item.label,

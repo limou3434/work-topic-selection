@@ -33,12 +33,12 @@ export default () => {
       width: 48,
     },
     {
-      title: '专业',
-      dataIndex: 'projectName',
-    },
-    {
       title: '系部',
       dataIndex: 'deptName',
+    },
+    {
+      title: '专业',
+      dataIndex: 'projectName',
     },
     {
       title: '操作',

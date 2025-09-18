@@ -7,10 +7,10 @@ import {
   listUserByPageUsingPost,
   resetPasswordUsingPost,
 } from '@/services/work-topic-selection/userController';
-import {PlusOutlined, UploadOutlined} from '@ant-design/icons';
+import {ExclamationCircleOutlined, PlusOutlined, UploadOutlined} from '@ant-design/icons';
 import {ActionType, ProColumns, ProFormText, ProTable} from '@ant-design/pro-components';
 import {ModalForm, ProFormSelect, ProFormUploadButton} from '@ant-design/pro-form';
-import {Button, Dropdown, MenuProps, message, Popconfirm} from 'antd';
+import {Button, Dropdown, MenuProps, message, Modal, Popconfirm} from 'antd';
 import {useRef, useState} from 'react';
 
 type GithubIssueItem = {
@@ -54,7 +54,7 @@ export default () => {
       title: '操作',
       valueType: 'option',
       key: 'option',
-      render: (text, record, _, action) => [
+      render: (_text, record, _, action) => [
         <Popconfirm
           key="delete"
           title="确定要删除该用户吗？"
@@ -92,13 +92,51 @@ export default () => {
 
   const onMenuClick: MenuProps['onClick'] = (e) => {
     if (e.key === 'downloadTemplate') {
-      const link = document.createElement('a');
-      link.href =
-        'https://wci-1318277926.cos.ap-guangzhou.myqcloud.com/work-topic-selection/%E5%AD%A6%E7%94%9F%E8%B4%A6%E5%8F%B7%E6%89%B9%E9%87%8F%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF.csv';
-      link.download = '学生账号导入模板.csv';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // const link = document.createElement('a');
+      // link.href =
+      //   'https://wci-1318277926.cos.ap-guangzhou.myqcloud.com/work-topic-selection/%E5%AD%A6%E7%94%9F%E8%B4%A6%E5%8F%B7%E6%89%B9%E9%87%8F%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF.csv';
+      // link.download = '学生账号导入模板.csv';
+      // document.body.appendChild(link);
+      // link.click();
+      // document.body.removeChild(link);
+      if (e.key === 'downloadTemplate') {
+        let second = 5;
+
+        const modal = Modal.confirm({
+          title: "提示",
+          icon: <ExclamationCircleOutlined />,
+          content: "请严格按照模板格式填写 CSV 文件，并且删除模板文件中的示例，不严格按照此规则填写可能导入失败",
+          okText: `我已知晓，继续下载 (${second}s)`,
+          okButtonProps: { disabled: true },
+          cancelText: "取消",
+          onCancel: () => {
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            clearInterval(timer);
+          },
+          onOk: () => {
+            const link = document.createElement('a');
+            link.href =
+              'https://wci-1318277926.cos.ap-guangzhou.myqcloud.com/work-topic-selection/%E5%AD%A6%E7%94%9F%E8%B4%A6%E5%8F%B7%E6%89%B9%E9%87%8F%E5%AF%BC%E5%85%A5%E6%A8%A1%E6%9D%BF.csv';
+            link.download = '学生账号导入模板.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            clearInterval(timer);
+          },
+        });
+
+        const timer = setInterval(() => {
+          second -= 1;
+          modal.update({
+            okText: second > 0 ? `我已知晓，继续下载 (${second}s)` : "我已知晓，继续下载",
+            okButtonProps: { disabled: second > 0 },
+          });
+          if (second <= 0) clearInterval(timer);
+        }, 1000);
+      } else if (e.key === 'batchAdd') {
+        setImportModalOpen(true);
+      }
     } else if (e.key === 'batchAdd') {
       setImportModalOpen(true);
     }
