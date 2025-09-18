@@ -6,5 +6,5 @@ spring:
     database: 0
 server:
   address: 0.0.0.0
-knife4j:
-  enable: false
+#knife4j:
+#  enable: false
