@@ -79,10 +79,10 @@ export default () => {
 
         const modal = Modal.confirm({
           title: "提示",
-          icon: <ExclamationCircleOutlined />,
+          icon: <ExclamationCircleOutlined/>,
           content: "请严格按照模板格式填写 CSV 文件，并且删除模板文件中的示例，不严格按照此规则填写可能导入失败",
           okText: `我已知晓，继续下载 (${second}s)`,
-          okButtonProps: { disabled: true },
+          okButtonProps: {disabled: true},
           cancelText: "取消",
           onCancel: () => {
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -105,7 +105,7 @@ export default () => {
           second -= 1;
           modal.update({
             okText: second > 0 ? `我已知晓，继续下载 (${second}s)` : "我已知晓，继续下载",
-            okButtonProps: { disabled: second > 0 },
+            okButtonProps: {disabled: second > 0},
           });
           if (second <= 0) clearInterval(timer);
         }, 1000);
@@ -171,7 +171,14 @@ export default () => {
       dateFormatter="string"
       headerTitle="教师账号管理"
       toolBarRender={() => [
-        <>
+        <div
+          key="toolbar-container"
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 8, // 按钮间距
+          }}
+        >
           <Dropdown menu={{items, onClick: onMenuClick}}>
             <Button type="dashed">批量操作</Button>
           </Dropdown>
@@ -293,7 +300,7 @@ export default () => {
             <ProFormText width="md" name="userAccount" label="账号" required/>
             <ProFormText width="md" name="userName" label="姓名" required/>
           </ModalForm>
-        </>,
+        </div>
       ]}
     />
   );

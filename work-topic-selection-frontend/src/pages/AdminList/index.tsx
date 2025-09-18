@@ -4,11 +4,11 @@ import {
   listUserByPageUsingPost,
   resetPasswordUsingPost,
 } from '@/services/work-topic-selection/userController';
-import { PlusOutlined } from '@ant-design/icons';
-import { ActionType, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
-import { ModalForm } from '@ant-design/pro-form';
-import { Button, Popconfirm, message } from 'antd';
-import React, { useRef } from 'react';
+import {PlusOutlined} from '@ant-design/icons';
+import {ActionType, ProColumns, ProFormText, ProTable} from '@ant-design/pro-components';
+import {ModalForm} from '@ant-design/pro-form';
+import {Button, message, Popconfirm} from 'antd';
+import React, {useRef} from 'react';
 
 type GithubIssueItem = {
   userAccount: string;
@@ -43,7 +43,7 @@ export default () => {
           key="delete"
           title="确定要删除该用户吗？"
           onConfirm={async () => {
-            const res = await deleteUserUsingPost({ userAccount: record.userAccount });
+            const res = await deleteUserUsingPost({userAccount: record.userAccount});
             if (res.code === 0) {
               message.success(res.message);
               action?.reload?.();
@@ -54,7 +54,7 @@ export default () => {
           okText="确定"
           cancelText="取消"
         >
-          <a style={{ color: '#ff4d4f' }}>删除</a>
+          <a style={{color: '#ff4d4f'}}>删除</a>
         </Popconfirm>,
       ],
     },
@@ -69,7 +69,7 @@ export default () => {
       request={async (params = {}, sort, filter) => {
         console.log(sort, filter, params);
         try {
-          const { current = 1, pageSize = 10, ...rest } = params;
+          const {current = 1, pageSize = 10, ...rest} = params;
           const requestParams = {
             ...rest,
             userRole: 3,
@@ -103,7 +103,7 @@ export default () => {
         labelWidth: 'auto',
       }}
       form={{
-        syncToUrl: (values, type) => (type === 'get' ? { ...values } : values),
+        syncToUrl: (values, type) => (type === 'get' ? {...values} : values),
       }}
       pagination={{
         defaultPageSize: 10,
@@ -112,70 +112,77 @@ export default () => {
       dateFormatter="string"
       headerTitle="系统账号管理"
       toolBarRender={() => [
-        // eslint-disable-next-line react/jsx-key
-        <ModalForm<{
-          userAccount: string;
-          userName: string;
-        }>
-          title="添加系统账号"
-          trigger={
-            <Button type="primary">
-              <PlusOutlined /> 添加系统账号
-            </Button>
-          }
-          autoFocusFirstInput
-          modalProps={{
-            destroyOnClose: true,
-            onCancel: () => console.log('取消添加'),
-          }}
-          submitTimeout={2000}
-          onFinish={async (values) => {
-            const res = await addUserUsingPost({ ...values, userRole: 3 });
-            if (res.code === 0) {
-              message.success(res.message);
-              actionRef.current?.reload();
-              return true;
-            } else {
-              message.error(res.message);
-              return false;
-            }
+        <div
+          key="toolbar-container"
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 8, // 按钮间距
           }}
         >
-          <ProFormText width="md" name="userAccount" label="工号" required />
-          <ProFormText width="md" name="userName" label="姓名" required />
-        </ModalForm>,
-        // eslint-disable-next-line react/jsx-key
-        <ModalForm<{
-          userAccount: string;
-          userName: string;
-        }>
-          title="重置账号密码"
-          trigger={
-            <Button type="primary" ghost>
-              <PlusOutlined /> 重置账号密码
-            </Button>
-          }
-          autoFocusFirstInput
-          modalProps={{
-            destroyOnClose: true,
-            onCancel: () => console.log('取消重置'),
-          }}
-          submitTimeout={2000}
-          onFinish={async (values) => {
-            const res = await resetPasswordUsingPost(values);
-            if (res.code === 0) {
-              message.success(res.message);
-              actionRef.current?.reload();
-              return true;
-            } else {
-              message.error(res.message);
-              return false;
+          <ModalForm<{
+            userAccount: string;
+            userName: string;
+          }>
+            title="添加系统账号"
+            trigger={
+              <Button type="primary">
+                <PlusOutlined/> 添加系统账号
+              </Button>
             }
-          }}
-        >
-          <ProFormText width="md" name="userAccount" label="账号" required />
-          <ProFormText width="md" name="userName" label="姓名" required />
-        </ModalForm>,
+            autoFocusFirstInput
+            modalProps={{
+              destroyOnClose: true,
+              onCancel: () => console.log('取消添加'),
+            }}
+            submitTimeout={2000}
+            onFinish={async (values) => {
+              const res = await addUserUsingPost({...values, userRole: 3});
+              if (res.code === 0) {
+                message.success(res.message);
+                actionRef.current?.reload();
+                return true;
+              } else {
+                message.error(res.message);
+                return false;
+              }
+            }}
+          >
+            <ProFormText width="md" name="userAccount" label="工号" required/>
+            <ProFormText width="md" name="userName" label="姓名" required/>
+          </ModalForm>
+          <ModalForm<{
+            userAccount: string;
+            userName: string;
+          }>
+            title="重置账号密码"
+            trigger={
+              <Button type="primary" ghost>
+                <PlusOutlined/> 重置账号密码
+              </Button>
+            }
+            autoFocusFirstInput
+            modalProps={{
+              destroyOnClose: true,
+              onCancel: () => console.log('取消重置'),
+            }}
+            submitTimeout={2000}
+            onFinish={async (values) => {
+              const res = await resetPasswordUsingPost(values);
+              if (res.code === 0) {
+                message.success(res.message);
+                actionRef.current?.reload();
+                return true;
+              } else {
+                message.error(res.message);
+                return false;
+              }
+            }}
+          >
+            <ProFormText width="md" name="userAccount" label="账号" required/>
+            <ProFormText width="md" name="userName" label="姓名" required/>
+          </ModalForm>
+        </div>
       ]}
     />
   );

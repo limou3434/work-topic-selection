@@ -117,88 +117,95 @@ export default () => {
       dateFormatter="string"
       headerTitle="主任账号管理"
       toolBarRender={() => [
-        // eslint-disable-next-line react/jsx-key
-        <ModalForm<{
-          deptName: string;
-          userAccount: string;
-          userName: string;
-        }>
-          title="添加主任账号"
-          trigger={
-            <Button type="primary">
-              <PlusOutlined/> 添加主任账号
-            </Button>
-          }
-          autoFocusFirstInput
-          modalProps={{
-            destroyOnClose: true,
-            onCancel: () => console.log('取消添加'),
-          }}
-          submitTimeout={2000}
-          onFinish={async (values) => {
-            const addDeptTeacher = {...values, userRole: 2};
-            const res = await addUserUsingPost(addDeptTeacher);
-            if (res.code === 0) {
-              message.success(res.message);
-              actionRef.current?.reload();
-              return true;
-            } else {
-              message.error(res.message);
-              return false;
-            }
+        <div
+          key="toolbar-container"
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 8, // 按钮间距
           }}
         >
-          <ProFormText width="md" name="userAccount" label="工号" required/>
-          <ProFormText width="md" name="userName" label="姓名" required/>
-          <ProFormSelect
-            request={async () => {
-              const response = await getDeptListUsingPost({});
-              if (response && response.data) {
-                return response.data.map((item) => ({
-                  label: item.label,
-                  value: item.value,
-                }));
-              }
-              return [];
+          <ModalForm<{
+            deptName: string;
+            userAccount: string;
+            userName: string;
+          }>
+            title="添加主任账号"
+            trigger={
+              <Button type="primary">
+                <PlusOutlined/> 添加主任账号
+              </Button>
+            }
+            autoFocusFirstInput
+            modalProps={{
+              destroyOnClose: true,
+              onCancel: () => console.log('取消添加'),
             }}
-            width="md"
-            name="deptName"
-            label="系部"
-            required
-          />
-        </ModalForm>,
-        // eslint-disable-next-line react/jsx-key
-        <ModalForm<{
-          userAccount: string;
-          userName: string;
-        }>
-          title="重置账号密码"
-          trigger={
-            <Button type="primary" ghost>
-              <PlusOutlined/> 重置账号密码
-            </Button>
-          }
-          autoFocusFirstInput
-          modalProps={{
-            destroyOnClose: true,
-            onCancel: () => console.log('取消重置'),
-          }}
-          submitTimeout={2000}
-          onFinish={async (values) => {
-            const res = await resetPasswordUsingPost(values);
-            if (res.code === 0) {
-              message.success(res.message);
-              actionRef.current?.reload();
-              return true;
-            } else {
-              message.error(res.message);
-              return false;
+            submitTimeout={2000}
+            onFinish={async (values) => {
+              const addDeptTeacher = {...values, userRole: 2};
+              const res = await addUserUsingPost(addDeptTeacher);
+              if (res.code === 0) {
+                message.success(res.message);
+                actionRef.current?.reload();
+                return true;
+              } else {
+                message.error(res.message);
+                return false;
+              }
+            }}
+          >
+            <ProFormText width="md" name="userAccount" label="工号" required/>
+            <ProFormText width="md" name="userName" label="姓名" required/>
+            <ProFormSelect
+              request={async () => {
+                const response = await getDeptListUsingPost({});
+                if (response && response.data) {
+                  return response.data.map((item) => ({
+                    label: item.label,
+                    value: item.value,
+                  }));
+                }
+                return [];
+              }}
+              width="md"
+              name="deptName"
+              label="系部"
+              required
+            />
+          </ModalForm>
+          <ModalForm<{
+            userAccount: string;
+            userName: string;
+          }>
+            title="重置账号密码"
+            trigger={
+              <Button type="primary" ghost>
+                <PlusOutlined/> 重置账号密码
+              </Button>
             }
-          }}
-        >
-          <ProFormText width="md" name="userAccount" label="账号" required/>
-          <ProFormText width="md" name="userName" label="姓名" required/>
-        </ModalForm>,
+            autoFocusFirstInput
+            modalProps={{
+              destroyOnClose: true,
+              onCancel: () => console.log('取消重置'),
+            }}
+            submitTimeout={2000}
+            onFinish={async (values) => {
+              const res = await resetPasswordUsingPost(values);
+              if (res.code === 0) {
+                message.success(res.message);
+                actionRef.current?.reload();
+                return true;
+              } else {
+                message.error(res.message);
+                return false;
+              }
+            }}
+          >
+            <ProFormText width="md" name="userAccount" label="账号" required/>
+            <ProFormText width="md" name="userName" label="姓名" required/>
+          </ModalForm>
+        </div>
       ]}
     />
   );
