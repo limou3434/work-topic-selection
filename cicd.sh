@@ -11,12 +11,12 @@
 # nvm install 22
 set -e
 
-# 变基项目
-git fetch origin && git reset --hard origin/main
+# 拉取项目
+git pull
 
 # 编译项目
-echo "后端编译..." && cd ./work-topic-selection-backend/ && ./mvnw clean package >.backend.log 2>&1 && echo "后端编译完成 ✅"
-echo "前端编译..." && cd ../work-topic-selection-frontend/ && npm i && npm run build >frontend.log 2>&1 && echo "前端编译完成 ✅"
+echo "后端编译..." && cd ./work-topic-selection-backend/ && ./mvnw clean package && echo "后端编译完成 ✅"
+echo "前端编译..." && cd ../work-topic-selection-frontend/ && npm i && npm run build && echo "前端编译完成 ✅"
 
 # 部署项目
 echo "后端部署..." && sudo docker compose down work-topic-selection-backend && sudo docker compose up -d --build work-topic-selection-backend >/dev/null && echo "前端部署完成 ✅"
