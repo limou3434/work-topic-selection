@@ -23,7 +23,8 @@ CREATE TABLE `user`
     `dept`         VARCHAR(256)          DEFAULT NULL COMMENT '系部',
     `status`       VARCHAR(256)          DEFAULT NULL COMMENT '账号状态',
     `project`      VARCHAR(256)          DEFAULT NULL COMMENT '专业',
-    `topicAmount`  INT                   DEFAULT NULL COMMENT '',
+    `topicAmount`  INT                   DEFAULT NULL COMMENT '已选课题数量',
+    `email`        VARCHAR(256)          DEFAULT NULL COMMENT '验证码发送邮箱',
     PRIMARY KEY (`id`, `userAccount`) USING BTREE COMMENT '主键',
     INDEX `idxUserName` (`userName`) COMMENT '提升基于用户名称的查询性能'
 )
@@ -192,7 +193,9 @@ VALUES
      NULL,
      '老用户',
      NULL,
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     -- 主任帐号
     (2,
      'test-dept-dzx',
@@ -205,7 +208,9 @@ VALUES
      '电子与移动通信工程系',
      '老用户',
      NULL,
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (3,
      'test-dept-dqx',
      '测试-电气工程与自动化系主任',
@@ -217,7 +222,9 @@ VALUES
      '电气工程与自动化系',
      '老用户',
      NULL,
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (4,
      'test-dept-jkx',
      '测试-计算机科学与工程系主任',
@@ -229,7 +236,9 @@ VALUES
      '计算机科学与工程系',
      '老用户',
      NULL,
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (5,
      'test-dept-szx',
      '测试-大数据与人工智能系主任',
@@ -241,7 +250,9 @@ VALUES
      '大数据与人工智能系',
      '老用户',
      NULL,
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     -- 教师帐号
     -- -- 电子与移动通信工程系的教师帐号
     (6,
@@ -255,7 +266,9 @@ VALUES
      '电子与移动通信工程系',
      '老用户',
      NULL,
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (7,
      'test-teacher-dzx-2',
      '测试-教师2(电子与移动通信工程系)',
@@ -267,7 +280,9 @@ VALUES
      '电子与移动通信工程系',
      '老用户',
      NULL,
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     -- -- 电气工程与自动化系的教师帐号
     (8,
      'test-teacher-dqx-1',
@@ -280,7 +295,9 @@ VALUES
      '电气工程与自动化系',
      '老用户',
      NULL,
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (9,
      'test-teacher-dzx-2',
      '测试-教师2(电气工程与自动化系)',
@@ -292,7 +309,9 @@ VALUES
      '电气工程与自动化系',
      '老用户',
      NULL,
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     -- -- 计算机科学与工程系的教师帐号
     (10,
      'test-teacher-jkx-1',
@@ -305,7 +324,9 @@ VALUES
      '计算机科学与工程系',
      '老用户',
      NULL,
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (11,
      'test-teacher-jkx-2',
      '测试-教师2(计算机科学与工程系)',
@@ -317,7 +338,9 @@ VALUES
      '计算机科学与工程系',
      '老用户',
      NULL,
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     -- -- 大数据与人工智能系的教师帐号
     (12,
      'test-teacher-szx-1',
@@ -330,7 +353,9 @@ VALUES
      '大数据与人工智能系',
      '老用户',
      NULL,
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (13,
      'test-teacher-szx-2',
      '测试-教师2(大数据与人工智能系)',
@@ -342,7 +367,9 @@ VALUES
      '大数据与人工智能系',
      '老用户',
      NULL,
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     -- 学生帐号
     -- -- 电子与移动通信工程系的学生帐号
     (14,
@@ -356,7 +383,9 @@ VALUES
      '电子与移动通信工程系',
      '老用户',
      '电子信息科学与技术',
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (15,
      'test-student-dzxxkxyjs-2',
      '测试学生2(电子信息科学与技术)',
@@ -368,7 +397,9 @@ VALUES
      '电子与移动通信工程系',
      '老用户',
      '电子信息科学与技术',
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (16,
      'test-student-txgc-1',
      '测试学生1(通信工程)',
@@ -380,7 +411,9 @@ VALUES
      '电子与移动通信工程系',
      '老用户',
      '通信工程',
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (17,
      'test-student-txgc-2',
      '测试学生2(通信工程)',
@@ -392,7 +425,9 @@ VALUES
      '电子与移动通信工程系',
      '老用户',
      '通信工程',
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     -- -- 电气工程与自动化系的教师帐号
     (18,
      'test-student-dqgcyzdh-1',
@@ -405,7 +440,9 @@ VALUES
      '电气工程与自动化系',
      '老用户',
      '电气工程与自动化',
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (19,
      'test-student-dqgcyzdh-2',
      '测试学生2(电气工程与自动化)',
@@ -417,7 +454,9 @@ VALUES
      '电气工程与自动化系',
      '老用户',
      '电气工程与自动化',
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     -- -- 计算机科学与工程系的教师帐号
     (20,
      'test-student-jsjkxyjs-1',
@@ -430,7 +469,9 @@ VALUES
      '计算机科学与工程系',
      '老用户',
      '计算机科学与技术',
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (21,
      'test-student-jsjkxyjs-2',
      '测试学生2(计算机科学与技术)',
@@ -442,7 +483,9 @@ VALUES
      '计算机科学与工程系',
      '老用户',
      '计算机科学与技术',
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (22,
      'test-student-rjgc-1',
      '测试学生1(软件工程)',
@@ -454,7 +497,9 @@ VALUES
      '计算机科学与工程系',
      '老用户',
      '软件工程',
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (23,
      'test-student-rjgc-2',
      '测试学生2(软件工程)',
@@ -466,7 +511,9 @@ VALUES
      '计算机科学与工程系',
      '老用户',
      '软件工程',
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     -- -- 大数据与人工智能系的教师帐号
     (24,
      'test-student-jskxydsjjs-1',
@@ -479,7 +526,9 @@ VALUES
      '大数据与人工智能系',
      '老用户',
      '数据科学与大数据技术',
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (25,
      'test-student-jskxydsjjs-2',
      '测试学生2(数据科学与大数据技术)',
@@ -491,7 +540,9 @@ VALUES
      '大数据与人工智能系',
      '老用户',
      '数据科学与大数据技术',
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (26,
      'test-student-znkxyjs-1',
      '测试学生1(智能科学与技术)',
@@ -503,7 +554,9 @@ VALUES
      '大数据与人工智能系',
      '老用户',
      '智能科学与技术',
-     NULL),
+     NULL,
+     '1346965749@qq.com'
+     ),
     (27,
      'test-student-znkxyjs-2',
      '测试学生2(智能科学与技术)',
@@ -515,5 +568,6 @@ VALUES
      '大数据与人工智能系',
      '老用户',
      '智能科学与技术',
-     NULL)
+     NULL,
+    '1346965749@qq.com')
 ;

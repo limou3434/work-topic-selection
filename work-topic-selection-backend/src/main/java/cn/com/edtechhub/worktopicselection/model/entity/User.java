@@ -9,7 +9,7 @@ import java.util.Date;
 /**
  * 用户表
  *
- * @TableName user
+ * @author ljp
  */
 @TableName(value = "user")
 @Data
@@ -75,6 +75,11 @@ public class User implements Serializable {
      * 已选课题数量
      */
     private Integer topicAmount;
+
+    /**
+     * 验证码发送邮箱
+     */
+    private String email;
 
     /// 序列化字段 ///
     @TableField(exist = false)

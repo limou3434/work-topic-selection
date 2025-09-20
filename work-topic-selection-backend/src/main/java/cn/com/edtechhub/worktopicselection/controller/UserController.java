@@ -332,6 +332,8 @@ public class UserController {
 
     /// 认证相关接口 ///
 
+    // TODO: 提高安全防护
+
     // 用户登入
     @SaIgnore
     @PostMapping("/login")
@@ -388,11 +390,7 @@ public class UserController {
         String userAccount = resetPasswordRequest.getUserAccount();
         ThrowUtils.throwIf(StringUtils.isBlank(userAccount), CodeBindMessageEnums.PARAMS_ERROR, "用户账号不能为空");
 
-        User user = userService.getOne(
-                new QueryWrapper<User>()
-                        .eq("userAccount", userAccount)
-                        .eq("userName", userName)
-        );
+        User user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount).eq("userName", userName));
         ThrowUtils.throwIf(user == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "该用户不存在, 无需重置密码");
 
         // 获取新的初始化密码
@@ -426,11 +424,7 @@ public class UserController {
         ThrowUtils.throwIf(StringUtils.isBlank(updatePassword), CodeBindMessageEnums.PARAMS_ERROR, "新密码不能为空");
 
         // 必须通过学号/工号密码验证后才能修改密码
-        User user = userService.getOne(
-                new QueryWrapper<User>()
-                        .eq("userAccount", userAccount)
-                        .eq("userPassword", DigestUtils.md5DigestAsHex((UserConstant.SALT + userPassword).getBytes()))
-        );
+        User user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount).eq("userPassword", DigestUtils.md5DigestAsHex((UserConstant.SALT + userPassword).getBytes())));
         ThrowUtils.throwIf(user == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "旧密码不正确, 无法修改密码, 如果忘记旧密码请发送邮箱 898738804@qq.com 向联系管理员重置密码");
 
         // 更新用户
@@ -461,9 +455,11 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, "发送成功, 请在您的 QQ 邮箱中查收!");
     }
 
-    // TODO: 添加用户封禁接口（还有自动检测用户在一分钟内是否多次恶意请求，如果是就自动封禁 1 分钟，并且上报 qq 邮箱）
+    // TODO: 添加用户封禁接口(还有自动检测用户在一分钟内是否多次恶意请求，如果是就自动封禁 1 分钟，并且上报 qq 邮箱)
 
     /// 系部专业相关接口 ///
+
+    // TODO: 重点检查, 这里的逻辑有些问题
 
     // 添加系部
     @SaCheckLogin
@@ -535,19 +531,14 @@ public class UserController {
         // 保证先删除专业才能删除系部
         List<Project> projectList = projectService.list(new QueryWrapper<Project>().eq("deptName", deptName));
         if (!projectList.isEmpty()) {
-            String projectNames = projectList.stream()
-                    .map(Project::getProjectName)
-                    .collect(Collectors.joining(", "));
+            String projectNames = projectList.stream().map(Project::getProjectName).collect(Collectors.joining(", "));
             ThrowUtils.throwIf(true, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "先删除属于该系部的所有专业（" + projectNames + "）后才能删除该系部");
         }
 
         // 保证先删除主任才能删除系部
         List<User> userList = userService.list(new QueryWrapper<User>().eq("dept", deptName));
         if (!userList.isEmpty()) {
-            String userNames = userList.stream()
-                    .limit(5)
-                    .map(User::getUserName)
-                    .collect(Collectors.joining(", "));
+            String userNames = userList.stream().limit(5).map(User::getUserName).collect(Collectors.joining(", "));
             if (userList.size() > 5) {
                 userNames += "...";
             }
@@ -580,10 +571,7 @@ public class UserController {
         // 保证先删除学生后才能删除专业
         List<User> userList = userService.list(new QueryWrapper<User>().eq("project", projectName));
         if (!userList.isEmpty()) {
-            String userNames = userList.stream()
-                    .limit(5)
-                    .map(User::getUserName)
-                    .collect(Collectors.joining(", "));
+            String userNames = userList.stream().limit(5).map(User::getUserName).collect(Collectors.joining(", "));
             if (userList.size() > 5) {
                 userNames += "...";
             }
@@ -678,6 +666,8 @@ public class UserController {
     }
 
     /// 选题相关接口 ///
+
+    // TODO: 重点检查, 这里的逻辑有些问题
 
     // TODO: 这里只使用了名字来查重，但是建议接入 AI 给出重复率和描述
     // 添加选题
@@ -827,18 +817,11 @@ public class UserController {
                 // 确认预选题目
                 if (studentTopicSelectionStatusEnum == StudentTopicSelectionStatusEnum.EN_PRESELECT) {
                     // 不允许重复确认预选
-                    long count = studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>()
-                            .eq("userAccount", loginUser.getUserAccount())
-                            .eq("topicId", topicId));
+                    long count = studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", topicId));
                     ThrowUtils.throwIf(count > 0, CodeBindMessageEnums.OPERATION_ERROR, "不能重复预选该题目");
 
                     // 不允许已经获取选题的人进行预选
-                    int isOk = Math.toIntExact(studentTopicSelectionService.count(
-                                    new QueryWrapper<StudentTopicSelection>()
-                                            .eq("userAccount", loginUser.getUserAccount())
-                                            .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())
-                            )
-                    );
+                    int isOk = Math.toIntExact(studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())));
                     ThrowUtils.throwIf(isOk != 0, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "您已经提交了题目, 不能再预选新的题目了");
 
                     // 限制预选数量
@@ -915,20 +898,11 @@ public class UserController {
 
         // 尝试获取当前登陆学生选题关联表中的记录
         User loginUser = userService.userGetCurrentLoginUser();
-        int selectedCount = Math.toIntExact(studentTopicSelectionService.count(
-                        new QueryWrapper<StudentTopicSelection>()
-                                .eq("userAccount", loginUser.getUserAccount())
-                                .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())
-                )
-        );
+        int selectedCount = Math.toIntExact(studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())));
         ThrowUtils.throwIf(selectedCount != 0, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "您已经提交了题目, 不能再选新的题目了, 如果需要取消则需要联系导师");
 
         // 尝试获取学生选题关联表中的记录
-        StudentTopicSelection selection = studentTopicSelectionService.getOne(
-                new QueryWrapper<StudentTopicSelection>()
-                        .eq("userAccount", loginUser.getUserAccount())
-                        .eq("topicId", topicId)
-        );
+        StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", topicId));
 
         // 处理选题操作
         synchronized (topicId) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
@@ -947,11 +921,7 @@ public class UserController {
                     ThrowUtils.throwIf(!update, CodeBindMessageEnums.OPERATION_ERROR, "无法提交选题, 请联系管理员 898738804@qq.com");
 
                     // 同时清理所有预选题目
-                    List<StudentTopicSelection> preselectList = studentTopicSelectionService.list(
-                            new QueryWrapper<StudentTopicSelection>()
-                                    .eq("userAccount", loginUser.getUserAccount())
-                                    .eq("status", StudentTopicSelectionStatusEnum.EN_PRESELECT.getCode())
-                    );
+                    List<StudentTopicSelection> preselectList = studentTopicSelectionService.list(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("status", StudentTopicSelectionStatusEnum.EN_PRESELECT.getCode()));
 
                     for (StudentTopicSelection selectionItem : preselectList) {
                         // 遍历每一条预选记录，对应题目的 selectAmount -1
@@ -972,11 +942,7 @@ public class UserController {
                 }
                 // 取消提交选题
                 else if (statusEnums == StudentTopicSelectionStatusEnum.UN_SELECT) {
-                    boolean remove = studentTopicSelectionService.remove(
-                            new QueryWrapper<StudentTopicSelection>()
-                                    .eq("userAccount", loginUser.getUserAccount())
-                                    .eq("topicId", selectTopicByIdRequest.getId())
-                    );
+                    boolean remove = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", selectTopicByIdRequest.getId()));
                     ThrowUtils.throwIf(!remove, CodeBindMessageEnums.NOT_FOUND_ERROR, "您还没有选择题目, 无法取消选择");
 
                     // 修改操作标志位
@@ -1023,23 +989,15 @@ public class UserController {
 
         // 处理请求列表中的所有 id(也就是前端表格中的所有列的数据)
         List<UpdateTopicListRequest> updateTopicListRequests = updateTopicRequest.getUpdateTopicListRequests();
-        Set<Long> updateTopicIds = updateTopicListRequests
-                .stream()
-                .map(UpdateTopicListRequest::getId)
-                .collect(Collectors.toSet());
+        Set<Long> updateTopicIds = updateTopicListRequests.stream().map(UpdateTopicListRequest::getId).collect(Collectors.toSet());
 
         // 过滤 teacherTopics 中不在 updateTopicIds 中的项
-        List<Topic> topicsToRemove = teacherTopics
-                .stream()
-                .filter(topic -> !updateTopicIds.contains(topic.getId()))
-                .collect(Collectors.toList());
+        List<Topic> topicsToRemove = teacherTopics.stream().filter(topic -> !updateTopicIds.contains(topic.getId())).collect(Collectors.toList());
 
         return transactionTemplate.execute(transactionStatus -> {
             // 删除 topicsToRemove 中的所有项
             if (!topicsToRemove.isEmpty()) {
-                List<Long> topicsToRemoveIds = topicsToRemove.stream()
-                        .map(Topic::getId)
-                        .collect(Collectors.toList());
+                List<Long> topicsToRemoveIds = topicsToRemove.stream().map(Topic::getId).collect(Collectors.toList());
                 topicService.removeByIds(topicsToRemoveIds);
                 // 删除与这些主题相关的学生选择记录
                 for (Long topicId : topicsToRemoveIds) {
@@ -1082,11 +1040,7 @@ public class UserController {
         synchronized (topicId) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
             return transactionTemplate.execute(transactionStatus -> {
                 // 检查学生是否已经选择过课题
-                StudentTopicSelection selection = studentTopicSelectionService.getOne(
-                        new QueryWrapper<StudentTopicSelection>()
-                                .eq("userAccount", userAccount)
-                                .eq("topicId", topicId)
-                );
+                StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount).eq("topicId", topicId));
                 ThrowUtils.throwIf(selection != null, CodeBindMessageEnums.NOT_FOUND_ERROR, "该学生已经选择过改课题, 请通知该同学退选已经确认的题目");
 
                 // 判断是否有余量
@@ -1159,11 +1113,7 @@ public class UserController {
         ThrowUtils.throwIf(id <= 0, CodeBindMessageEnums.PARAMS_ERROR, "id 必须是正整数");
 
         // 找到对应的学生题目关联记录
-        List<StudentTopicSelection> list = studentTopicSelectionService.list(
-                new QueryWrapper<StudentTopicSelection>()
-                        .eq("topicId", getSelectTopicById.getId())
-                        .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())
-        );
+        List<StudentTopicSelection> list = studentTopicSelectionService.list(new QueryWrapper<StudentTopicSelection>().eq("topicId", getSelectTopicById.getId()).eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode()));
 
         // 获取用户数据
         List<User> userList = new ArrayList<>();
@@ -1207,8 +1157,7 @@ public class UserController {
         User loginUser = userService.userGetCurrentLoginUser();
 
         // 获取总人数
-        QueryWrapper<User> queryWrapper = new QueryWrapper<User>()
-                .eq("userRole", UserRoleEnum.STUDENT.getCode()) // 只获取学生记录
+        QueryWrapper<User> queryWrapper = new QueryWrapper<User>().eq("userRole", UserRoleEnum.STUDENT.getCode()) // 只获取学生记录
                 .eq(!userService.userIsAdmin(loginUser), "dept", loginUser.getDept()) // 获取当前登陆用户系部相同的学生, 但是管理员可以获取所有学生
                 ;
         int totalStudents = (int) userService.count(queryWrapper);
@@ -1218,10 +1167,8 @@ public class UserController {
         int selectedStudents = 0;
         for (User user : userList) {
             final String userAccount = user.getUserAccount();
-            selectedStudents += (int) studentTopicSelectionService.count(
-                    new QueryWrapper<StudentTopicSelection>()
-                            .eq("userAccount", userAccount) // 获取当前用户的记录
-                            .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode()) // 查询状态为已选题的
+            selectedStudents += (int) studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount) // 获取当前用户的记录
+                    .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode()) // 查询状态为已选题的
             ); // TODO: 这个查询过程可以被优化, 但是暂时先这样
         }
 
@@ -1264,15 +1211,9 @@ public class UserController {
         User loginUser = userService.userGetCurrentLoginUser();
         String dept = loginUser.getDept();
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        userQueryWrapper
-                .eq("dept", dept) // 同系的
+        userQueryWrapper.eq("dept", dept) // 同系的
                 .eq("userRole", UserRoleEnum.TEACHER.getCode()) // 是教师的
-                .orderBy(
-                        SqlUtils.validSortField(sortField),
-                        sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
-                        sortField
-                )
-        ;
+                .orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC), sortField);
         List<User> users = userService.list(userQueryWrapper); // 得到所有的教师
 
         // 利用教师列表来创建返回的 Page 对象, 填充每位教师的选题情况
@@ -1283,10 +1224,7 @@ public class UserController {
 
             // 获得教师的对应选题
             QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
-            topicQueryWrapper
-                    .eq("teacherName", userName)
-                    .eq("deptName", loginUser.getDept())
-                    .eq("status", TopicStatusEnum.PUBLISHED.getCode()) // 学生只能查看已经开放的选题
+            topicQueryWrapper.eq("teacherName", userName).eq("deptName", loginUser.getDept()).eq("status", TopicStatusEnum.PUBLISHED.getCode()) // 学生只能查看已经开放的选题
             ;
             int count = (int) topicService.count(topicQueryWrapper);
             List<Topic> topicList = topicService.list(topicQueryWrapper);
@@ -1327,18 +1265,11 @@ public class UserController {
         // 查询对应的预先选题记录
         String userAccount = loginUser.getUserAccount();
         ThrowUtils.throwIf(userAccount == null, CodeBindMessageEnums.OPERATION_ERROR, "参数有问题");
-        List<StudentTopicSelection> studentTopicSelectionList = studentTopicSelectionService.list(
-                new QueryWrapper<StudentTopicSelection>()
-                        .eq("userAccount", userAccount)
-                        .eq("status", StudentTopicSelectionStatusEnum.EN_PRESELECT.getCode())
-        );
+        List<StudentTopicSelection> studentTopicSelectionList = studentTopicSelectionService.list(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount).eq("status", StudentTopicSelectionStatusEnum.EN_PRESELECT.getCode()));
         ThrowUtils.throwIf(studentTopicSelectionList == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "当前没有预选的题目");
 
         // 填充完整的返回体, 把关联对应的选题都拿到
-        List<Long> topicIds = studentTopicSelectionList.stream()
-                .map(StudentTopicSelection::getTopicId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        List<Long> topicIds = studentTopicSelectionList.stream().map(StudentTopicSelection::getTopicId).filter(Objects::nonNull).collect(Collectors.toList());
         List<Topic> topicList = topicService.listByIds(topicIds);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topicList);
     }
@@ -1353,11 +1284,7 @@ public class UserController {
         String userAccount = loginUser.getUserAccount();
 
         // 查找确认最终选题的记录
-        StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(
-                new QueryWrapper<StudentTopicSelection>()
-                        .eq("userAccount", userAccount)
-                        .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())
-        );
+        StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount).eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode()));
         log.info("用户: {} 确认了最终选题", userAccount);
 
         ThrowUtils.throwIf(studentTopicSelection == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "当前用户没有确认最终的选题");
@@ -1380,25 +1307,16 @@ public class UserController {
         final String dept = loginUser.getDept();
 
         // 获取所有学生用户
-        final List<User> userList = userService.list(
-                new QueryWrapper<User>()
-                        .eq("userRole", UserRoleEnum.STUDENT.getCode())
-                        .eq(StringUtils.isNotBlank(dept), "dept", dept)
-        );
+        final List<User> userList = userService.list(new QueryWrapper<User>().eq("userRole", UserRoleEnum.STUDENT.getCode()).eq(StringUtils.isNotBlank(dept), "dept", dept));
 
         // 获取所有已经选题的学生
         final List<StudentTopicSelection> selectedList = studentTopicSelectionService.list();
 
         // 将已经选题的学生账号存入一个 Set
-        Set<String> selectedUserAccounts = selectedList.stream()
-                .map(StudentTopicSelection::getUserAccount)
-                .collect(Collectors.toSet());
+        Set<String> selectedUserAccounts = selectedList.stream().map(StudentTopicSelection::getUserAccount).collect(Collectors.toSet());
 
         // 筛选出未选题的学生
-        List<User> unselectedUsers = userList
-                .stream()
-                .filter(user -> !selectedUserAccounts.contains(user.getUserAccount()))
-                .collect(Collectors.toList());
+        List<User> unselectedUsers = userList.stream().filter(user -> !selectedUserAccounts.contains(user.getUserAccount())).collect(Collectors.toList());
 
         return TheResult.success(CodeBindMessageEnums.SUCCESS, unselectedUsers);
     }
@@ -1461,10 +1379,7 @@ public class UserController {
             userList = userService.list(new QueryWrapper<User>().eq("userRole", userRole));
             BeanUtils.copyProperties(userList, userNameVO);
         } else {
-            userList = userService.list(new QueryWrapper<User>()
-                    .eq("userRole", userRole)
-                    .eq("dept", dept)
-            );
+            userList = userService.list(new QueryWrapper<User>().eq("userRole", userRole).eq("dept", dept));
         }
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userNameVO);
     }
@@ -1523,14 +1438,7 @@ public class UserController {
 
         // 查询用户列表
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        userQueryWrapper
-                .eq("dept", dept)
-                .eq("userRole", UserRoleEnum.TEACHER)
-                .orderBy(
-                        SqlUtils.validSortField(sortField),
-                        sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
-                        sortField
-                );
+        userQueryWrapper.eq("dept", dept).eq("userRole", UserRoleEnum.TEACHER).orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC), sortField);
         List<User> users = this.userService.list(userQueryWrapper);
 
         // 创建返回的 Page 对象
