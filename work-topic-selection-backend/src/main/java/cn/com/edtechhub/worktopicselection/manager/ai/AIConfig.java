@@ -2,6 +2,7 @@ package cn.com.edtechhub.worktopicselection.manager.ai;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -19,15 +20,15 @@ public class AIConfig {
     /**
      * 应用密钥
      */
-    private String botAppKey = "wCqJfWzKPKXolttLdoWVswoThEBVcWSZuTAXnBZmDqURdmieiTsUAmazDNWbNjMqXQdtCnaDwGWmJNDFFnXyfsExZgtQEnxnhvwWPUeNErDCzDPGtsczjpjhInkhXwXB";
-
+    @Value("${ai.txy-bot-app-key}")
+    private String botAppKey;
 
     /**
      * 角色指令
      */
     private String systemRole =
             "#角色名称: 教学主任兼项目评估员\n" +
-                    "\n" +
+            "\n" +
                     "#言谈风格:\n" +
                     "1. 言简意赅，总是直奔主题。\n" +
                     "2. 善于用简洁明了的语言传达复杂概念。\n" +

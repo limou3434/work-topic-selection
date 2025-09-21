@@ -112,3 +112,7 @@ sa-token: # 默认开启 Redis 配置将自动支持 Sa-token 使用 Redis 存�
   token-style: uuid # 默认可取值: uuid、simple-uuid、random-32、random-64、random-128、tik
   ## 是否输出操作日志
   is-log: true
+
+# 配置 AI
+ai:
+  txy-bot-app-key: ${TXY_BOT_APP_KEY}
