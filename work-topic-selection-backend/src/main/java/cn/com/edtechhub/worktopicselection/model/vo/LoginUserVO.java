@@ -42,6 +42,10 @@ public class LoginUserVO implements Serializable {
      */
     private String userAvatar="https://pic4.zhimg.com/v2-2eb598cdd000376bf0f6027a7bb326c7_r.jpg";
 
+    /**
+     * 用户邮箱
+     */
+    private String email;
 
     private static final long serialVersionUID = 1L;
 }

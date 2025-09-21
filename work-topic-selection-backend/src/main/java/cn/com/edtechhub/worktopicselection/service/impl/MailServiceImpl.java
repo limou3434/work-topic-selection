@@ -29,7 +29,7 @@ public class MailServiceImpl implements MailService {
                 "    <div style='text-align:center; margin:20px 0;'>" +
                 "      <span style='display:inline-block; font-size:28px; font-weight:bold; color:#fff; background:#00785a; padding:10px 20px; border-radius:6px;'>" + code + "</span>" +
                 "    </div>" +
-                "    <p style='font-size:14px; color:#666;'>验证码有效期为 5 分钟，请勿泄露给他人。</p>" +
+                "    <p style='font-size:14px; color:#666;'>验证码有效期为 2 分钟，请勿泄露给他人。</p>" +
                 "    <hr style='margin:30px 0; border:none; border-top:1px solid #ddd;'/>" +
                 "    <p style='font-size:12px; color:#999; text-align:center;'>此邮件由系统自动发送，请不要直接回复。</p>" +
                 "  </div>" +

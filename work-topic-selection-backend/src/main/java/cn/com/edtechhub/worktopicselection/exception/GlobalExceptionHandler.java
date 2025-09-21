@@ -6,6 +6,7 @@ import cn.dev33.satoken.exception.DisableServiceException;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.NotRoleException;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -81,6 +82,16 @@ public class GlobalExceptionHandler {
     public BaseResponse<?> disableServiceExceptionHandler() {
         log.warn("触发用户封禁异常处理方法");
         return TheResult.error(CodeBindMessageEnums.USER_DISABLE_ERROR, "当前用户因为违规被封禁");
+    }
+
+    /**
+     * 流量控制异常处理方法(由 Sentinel 框架自己来触发)
+     */
+    @ExceptionHandler(BlockException.class)
+    // TODO: 不过由于服务层和控制层做双重的验证很累, 在单体项目中就不需要使用这个
+    public BaseResponse<?> handleBlockExceptionHandler() {
+        log.warn("触发流量控制异常处理方法");
+        return TheResult.error(CodeBindMessageEnums.FLOW_RULES, "请求流量过大, 请稍后再试");
     }
 
     /**
