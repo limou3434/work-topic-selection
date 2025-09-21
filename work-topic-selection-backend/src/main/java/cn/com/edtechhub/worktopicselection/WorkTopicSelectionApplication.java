@@ -1,7 +1,6 @@
 package cn.com.edtechhub.worktopicselection;
 
 import lombok.extern.slf4j.Slf4j;
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -22,6 +21,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class WorkTopicSelectionApplication {
 
     public static void main(String[] args) {
+        /*ApplicationContext ctx = */
         SpringApplication.run(WorkTopicSelectionApplication.class, args);
         log.info("http://127.0.0.1:8000/doc.html");
     }

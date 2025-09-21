@@ -25,7 +25,8 @@ CREATE TABLE `user`
     `project`      VARCHAR(256)          DEFAULT NULL COMMENT '专业',
     `topicAmount`  INT                   DEFAULT NULL COMMENT '已选课题数量',
     `email`        VARCHAR(256)          DEFAULT NULL COMMENT '验证码发送邮箱',
-    PRIMARY KEY (`id`, `userAccount`) USING BTREE COMMENT '主键',
+    PRIMARY KEY (`id`) USING BTREE COMMENT '主键',
+    UNIQUE KEY (`userAccount`) COMMENT '唯一键',
     INDEX `idxUserName` (`userName`) COMMENT '提升基于用户名称的查询性能'
 )
     ENGINE = InnoDB
@@ -299,7 +300,7 @@ VALUES
      '1346965749@qq.com'
      ),
     (9,
-     'test-teacher-dzx-2',
+     'test-teacher-dqx-2',
      '测试-教师2(电气工程与自动化系)',
      'bde672b1737093d5f9ad55ccc26f32eb',
      '2025-06-15 13:25:49',

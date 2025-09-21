@@ -5,18 +5,17 @@
 <mapper namespace="cn.com.edtechhub.worktopicselection.mapper.StudentTopicSelectionMapper">
 
     <resultMap id="BaseResultMap" type="cn.com.edtechhub.worktopicselection.model.entity.StudentTopicSelection">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="userAccount" column="userAccount" jdbcType="VARCHAR"/>
-            <result property="topicId" column="topicId" jdbcType="BIGINT"/>
-            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
-            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
-            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
-            <result property="status" column="status" jdbcType="INTEGER"/>
+            <id property="id" column="id" />
+            <result property="userAccount" column="userAccount" />
+            <result property="topicId" column="topicId" />
+            <result property="createTime" column="createTime" />
+            <result property="updateTime" column="updateTime" />
+            <result property="isDelete" column="isDelete" />
+            <result property="status" column="status" />
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,userAccount,topicId,
-        createTime,updateTime,isDelete,
+        id,userAccount,topicId,createTime,updateTime,isDelete,
         status
     </sql>
 </mapper>

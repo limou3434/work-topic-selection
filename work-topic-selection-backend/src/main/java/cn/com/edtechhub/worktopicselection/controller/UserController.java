@@ -7,6 +7,8 @@ import cn.com.edtechhub.worktopicselection.constant.TopicConstant;
 import cn.com.edtechhub.worktopicselection.constant.UserConstant;
 import cn.com.edtechhub.worktopicselection.exception.BusinessException;
 import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
+import cn.com.edtechhub.worktopicselection.manager.ai.AIManager;
+import cn.com.edtechhub.worktopicselection.manager.ai.AIResult;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeleteDeptRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeptAddRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeptQueryRequest;
@@ -24,6 +26,7 @@ import cn.com.edtechhub.worktopicselection.model.enums.TopicStatusEnum;
 import cn.com.edtechhub.worktopicselection.model.enums.UserRoleEnum;
 import cn.com.edtechhub.worktopicselection.model.vo.*;
 import cn.com.edtechhub.worktopicselection.response.BaseResponse;
+import cn.com.edtechhub.worktopicselection.model.dto.topic.GetTopicReviewLevelRequest;
 import cn.com.edtechhub.worktopicselection.response.TheResult;
 import cn.com.edtechhub.worktopicselection.service.*;
 import cn.com.edtechhub.worktopicselection.utils.DeviceUtils;
@@ -46,6 +49,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -64,6 +68,12 @@ public class UserController {
      */
     @Resource
     TransactionTemplate transactionTemplate;
+
+    /**
+     * 引入 AI 管理依赖
+     */
+    @Resource
+    private AIManager aiManager;
 
     /**
      * 引入用户服务依赖
@@ -665,7 +675,7 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, projectVOList);
     }
 
-    /// 选题相关接口 ///
+    /// 选题题目相关接口 ///
 
     // TODO: 重点检查, 这里的逻辑有些问题
 
@@ -1299,6 +1309,7 @@ public class UserController {
     }
 
     // 获取和当前登陆用户同系的没有选题的学生
+    @SaCheckLogin
     @SaCheckRole(value = {"dept"}, mode = SaMode.OR)
     @PostMapping("/get/unselect/topic/student/list")
     public BaseResponse<List<User>> getUnSelectTopicStudentList() {
@@ -1322,6 +1333,7 @@ public class UserController {
     }
 
     // 获取管理员获取题目
+    @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/get/topic/list/by/admin")
     public BaseResponse<Page<Topic>> getTopicListByAdmin(@RequestBody TopicQueryByAdminRequest topicQueryByAdminRequest) {
@@ -1476,6 +1488,31 @@ public class UserController {
         Page<DeptTeacherVO> teacherPage = new Page<>(current, size);
         teacherPage.setRecords(teacherVOList);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, teacherPage);
+    }
+
+    /**
+     * 获取题目审核等级
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin", "teacher"}, mode = SaMode.OR)
+    @PostMapping("/get/topic/review_level")
+    public BaseResponse<AIResult> getTopicReviewLevel(@RequestBody GetTopicReviewLevelRequest request) {
+        // 参数检查
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
+
+        String topicTitle = request.getTopicTitle();
+        ThrowUtils.throwIf(topicTitle == null, CodeBindMessageEnums.PARAMS_ERROR, "题目标题不能为空");
+
+        String topicContent = request.getTopicContent();
+        ThrowUtils.throwIf(topicContent == null || topicContent.length() < 5, CodeBindMessageEnums.PARAMS_ERROR, "题目内容不能为空");
+
+        // 获取当前登陆用户的 id 并且转化为 UUID
+        Long id = userService.userGetCurrentLoginUser().getId();
+        String userId = UUID.nameUUIDFromBytes(String.valueOf(id).getBytes(StandardCharsets.UTF_8)).toString();
+
+        AIResult aiResult = aiManager.sendAi(userId,  topicTitle + topicContent);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, aiResult);
     }
 
     // TODO: 添加两个原子事务接口

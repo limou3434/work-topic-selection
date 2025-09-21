@@ -62,8 +62,8 @@ public class ${upperDataKey}Controller {
         User loginUser = userService.getLoginUser(request);
         ${dataKey}.setUserId(loginUser.getId());
         // 写入数据库
-        boolean result = ${dataKey}Service.save(${dataKey});
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        boolean aiResult = ${dataKey}Service.save(${dataKey});
+        ThrowUtils.throwIf(!aiResult, ErrorCode.OPERATION_ERROR);
         // 返回新写入的数据 id
         long new${upperDataKey}Id = ${dataKey}.getId();
         return ResultUtils.success(new${upperDataKey}Id);
@@ -91,8 +91,8 @@ public class ${upperDataKey}Controller {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         // 操作数据库
-        boolean result = ${dataKey}Service.removeById(id);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        boolean aiResult = ${dataKey}Service.removeById(id);
+        ThrowUtils.throwIf(!aiResult, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
 
@@ -118,8 +118,8 @@ public class ${upperDataKey}Controller {
         ${upperDataKey} old${upperDataKey} = ${dataKey}Service.getById(id);
         ThrowUtils.throwIf(old${upperDataKey} == null, ErrorCode.NOT_FOUND_ERROR);
         // 操作数据库
-        boolean result = ${dataKey}Service.updateById(${dataKey});
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        boolean aiResult = ${dataKey}Service.updateById(${dataKey});
+        ThrowUtils.throwIf(!aiResult, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
 
@@ -229,8 +229,8 @@ public class ${upperDataKey}Controller {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
         // 操作数据库
-        boolean result = ${dataKey}Service.updateById(${dataKey});
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        boolean aiResult = ${dataKey}Service.updateById(${dataKey});
+        ThrowUtils.throwIf(!aiResult, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
 

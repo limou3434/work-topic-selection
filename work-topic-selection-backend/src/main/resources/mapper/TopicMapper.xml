@@ -5,32 +5,29 @@
 <mapper namespace="cn.com.edtechhub.worktopicselection.mapper.TopicMapper">
 
     <resultMap id="BaseResultMap" type="cn.com.edtechhub.worktopicselection.model.entity.Topic">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="topic" column="topic" jdbcType="VARCHAR"/>
-            <result property="type" column="type" jdbcType="VARCHAR"/>
-            <result property="description" column="description" jdbcType="VARCHAR"/>
-            <result property="requirement" column="requirement" jdbcType="VARCHAR"/>
-            <result property="teacherName" column="teacherName" jdbcType="VARCHAR"/>
-            <result property="deptName" column="deptName" jdbcType="VARCHAR"/>
-            <result property="deptTeacher" column="deptTeacher" jdbcType="VARCHAR"/>
-            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
-            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
-            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
-            <result property="surplusQuantity" column="surplusQuantity" jdbcType="INTEGER"/>
-            <result property="startTime" column="startTime" jdbcType="TIMESTAMP"/>
-            <result property="endTime" column="endTime" jdbcType="TIMESTAMP"/>
-            <result property="status" column="status" jdbcType="VARCHAR"/>
-            <result property="reason" column="reason" jdbcType="VARCHAR"/>
-            <result property="selectAmount" column="selectAmount" jdbcType="INTEGER"/>
-
+            <id property="id" column="id" />
+            <result property="topic" column="topic" />
+            <result property="type" column="type" />
+            <result property="description" column="description" />
+            <result property="requirement" column="requirement" />
+            <result property="teacherName" column="teacherName" />
+            <result property="deptName" column="deptName" />
+            <result property="deptTeacher" column="deptTeacher" />
+            <result property="createTime" column="createTime" />
+            <result property="updateTime" column="updateTime" />
+            <result property="isDelete" column="isDelete" />
+            <result property="surplusQuantity" column="surplusQuantity" />
+            <result property="startTime" column="startTime" />
+            <result property="endTime" column="endTime" />
+            <result property="status" column="status" />
+            <result property="selectAmount" column="selectAmount" />
+            <result property="reason" column="reason" />
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,topic,type,
-        description,requirement,teacherName,
-        deptName,deptTeacher,createTime,
-        updateTime,isDelete,surplusQuantity,
-        startTime,endTime,reason
-        status,selectAmount
+        id,topic,type,description,requirement,teacherName,
+        deptName,deptTeacher,createTime,updateTime,isDelete,
+        surplusQuantity,startTime,endTime,status,selectAmount,
+        reason
     </sql>
 </mapper>

@@ -5,15 +5,14 @@
 <mapper namespace="cn.com.edtechhub.worktopicselection.mapper.DeptMapper">
 
     <resultMap id="BaseResultMap" type="cn.com.edtechhub.worktopicselection.model.entity.Dept">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="deptName" column="deptName" jdbcType="VARCHAR"/>
-            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
-            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
-            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+            <id property="id" column="id" />
+            <result property="deptName" column="deptName" />
+            <result property="createTime" column="createTime" />
+            <result property="updateTime" column="updateTime" />
+            <result property="isDelete" column="isDelete" />
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,deptName,createTime,
-        updateTime,isDelete
+        id,deptName,createTime,updateTime,isDelete
     </sql>
 </mapper>
