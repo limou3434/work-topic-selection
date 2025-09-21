@@ -1,6 +1,3 @@
-// TODO: 页面的设置系统管理员有些问题
-
-
 import { Footer } from '@/components';
 import {getLoginUserUsingGet, userLoginUsingPost} from '@/services/work-topic-selection/userController';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
@@ -11,6 +8,7 @@ import { createStyles } from 'antd-style';
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
 import Settings from '../../../../config/defaultSettings';
+// @ts-ignore
 import {useNavigate} from "react-router-dom";
 
 const useStyles = createStyles(({ token }) => {
@@ -177,7 +175,7 @@ const Login: React.FC = () => {
                 }}
                 to="/user/register"
               >
-                修改密码
+                修改密码/重置密码
               </Link>
             </div>
           </div>

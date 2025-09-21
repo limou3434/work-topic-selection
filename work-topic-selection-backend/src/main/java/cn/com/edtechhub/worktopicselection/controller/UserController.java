@@ -58,7 +58,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 用户网络接口
+ * 用户控制层
  *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
@@ -497,7 +497,9 @@ public class UserController {
         });
     }
 
-    // 用户自己手动修改密码
+    /**
+     * 用户自己手动修改密码
+     */
     @SaIgnore
     @PostMapping("/updata/password")
     public BaseResponse<Long> userUpdatePassword(@RequestBody UserUpdatePassword request) throws BlockException {
@@ -514,28 +516,43 @@ public class UserController {
         String userAccount = request.getUserAccount();
         ThrowUtils.throwIf(StringUtils.isBlank(userAccount), CodeBindMessageEnums.PARAMS_ERROR, "用户学号/工号不能为空");
 
+        String code = request.getCode();
         String userPassword = request.getUserPassword();
-        ThrowUtils.throwIf(StringUtils.isBlank(userPassword), CodeBindMessageEnums.PARAMS_ERROR, "用户密码不能为空");
+        ThrowUtils.throwIf(StringUtils.isBlank(code) && StringUtils.isBlank(userPassword), CodeBindMessageEnums.PARAMS_ERROR, "用户旧密码或验证码不能为空");
 
         String updatePassword = request.getUpdatePassword();
         ThrowUtils.throwIf(StringUtils.isBlank(updatePassword), CodeBindMessageEnums.PARAMS_ERROR, "新密码不能为空");
 
         // 必须通过学号 / 工号密码验证后才能修改密码
-        User user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount).eq("userPassword", DigestUtils.md5DigestAsHex((UserConstant.SALT + userPassword).getBytes())));
-        ThrowUtils.throwIf(user == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "旧密码不正确, 无法修改密码, 如果忘记旧密码请发送邮箱 898738804@qq.com 向联系管理员重置密码");
+        User user;
+        // 如果使用验证码重置
+        if (StringUtils.isNotBlank(code)) {
+            String codeInRedis = redisManager.getValue("code:" + userAccount);
+            ThrowUtils.throwIf(codeInRedis == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "验证码已过期, 请重新获取验证码");
+            assert codeInRedis != null;
+            ThrowUtils.throwIf(!codeInRedis.equals(code), CodeBindMessageEnums.PARAMS_ERROR, "您的验证码错误");
+            user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
+            ThrowUtils.throwIf(user == null, CodeBindMessageEnums.SYSTEM_ERROR, "用户不存在");
+        }
+        // 如果使用旧密码重置
+        else {
+            user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount).eq("userPassword", DigestUtils.md5DigestAsHex((UserConstant.SALT + userPassword).getBytes())));
+            ThrowUtils.throwIf(user == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "旧密码不正确, 无法修改密码, 如果忘记旧密码请发送邮箱 898738804@qq.com 向联系管理员重置密码");
+        }
         assert user != null;
 
         // 更新用户
+        User finalUser = user;
         return transactionTemplate.execute(transactionStatus -> {
-            user.setUserPassword(DigestUtils.md5DigestAsHex((UserConstant.SALT + updatePassword).getBytes()));
-            boolean result = userService.updateById(user);
+            finalUser.setUserPassword(DigestUtils.md5DigestAsHex((UserConstant.SALT + updatePassword).getBytes()));
+            boolean result = userService.updateById(finalUser);
             ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "修改密码失败");
-            return TheResult.success(CodeBindMessageEnums.SUCCESS, user.getId());
+            return TheResult.success(CodeBindMessageEnums.SUCCESS, finalUser.getId());
         });
     }
 
     /**
-     * 发送邮件的接口
+     * 发送临时密码
      */
     @SaIgnore
     @PostMapping("/send/code")
@@ -561,19 +578,24 @@ public class UserController {
         String email = user.getEmail();
         ThrowUtils.throwIf(StringUtils.isBlank(email), CodeBindMessageEnums.PARAMS_ERROR, "用户邮箱不能为空");
 
-        // 如果缓存中有验证码则直接使用, 如果没有就新缓存一个
+        // 如果缓存中有临时立马则直接使用, 如果没有就新缓存一个
         String code = redisManager.getValue("code:" + userAccount);
         if (StringUtils.isBlank(code)) {
-            // 获取 6 位随机验证码
+            // 获取 10 位临时密码
             Random random = new Random();
-            code = Integer.toString(100000 + random.nextInt(900000));
+            String chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*";
+            StringBuilder sb = new StringBuilder(6);
+            for (int i = 0; i < 10; i++) {
+                sb.append(chars.charAt(random.nextInt(chars.length())));
+            }
+            code = sb.toString();
 
             // 缓存验证码
             redisManager.setValue("code:" + userAccount, code, 2 * 60);
         }
 
         try {
-            mailService.sendCodeMail(email, "验证码认证 - 广州南方学院毕业设计选题系统", code);
+            mailService.sendCodeMail(email, "临时密码 - 广州南方学院毕业设计选题系统" + code, code);
         } catch (Exception e) {
             ThrowUtils.throwIf(true, CodeBindMessageEnums.SYSTEM_ERROR, "邮件发送失败, 请联系管理员 898738804@qq.com");
         }

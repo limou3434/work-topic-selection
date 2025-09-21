@@ -13,11 +13,25 @@ import lombok.Data;
 @Data
 public class UserUpdatePassword implements Serializable {
 
+    /**
+     * 用户账号
+     */
     private String userAccount;
 
-    private String userPassword;
+    /**
+     * 旧的密码
+     */
+        private String userPassword;
 
+    /**
+     * 新的密码
+     */
     private String updatePassword;
+
+    /**
+     * 临时密码
+     */
+    private String code;
 
     /// 序列化字段 ///
     @TableField(exist = false)

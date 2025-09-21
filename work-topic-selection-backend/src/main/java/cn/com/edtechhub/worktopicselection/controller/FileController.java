@@ -43,6 +43,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * 文件控制层
+ *
+ * @author <a href="https://github.com/limou3434">limou3434</a>
+ */
 @RestController
 @RequestMapping("/file")
 public class FileController {

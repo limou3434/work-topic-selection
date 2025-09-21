@@ -15,6 +15,17 @@ declare namespace API {
     type?: string;
   };
 
+  type AIResult = {
+    description?: string;
+    level?: string;
+  };
+
+  type BaseResponseAIResult_ = {
+    code?: number;
+    data?: AIResult;
+    message?: string;
+  };
+
   type BaseResponseBoolean_ = {
     code?: number;
     data?: boolean;
@@ -198,6 +209,11 @@ declare namespace API {
     id?: number;
   };
 
+  type GetTopicReviewLevelRequest = {
+    topicContent?: string;
+    topicTitle?: string;
+  };
+
   type getUserByIdUsingGETParams = {
     /** id */
     id?: number;
@@ -214,6 +230,7 @@ declare namespace API {
 
   type LoginUserVO = {
     createTime?: string;
+    email?: string;
     id?: number;
     updateTime?: string;
     userAvatar?: string;
@@ -347,6 +364,10 @@ declare namespace API {
     status?: number;
   };
 
+  type SendCodeRequest = {
+    userAccount?: string;
+  };
+
   type SetTimeRequest = {
     endTime?: string;
     startTime?: string;
@@ -441,6 +462,7 @@ declare namespace API {
   type User = {
     createTime?: string;
     dept?: string;
+    email?: string;
     id?: number;
     isDelete?: number;
     project?: string;
@@ -482,6 +504,7 @@ declare namespace API {
   };
 
   type UserUpdatePassword = {
+    code?: string;
     updatePassword?: string;
     userAccount?: string;
     userPassword?: string;

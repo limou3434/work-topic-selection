@@ -358,6 +358,21 @@ export async function getTopicListUsingPost(
   });
 }
 
+/** getTopicReviewLevel POST /user/get/topic/review_level */
+export async function getTopicReviewLevelUsingPost(
+  body: API.GetTopicReviewLevelRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseAIResult_>('/user/get/topic/review_level', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** getUnSelectTopicStudentList POST /user/get/unselect/topic/student/list */
 export async function getUnSelectTopicStudentListUsingPost(options?: { [key: string]: any }) {
   return request<API.BaseResponseListUser_>('/user/get/unselect/topic/student/list', {
@@ -500,6 +515,21 @@ export async function selectTopicByIdUsingPost(
   options?: { [key: string]: any },
 ) {
   return request<API.BaseResponseLong_>('/user/select/topic/by/id', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** sendCode POST /user/send/code */
+export async function sendCodeUsingPost(
+  body: API.SendCodeRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseString_>('/user/send/code', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

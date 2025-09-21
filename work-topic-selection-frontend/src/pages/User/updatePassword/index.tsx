@@ -5,197 +5,175 @@ import { useIntl } from '@ant-design/pro-provider';
 import { Helmet, Link, history } from '@umijs/max';
 import { Tabs, message } from 'antd';
 import { createStyles } from 'antd-style';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Settings from '../../../../config/defaultSettings';
-import {userUpdatePasswordUsingPost} from "@/services/work-topic-selection/userController";
+import { sendCodeUsingPost, userUpdatePasswordUsingPost } from "@/services/work-topic-selection/userController";
 
-
-const useStyles = createStyles(({ token }) => {
-  return {
-    action: {
-      marginLeft: '8px',
-      color: 'rgba(0, 0, 0, 0.2)',
-      fontSize: '24px',
-      verticalAlign: 'middle',
-      cursor: 'pointer',
-      transition: 'color 0.3s',
-      '&:hover': {
-        color: token.colorPrimaryActive,
-      },
-    },
-    lang: {
-      width: 42,
-      height: 42,
-      lineHeight: '42px',
-      position: 'fixed',
-      right: 16,
-      borderRadius: token.borderRadius,
-      ':hover': {
-        backgroundColor: token.colorBgTextHover,
-      },
-    },
-    container: {
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      overflow: 'auto',
-      backgroundImage:
-        "url('https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/V-_oS6r-i7wAAAAAAAAAAAAAFl94AQBr')",
-      backgroundSize: '100% 100%',
-    },
-  };
-});
+const useStyles = createStyles(({ token }) => ({
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100vh',
+    overflow: 'auto',
+    backgroundImage:
+      "url('https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/V-_oS6r-i7wAAAAAAAAAAAAAFl94AQBr')",
+    backgroundSize: '100% 100%',
+  },
+}));
 
 const Register: React.FC = () => {
-  const [type, setType] = useState<string>('account');
   const { styles } = useStyles();
   useIntl();
-  const handleSubmit = async (values: API.UserUpdatePassword) => {
-    // @ts-ignore
-    const { updatePassword2, updatePassword } = values;
-    // 校验密码确认字段
-    if (updatePassword2 !== updatePassword) {
+
+  const [type, setType] = useState<string>('account');
+  const formRef = useRef<any>();
+  const [countdown, setCountdown] = useState<number>(0);
+  const [useTempPassword, setUseTempPassword] = useState<boolean>(false);
+
+  // 发送临时密码
+  const handleSendCode = async () => {
+    const userAccount = formRef.current?.getFieldValue('userAccount');
+    if (!userAccount) {
+      message.error('请先输入账号');
+      return;
+    }
+
+    try {
+      const res = await sendCodeUsingPost({ userAccount });
+      if (res.code === 0) {
+        message.success('临时密码已发送，请在下方输入');
+        setCountdown(60);
+        setUseTempPassword(true); // 激活临时密码模式
+        const timer = setInterval(() => {
+          setCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      } else {
+        message.error(res.message);
+      }
+    } catch {
+      message.error('发送失败，请稍后重试');
+    }
+  };
+
+  // 提交修改密码
+  const handleSubmit = async (values: any) => {
+    const { updatePassword, updatePassword2, userPassword, tempPasswordInput, userAccount } = values;
+
+    if (updatePassword !== updatePassword2) {
       message.error('两次输入的密码不一致');
       return;
     }
-    try {
-      // 注册
-      const res = await userUpdatePasswordUsingPost(values);
 
-      if (res.code===0) {
+    const payload: any = { userAccount, updatePassword };
 
-        message.success(res.message);
-        // 重定向到登录页面
-        history.push('/user/login');
+    if (useTempPassword) {
+      if (!tempPasswordInput) {
+        message.error('请输入临时密码');
         return;
+      }
+      payload.code = tempPasswordInput; // 临时密码提交到 code 字段
+    } else {
+      if (!userPassword) {
+        message.error('请输入原密码');
+        return;
+      }
+      payload.userPassword = userPassword; // 旧密码提交到 userPassword
+    }
+
+    try {
+      const res = await userUpdatePasswordUsingPost(payload);
+      if (res.code === 0) {
+        message.success(res.message);
+        history.push('/user/login');
       } else {
-       message.error(res.message)
+        message.error(res.message);
       }
     } catch (error) {
-      // 处理注册异常
       message.error('修改失败，请稍后重试');
     }
   };
+
   return (
     <div className={styles.container}>
       <Helmet>
-        <title>
-          {'修改密码'}- {Settings.title}
-        </title>
+        <title>{'修改密码'}- {Settings.title}</title>
       </Helmet>
-      <div
-        style={{
-          flex: '1',
-          padding: '32px 0',
-        }}
-      >
+      <div style={{ flex: 1, padding: '32px 0' }}>
         <LoginForm
-          contentStyle={{
-            minWidth: 280,
-            maxWidth: '75vw',
-          }}
-          submitter={{
-            searchConfig: {
-              submitText: '修改密码',
-            },
-          }}
+          formRef={formRef}
+          contentStyle={{ minWidth: 280, maxWidth: '75vw' }}
+          submitter={{ searchConfig: { submitText: '修改密码' } }}
           logo={<img alt="logo" src="/logo_256.png" />}
           title="毕设选题系统"
-          subTitle={'智能大数据工作室'}
-          onFinish={async (values) => {
-            await handleSubmit(values as API.UserUpdatePassword);
-          }}
+          subTitle="智能大数据工作室"
+          onFinish={async values => await handleSubmit(values)}
         >
           <Tabs
             activeKey={type}
             onChange={setType}
             centered
-            items={[
-              {
-                key: 'account',
-                label: '修改密码',
-              },
-            ]}
+            items={[{ key: 'account', label: '修改密码' }]}
           />
           {type === 'account' && (
             <>
               <ProFormText
                 name="userAccount"
-                fieldProps={{
-                  size: 'large',
-                  //@ts-ignore
-                  prefix: <UserOutlined />,
-                }}
-                placeholder={'请输入账户'}
-                rules={[
-                  {
-                    required: true,
-                    message: '名字是必填项！',
-                  },
-                ]}
+                fieldProps={{ size: 'large', prefix: <UserOutlined /> }}
+                placeholder="请输入账户"
+                rules={[{ required: true, message: '账号必填！' }]}
               />
-              <ProFormText.Password
-                name="userPassword"
-                fieldProps={{
-                  size: 'large',
-                  //@ts-ignore
-                  prefix: <LockOutlined />,
-                }}
-                placeholder={'请输入密码'}
-                rules={[
-                  {
-                    required: true,
-                    min: 8,
-                    message: '密码不少于8位',
-                  },
-                ]}
-              />
+
+              {!useTempPassword && (
+                <ProFormText.Password
+                  name="userPassword"
+                  fieldProps={{ size: 'large', prefix: <LockOutlined /> }}
+                  placeholder="请输入原密码"
+                  rules={[{ required: true, min: 8, message: '原密码不少于8位' }]}
+                />
+              )}
+
+              {useTempPassword && (
+                <ProFormText.Password
+                  name="tempPasswordInput"
+                  fieldProps={{ size: 'large', prefix: <LockOutlined /> }}
+                  placeholder="请输入临时密码"
+                  rules={[{ required: true, message: '临时密码必填' }]}
+                />
+              )}
+
               <ProFormText.Password
                 name="updatePassword"
-                fieldProps={{
-                  size: 'large',
-                  //@ts-ignore
-                  prefix: <LockOutlined />,
-                }}
-                placeholder={'请输入修改密码'}
-                rules={[
-                  {
-                    required: true,
-                    min: 8,
-                    message: '密码不少于8位',
-                  },
-                ]}
+                fieldProps={{ size: 'large', prefix: <LockOutlined /> }}
+                placeholder="请输入新密码"
+                rules={[{ required: true, min: 8, message: '新密码不少于8位' }]}
               />
               <ProFormText.Password
                 name="updatePassword2"
-                fieldProps={{
-                  size: 'large',
-                  //@ts-ignore
-                  prefix: <LockOutlined />,
-                }}
-                placeholder={'请再次输入修改密码'}
-                rules={[
-                  {
-                    required: true,
-                    min: 8,
-                    message: '密码不少于8位',
-                  },
-                ]}
+                fieldProps={{ size: 'large', prefix: <LockOutlined /> }}
+                placeholder="请再次输入新密码"
+                rules={[{ required: true, min: 8, message: '新密码不少于8位' }]}
               />
             </>
           )}
-          <div
-            style={{
-              marginBottom: 60,
-            }}
-          >
-            <div>
-              <Link
+
+          <div style={{ marginBottom: 60 }}>
+            <div style={{ marginBottom: 60, display: 'flex', justifyContent: 'space-between' }}>
+              <a
                 style={{
-                  float: 'right',
+                  cursor: countdown > 0 ? 'not-allowed' : 'pointer',
+                  color: countdown > 0 ? '#999' : '#1890ff'
                 }}
-                to="/user/login"
+                onClick={() => countdown === 0 && handleSendCode()}
               >
+                {countdown > 0 ? `重新获取(${countdown}s)` : '忘记密码？获取临时密码！'}
+              </a>
+              <Link to="/user/login" style={{ float: 'right' }}>
                 返回登录页面
               </Link>
             </div>
@@ -206,4 +184,5 @@ const Register: React.FC = () => {
     </div>
   );
 };
+
 export default Register;

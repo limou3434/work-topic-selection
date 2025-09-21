@@ -25,11 +25,11 @@ public class MailServiceImpl implements MailService {
                 "  <div style='max-width:600px; margin:0 auto; background:white; border-radius:8px; padding:30px; box-shadow:0 4px 10px rgba(0,0,0,0.1);'>" +
                 "    <h2 style='color:#00785a; text-align:center;'>邮箱验证</h2>" +
                 "    <p style='font-size:16px; color:#333;'>您好，感谢您使用 <b>广州南方学院毕业设计选题系统</b> 。</p>" +
-                "    <p style='font-size:16px; color:#333;'>以下是您的验证码：</p>" +
+                "    <p style='font-size:16px; color:#333;'>以下是您的临时密码: </p>" +
                 "    <div style='text-align:center; margin:20px 0;'>" +
                 "      <span style='display:inline-block; font-size:28px; font-weight:bold; color:#fff; background:#00785a; padding:10px 20px; border-radius:6px;'>" + code + "</span>" +
                 "    </div>" +
-                "    <p style='font-size:14px; color:#666;'>验证码有效期为 2 分钟，请勿泄露给他人。</p>" +
+                "    <p style='font-size:14px; color:#666;'>临时密码有效期为 2 分钟，请勿泄露给他人。</p>" +
                 "    <hr style='margin:30px 0; border:none; border-top:1px solid #ddd;'/>" +
                 "    <p style='font-size:12px; color:#999; text-align:center;'>此邮件由系统自动发送，请不要直接回复。</p>" +
                 "  </div>" +
