@@ -19,6 +19,11 @@ public class UserUpdatePassword implements Serializable {
     private String userAccount;
 
     /**
+     * 用户邮箱
+     */
+    private String email;
+
+    /**
      * 旧的密码
      */
         private String userPassword;

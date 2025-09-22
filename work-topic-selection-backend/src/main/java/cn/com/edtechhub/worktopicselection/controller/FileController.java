@@ -65,19 +65,19 @@ public class FileController {
     TransactionTemplate transactionTemplate;
 
     /**
-     * 引入用户服务依赖
+     * 注入用户服务依赖
      */
     @Resource
     private UserService userService;
 
     /**
-     * 引入选题服务依赖
+     * 注入选题服务依赖
      */
     @Resource
     private TopicService topicService;
 
     /**
-     * 引入学生关联关联服务依赖
+     * 注入学生关联关联服务依赖
      */
     @Resource
     private StudentTopicSelectionService studentTopicSelectionService;

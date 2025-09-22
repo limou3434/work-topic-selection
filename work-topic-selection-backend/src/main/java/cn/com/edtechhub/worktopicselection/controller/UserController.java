@@ -74,55 +74,55 @@ public class UserController {
     TransactionTemplate transactionTemplate;
 
     /**
-     * 引入 Redis 管理依赖
+     * 注入 Redis 管理依赖
      */
     @Resource
     RedisManager redisManager;
 
     /**
-     * 引入 Redis 管理依赖
+     * 注入 Redis 管理依赖
      */
     @Resource
     SentineManager sentineManager;
 
     /**
-     * 引入 AI 管理依赖
+     * 注入 AI 管理依赖
      */
     @Resource
     private AIManager aiManager;
 
     /**
-     * 引入用户服务依赖
+     * 注入用户服务依赖
      */
     @Resource
     private UserService userService;
 
     /**
-     * 引入系部服务依赖
+     * 注入系部服务依赖
      */
     @Resource
     private DeptService deptService;
 
     /**
-     * 引入专业服务依赖
+     * 注入专业服务依赖
      */
     @Resource
     private ProjectService projectService;
 
     /**
-     * 引入选题服务依赖
+     * 注入选题服务依赖
      */
     @Resource
     private TopicService topicService;
 
     /**
-     * 引入学生选题关联服务依赖
+     * 注入学生选题关联服务依赖
      */
     @Resource
     private StudentTopicSelectionService studentTopicSelectionService;
 
     /**
-     * 引入邮箱服务依赖
+     * 注入邮箱服务依赖
      */
     @Resource
     private MailService mailService;
@@ -188,6 +188,7 @@ public class UserController {
             user.setDept(userDeptName);
             user.setProject(userProject);
             user.setUserRole(userRole);
+            user.setStatus(null);
             user.setUserPassword(DigestUtils.md5DigestAsHex((UserConstant.SALT + UserConstant.DEFAULT_PASSWD).getBytes()));
 
             boolean result = userService.save(user);
@@ -425,6 +426,8 @@ public class UserController {
         String encryptPassword = DigestUtils.md5DigestAsHex((UserConstant.SALT + userPassword).getBytes()); // 提前得到加密密码
         ThrowUtils.throwIf(!Objects.equals(user.getUserPassword(), encryptPassword), CodeBindMessageEnums.PARAMS_ERROR, "用户密码不正确");
 
+        ThrowUtils.throwIf(StringUtils.isBlank(user.getStatus()), CodeBindMessageEnums.USER_INIT_PASSWD, "您的密码为系统默认密码, 请先绑定自己的 qq 邮箱并且修改密码后再登陆");
+
         // 用户登陆
         String device = DeviceUtils.getRequestDevice(httpServletrequest); // 登陆设备
         StpUtil.login(user.getId(), device); // 开始登录
@@ -487,7 +490,8 @@ public class UserController {
         return transactionTemplate.execute(transactionStatus -> {
             String newEncryptPassword = DigestUtils.md5DigestAsHex((UserConstant.SALT + UserConstant.DEFAULT_PASSWD).getBytes());
             user.setUserPassword(newEncryptPassword);
-            user.setStatus(null); // 状态置空, 以方便后续强制要求用户重新登陆
+            user.setStatus(""); // 状态置新, 以方便后续强制要求用户重新登陆
+            user.setEmail(""); // 同时解绑邮箱
             final boolean result = userService.updateById(user);
             ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "修改用户密码失败");
 
@@ -523,23 +527,34 @@ public class UserController {
         String updatePassword = request.getUpdatePassword();
         ThrowUtils.throwIf(StringUtils.isBlank(updatePassword), CodeBindMessageEnums.PARAMS_ERROR, "新密码不能为空");
 
-        // 必须通过学号 / 工号密码验证后才能修改密码
+        // 必须通过学号或工号以及密码验证后才能修改密码
         User user;
-        // 如果使用验证码重置
         if (StringUtils.isNotBlank(code)) {
+            // 如果使用验证码重置
             String codeInRedis = redisManager.getValue("code:" + userAccount);
             ThrowUtils.throwIf(codeInRedis == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "验证码已过期, 请重新获取验证码");
             assert codeInRedis != null;
+
             ThrowUtils.throwIf(!codeInRedis.equals(code), CodeBindMessageEnums.PARAMS_ERROR, "您的验证码错误");
+
             user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
             ThrowUtils.throwIf(user == null, CodeBindMessageEnums.SYSTEM_ERROR, "用户不存在");
-        }
-        // 如果使用旧密码重置
-        else {
+        } else {
+            // 如果使用旧密码重置
             user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount).eq("userPassword", DigestUtils.md5DigestAsHex((UserConstant.SALT + userPassword).getBytes())));
             ThrowUtils.throwIf(user == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "旧密码不正确, 无法修改密码, 如果忘记旧密码请发送邮箱 898738804@qq.com 向联系管理员重置密码");
         }
         assert user != null;
+
+        // 如果邮箱为空则需要绑定邮箱
+        if (StringUtils.isBlank(user.getEmail())) {
+            String email = request.getEmail();
+            ThrowUtils.throwIf(StringUtils.isBlank(email), CodeBindMessageEnums.PARAMS_ERROR, "首次登陆必须绑定邮箱");
+            user.setStatus("老用户");
+            user.setEmail(email);
+        } else {
+            ThrowUtils.throwIf(!user.getEmail().equals(request.getEmail()), CodeBindMessageEnums.PARAMS_ERROR, "输入的邮箱和账户绑定的邮箱不匹配");
+        }
 
         // 更新用户
         User finalUser = user;
@@ -576,7 +591,7 @@ public class UserController {
         assert user != null;
 
         String email = user.getEmail();
-        ThrowUtils.throwIf(StringUtils.isBlank(email), CodeBindMessageEnums.PARAMS_ERROR, "用户邮箱不能为空");
+        ThrowUtils.throwIf(StringUtils.isBlank(email), CodeBindMessageEnums.PARAMS_ERROR, "当前用户还没有绑定邮箱");
 
         // 如果缓存中有临时立马则直接使用, 如果没有就新缓存一个
         String code = redisManager.getValue("code:" + userAccount);
@@ -595,7 +610,7 @@ public class UserController {
         }
 
         try {
-            mailService.sendCodeMail(email, "临时密码 - 广州南方学院毕业设计选题系统" + code, code);
+            mailService.sendCodeMail(email, "广州南方学院毕业设计选题系统", code);
         } catch (Exception e) {
             ThrowUtils.throwIf(true, CodeBindMessageEnums.SYSTEM_ERROR, "邮件发送失败, 请联系管理员 898738804@qq.com");
         }

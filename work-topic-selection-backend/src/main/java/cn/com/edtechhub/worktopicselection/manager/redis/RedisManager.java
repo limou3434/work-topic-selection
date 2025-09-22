@@ -1,6 +1,5 @@
 package cn.com.edtechhub.worktopicselection.manager.redis;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -27,8 +26,9 @@ public class RedisManager {
 
     /**
      * 设置值, 带过期时间(秒)
-     * @param key 键
-     * @param value 值
+     *
+     * @param key            键
+     * @param value          值
      * @param timeoutSeconds 过期时间
      */
     public void setValue(String key, String value, long timeoutSeconds) {
@@ -37,7 +37,8 @@ public class RedisManager {
 
     /**
      * 设置值
-     * @param key 键
+     *
+     * @param key   键
      * @param value 值
      */
     public void setValue(String key, String value) {
@@ -46,6 +47,7 @@ public class RedisManager {
 
     /**
      * 获取值
+     *
      * @param key 键
      */
     public String getValue(String key) {
@@ -54,6 +56,7 @@ public class RedisManager {
 
     /**
      * 删除键
+     *
      * @param key 键
      */
     public void deleteKey(String key) {
@@ -62,7 +65,8 @@ public class RedisManager {
 
     /**
      * List 操作
-     * @param key 键
+     *
+     * @param key   键
      * @param value 值
      */
     public void rightPushList(String key, String value) {
@@ -71,6 +75,7 @@ public class RedisManager {
 
     /**
      * List 操作
+     *
      * @param key 键
      */
     public String leftPopList(String key) {
@@ -79,7 +84,8 @@ public class RedisManager {
 
     /**
      * Set 操作
-     * @param key 键
+     *
+     * @param key    键
      * @param values 值
      */
     public void addSet(String key, String... values) {
@@ -88,6 +94,7 @@ public class RedisManager {
 
     /**
      * Set 操作
+     *
      * @param key 键
      */
     public Object getSetMembers(String key) {
@@ -96,7 +103,8 @@ public class RedisManager {
 
     /**
      * Hash 操作
-     * @param key 键
+     *
+     * @param key   键
      * @param field 字段
      * @param value 值
      */
@@ -106,7 +114,8 @@ public class RedisManager {
 
     /**
      * Hash 操作
-     * @param key 键
+     *
+     * @param key   键
      * @param field 字段
      */
     public Object getHash(String key, String field) {
