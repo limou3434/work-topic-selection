@@ -38,19 +38,19 @@ public class RequestLogAOP implements HandlerInterceptor {
     MailService mailService;
 
     /**
-     * 1 min 内最多请求次数
+     * 最多请求次数
      */
     private static final int MAX_REQUESTS = 300;
 
     /**
-     * 1 min 内请求统计窗口
+     * 统计窗口秒数
      */
-    private static final int TIME_WINDOW_SECONDS = 60;
+    private static final int TIME_WINDOW_SECONDS = 50;
 
     /**
      * 封禁时间秒数
      */
-    private static final int BAN_TIME_SECONDS = 10;
+    private static final int BAN_TIME_SECONDS = 60;
 
     /**
      * 每次网络接口被调用都会执行这个方法, 进而打印日志
