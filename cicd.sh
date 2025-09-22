@@ -23,4 +23,4 @@ echo "后端部署..." && sudo docker compose down work-topic-selection-backend 
 echo "前端部署..." && sudo docker compose down work-topic-selection-frontend && sudo docker compose up -d --build work-topic-selection-frontend >/dev/null && echo "后端部署完成 ✅"
 
 # 重载网管
-echo "网光部署..." && sudo docker compose down work-caddy && sudo docker compose up -d work-caddy
+echo "网官部署..." && sudo docker compose down work-caddy && sudo docker compose up -d work-caddy
