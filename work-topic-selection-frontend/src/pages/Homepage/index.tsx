@@ -1,10 +1,12 @@
-import { PageContainer } from '@ant-design/pro-components';
-import { useModel } from '@umijs/max';
+import {PageContainer} from '@ant-design/pro-components';
+import {useModel} from '@umijs/max';
 import {Card, Carousel, Collapse, Divider, Image, theme, Typography} from 'antd';
 import React from 'react';
 import WarningNotification from "@/components/WarningNotification";
+import {Toc} from "@/pages/Toc";
+import {StatusPage} from "@/pages/StatusPage";
 
-const { Title, Paragraph, Text } = Typography;
+const {Title, Paragraph, Text} = Typography;
 
 /**
  * 每个单独的卡片，为了复用样式抽成了组件
@@ -16,10 +18,10 @@ const InfoCard: React.FC<{
   index: number;
   desc: string;
   href: string;
-}> = ({ title, href, index, desc }) => {
-  const { useToken } = theme;
+}> = ({title, href, index, desc}) => {
+  const {useToken} = theme;
 
-  const { token } = useToken();
+  const {token} = useToken();
 
   return (
     <div
@@ -87,10 +89,10 @@ const InfoCard: React.FC<{
 };
 
 const Welcome: React.FC = () => {
-  const { token } = theme.useToken();
-  const { initialState } = useModel('@@initialState');
+  const {token} = theme.useToken();
+  const {initialState} = useModel('@@initialState');
   const blockContent =
-`邮箱格式：
+    `邮箱格式：
 标题：毕设系统+真实姓名+学号/工号
 内容：电话号码+具体问题
 `;
@@ -104,13 +106,13 @@ const Welcome: React.FC = () => {
         }}
         bodyStyle={{
           backgroundImage:
-            //@ts-ignore
+          //@ts-ignore
             initialState?.settings?.navTheme === 'realDark'
               ? 'background-image: linear-gradient(75deg, #1A1B1F 0%, #191C1F 100%)'
               : 'background-image: linear-gradient(75deg, #FBFDFF 0%, #F5F7FF 100%)',
         }}
       >
-        <Title style={{ textAlign: 'center' }}>欢迎使用毕业设计选题系统🎉</Title>
+        <Title style={{textAlign: 'center'}}>欢迎使用毕业设计选题系统🎉</Title>
         <div
           style={{
             backgroundPosition: '100% -30%',
@@ -155,10 +157,13 @@ const Welcome: React.FC = () => {
             />
           </div>
         </div>
-        <Divider />
+        <Divider/>
         <Typography>
-          <Title level={2}>1.如何使用?</Title>
-          <Title level={3}>1.1.学生使用手册</Title>
+          <Title level={2}>1.使用环境?</Title>
+          <Paragraph>理论上本站在任意浏览器都可以正常运行，但是在一些老版本的浏览器中可能会有兼容性问题，请尽可能使用最新的 <Text code>Chrome</Text> 或 <Text code>Edge</Text> 浏览器（避免使用 <Text code>360</Text> 浏览器），正常的主页图片如下（可能有些许不同）：</Paragraph>
+          <Image src="./home.png" style={{width: '100%', borderRadius: 8}}/>
+          <Title level={2}>2.如何使用?</Title>
+          <Title level={3}>2.1.学生使用手册</Title>
           <Paragraph>如果您是学生，您的主要操作就是</Paragraph>
           <Paragraph>
             <Text strong>
@@ -173,27 +178,31 @@ const Welcome: React.FC = () => {
             </Text>
           </Paragraph>
           <Paragraph>
-            学生应当<Text underline>在题目开放前</Text>，预选自己心仪的 <Text code>毕业设计题目（后续简称“题目”）</Text>。而<Text underline>在题目开放后</Text>可以抢夺题目，每一个学生最终只能确认选择一个题目，并且在选择题目瞬间自动清空所有的预选清单，无法再次预选题目（除非取消已经提交的题目）。
+            学生应当<Text underline>在题目开放前</Text>，预选自己心仪的 <Text code>毕业设计题目（后续简称“题目”）</Text>。而<Text
+            underline>在题目开放后</Text>可以抢夺题目，每一个学生最终只能确认选择一个题目，并且在选择题目瞬间自动清空所有的预选清单，无法再次预选题目（除非取消已经提交的题目）。
           </Paragraph>
           <Paragraph>
             本系统 <Text mark>虽然提供取消当前已经提交题目的功能，但只根据学校的安排进行开放</Text>。若您发现无法取消当前已提交的题目，则需要联系自己当前已提交题目所对应导师进行处理。
           </Paragraph>
           <Paragraph>
-            抢题过程中，请不要过分使用某些连点器工具来使用本系统，<Text style={{ color: 'red' }}>一旦被系统检测到账号异常行为将会进行临时封号</Text>，严重将导致您的选题安排。
+            抢题过程中，请不要过分使用某些连点器工具来使用本系统，<Text
+            style={{color: 'red'}}>一旦被系统检测到账号异常行为将会进行临时封号</Text>，严重将导致您的选题安排。
           </Paragraph>
           <Paragraph>
             <Collapse
               size="small"
-              items={[{ key: '1', label: '学生端简易演示过程', children:
+              defaultActiveKey={['1']}
+              items={[{
+                key: '1', label: '学生端简易演示过程', children:
                   <>
                     <Carousel
                       autoplay
-                      dots={{ className: 'custom-dots' }}
+                      dots={{className: 'custom-dots'}}
                       arrows
-                      style={{ margin: '0 auto' }}
+                      style={{margin: '0 auto'}}
                     >
                       <div>
-                        <Image src="./steps/student/1.jpg" style={{ width: '100%', borderRadius: 8 }} />
+                        <Image src="./steps/student/1.jpg" style={{width: '100%', borderRadius: 8}}/>
                         <div style={{
                           textAlign: 'center',
                           marginTop: 12,
@@ -207,7 +216,7 @@ const Welcome: React.FC = () => {
                         </div>
                       </div>
                       <div>
-                        <Image src="./steps/student/2.jpg" style={{ width: '100%', borderRadius: 8 }} />
+                        <Image src="./steps/student/2.jpg" style={{width: '100%', borderRadius: 8}}/>
                         <div style={{
                           textAlign: 'center',
                           marginTop: 12,
@@ -221,7 +230,7 @@ const Welcome: React.FC = () => {
                         </div>
                       </div>
                       <div>
-                        <Image src="./steps/student/3.jpg" style={{ width: '100%', borderRadius: 8 }} />
+                        <Image src="./steps/student/3.jpg" style={{width: '100%', borderRadius: 8}}/>
                         <div style={{
                           textAlign: 'center',
                           marginTop: 12,
@@ -235,7 +244,7 @@ const Welcome: React.FC = () => {
                         </div>
                       </div>
                       <div>
-                        <Image src="./steps/student/4.jpg" style={{ width: '100%', borderRadius: 8 }} />
+                        <Image src="./steps/student/4.jpg" style={{width: '100%', borderRadius: 8}}/>
                         <div style={{
                           textAlign: 'center',
                           marginTop: 12,
@@ -253,7 +262,7 @@ const Welcome: React.FC = () => {
               }]}
             />
           </Paragraph>
-          <Title level={3}>1.2.教师使用手册</Title>
+          <Title level={3}>2.2.教师使用手册</Title>
           <Paragraph>如果您是教师，您的主要操作就是</Paragraph>
           <Paragraph>
             <Text strong>
@@ -273,18 +282,19 @@ const Welcome: React.FC = () => {
           <Paragraph>
             <Collapse
               size="small"
+              defaultActiveKey={['1']}
               items={[{
                 key: '1',
                 label: '教师端简易演示过程',
                 children: (
                   <Carousel
                     autoplay
-                    dots={{ className: 'custom-dots' }}
+                    dots={{className: 'custom-dots'}}
                     arrows
-                    style={{ margin: '0 auto' }}
+                    style={{margin: '0 auto'}}
                   >
                     <div>
-                      <Image src="./steps/teacher/1.jpg" style={{ width: '100%', borderRadius: 8 }} />
+                      <Image src="./steps/teacher/1.jpg" style={{width: '100%', borderRadius: 8}}/>
                       <div style={{
                         textAlign: 'center',
                         marginTop: 12,
@@ -298,7 +308,7 @@ const Welcome: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <Image src="./steps/teacher/2.jpg" style={{ width: '100%', borderRadius: 8 }} />
+                      <Image src="./steps/teacher/2.jpg" style={{width: '100%', borderRadius: 8}}/>
                       <div style={{
                         textAlign: 'center',
                         marginTop: 12,
@@ -312,7 +322,7 @@ const Welcome: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <Image src="./steps/teacher/3.jpg" style={{ width: '100%', borderRadius: 8 }} />
+                      <Image src="./steps/teacher/3.jpg" style={{width: '100%', borderRadius: 8}}/>
                       <div style={{
                         textAlign: 'center',
                         marginTop: 12,
@@ -326,7 +336,7 @@ const Welcome: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <Image src="./steps/teacher/4.jpg" style={{ width: '100%', borderRadius: 8 }} />
+                      <Image src="./steps/teacher/4.jpg" style={{width: '100%', borderRadius: 8}}/>
                       <div style={{
                         textAlign: 'center',
                         marginTop: 12,
@@ -340,7 +350,7 @@ const Welcome: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <Image src="./steps/teacher/5.jpg" style={{ width: '100%', borderRadius: 8 }} />
+                      <Image src="./steps/teacher/5.jpg" style={{width: '100%', borderRadius: 8}}/>
                       <div style={{
                         textAlign: 'center',
                         marginTop: 12,
@@ -354,7 +364,7 @@ const Welcome: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <Image src="./steps/teacher/6.jpg" style={{ width: '100%', borderRadius: 8 }} />
+                      <Image src="./steps/teacher/6.jpg" style={{width: '100%', borderRadius: 8}}/>
                       <div style={{
                         textAlign: 'center',
                         marginTop: 12,
@@ -368,7 +378,7 @@ const Welcome: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <Image src="./steps/teacher/7.jpg" style={{ width: '100%', borderRadius: 8 }} />
+                      <Image src="./steps/teacher/7.jpg" style={{width: '100%', borderRadius: 8}}/>
                       <div style={{
                         textAlign: 'center',
                         marginTop: 12,
@@ -386,7 +396,7 @@ const Welcome: React.FC = () => {
               }]}
             />
           </Paragraph>
-          <Title level={3}>1.3.主任使用手册</Title>
+          <Title level={3}>2.3.主任使用手册</Title>
           <Paragraph>如果您是主任，您的主要操作就是</Paragraph>
           <Paragraph>
             <Text strong>
@@ -406,18 +416,19 @@ const Welcome: React.FC = () => {
           <Paragraph>
             <Collapse
               size="small"
+              defaultActiveKey={['1']}
               items={[{
                 key: '1',
                 label: '主任端简易演示过程',
                 children: (
                   <Carousel
                     autoplay
-                    dots={{ className: 'custom-dots' }}
+                    dots={{className: 'custom-dots'}}
                     arrows
-                    style={{ margin: '0 auto' }}
+                    style={{margin: '0 auto'}}
                   >
                     <div>
-                      <Image src="./steps/dept/1.jpg" style={{ width: '100%', borderRadius: 8 }} />
+                      <Image src="./steps/dept/1.jpg" style={{width: '100%', borderRadius: 8}}/>
                       <div style={{
                         textAlign: 'center',
                         marginTop: 12,
@@ -431,7 +442,7 @@ const Welcome: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <Image src="./steps/dept/2.jpg" style={{ width: '100%', borderRadius: 8 }} />
+                      <Image src="./steps/dept/2.jpg" style={{width: '100%', borderRadius: 8}}/>
                       <div style={{
                         textAlign: 'center',
                         marginTop: 12,
@@ -445,7 +456,7 @@ const Welcome: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <Image src="./steps/dept/3.jpg" style={{ width: '100%', borderRadius: 8 }} />
+                      <Image src="./steps/dept/3.jpg" style={{width: '100%', borderRadius: 8}}/>
                       <div style={{
                         textAlign: 'center',
                         marginTop: 12,
@@ -463,15 +474,28 @@ const Welcome: React.FC = () => {
               }]}
             />
           </Paragraph>
-          <Title level={2}>2.遇到问题?</Title>
+          <Title level={2}>3.遇到问题?</Title>
           <Paragraph>
-            如果您在使用的过程中遇到问题，先尝试自己是否能够解决，如果实在遇到解决不了的问题可以发送邮箱到 <Text code>898738804@qq.com</Text> 中，邮件格式如下：
+            <ul>
+              <li>
+                没有帐号？先联系老师询问情况，再由管理员创建帐号。
+              </li>
+              <li>
+                被封号了？系统在检测到恶意流量时会对帐号进行封禁，一般在一定时间后会自动接触。
+              </li>
+              <li>
+                使用疑问？请先查看上述使用手册，以及学校的通知文件，或者联系管理员。
+              </li>
+            </ul>
+            如果您在使用的过程中遇到问题，先尝试自己是否能够解决，如果实在遇到解决不了的问题可以发送邮箱到 <Text
+            code>898738804@qq.com</Text> 中，邮件格式如下（非重要事件请不要发送邮件）：
           </Paragraph>
           <Paragraph>
             <pre>{blockContent}</pre>
           </Paragraph>
         </Typography>
       </Card>
+      <Toc/>
     </PageContainer>
   );
 };

@@ -13,7 +13,6 @@
   },
   { path: '/user', redirect: '/home' },
   { path: '/', redirect: '/home' }, // 根路径也重定向到主页
-
   {
     name: '主页',
     path: '/home',
