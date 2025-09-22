@@ -1,17 +1,17 @@
-import { Footer } from '@/components';
+import {Footer} from '@/components';
 import {getLoginUserUsingGet, userLoginUsingPost} from '@/services/work-topic-selection/userController';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { LoginForm, ProFormText } from '@ant-design/pro-components';
-import { Helmet, Link, history, useModel } from '@umijs/max';
-import { Tabs, message } from 'antd';
-import { createStyles } from 'antd-style';
-import React, { useState } from 'react';
-import { flushSync } from 'react-dom';
+import {LockOutlined, UserOutlined} from '@ant-design/icons';
+import {LoginForm, ProFormText} from '@ant-design/pro-components';
+import {Helmet, history, Link, useModel} from '@umijs/max';
+import {message, Tabs} from 'antd';
+import {createStyles} from 'antd-style';
+import React, {useState} from 'react';
+import {flushSync} from 'react-dom';
 import Settings from '../../../../config/defaultSettings';
 // @ts-ignore
 import {useNavigate} from "react-router-dom";
 
-const useStyles = createStyles(({ token }) => {
+const useStyles = createStyles(({token}) => {
   return {
     action: {
       marginLeft: '8px',
@@ -50,8 +50,8 @@ const useStyles = createStyles(({ token }) => {
 const Login: React.FC = () => {
   const [type, setType] = useState<string>('account');
   // @ts-ignore
-  const {refresh, setInitialState } = useModel('@@initialState');
-  const { styles } = useStyles();
+  const {refresh, setInitialState} = useModel('@@initialState');
+  const {styles} = useStyles();
   const navigate = useNavigate();
 
   /**
@@ -80,10 +80,10 @@ const Login: React.FC = () => {
         history.push('/' || urlParams.get('redirect'));
         refresh();
         return;
-      }else if(res.code===40001){
+      } else if (res.code === 40001) {
         message.error(res.message);
         navigate(`/user/register`);
-      }else {
+      } else {
         message.error(res.message);
       }
     } catch (error) {
@@ -110,7 +110,7 @@ const Login: React.FC = () => {
             minWidth: 280,
             maxWidth: '75vw',
           }}
-          logo={<img alt="logo" src="/logo_256.png" />}
+          logo={<img alt="logo" src="/logo_256.png"/>}
           title="毕设选题系统"
           subTitle={'智能大数据工作室'}
           onFinish={async (values) => {
@@ -135,7 +135,7 @@ const Login: React.FC = () => {
                 fieldProps={{
                   size: 'large',
                   //@ts-ignore
-                  prefix: <UserOutlined />,
+                  prefix: <UserOutlined/>,
                 }}
                 placeholder={'请输入账户'}
                 rules={[
@@ -150,7 +150,7 @@ const Login: React.FC = () => {
                 fieldProps={{
                   size: 'large',
                   //@ts-ignore
-                  prefix: <LockOutlined />,
+                  prefix: <LockOutlined/>,
                 }}
                 placeholder={'请输入密码'}
                 rules={[
@@ -181,7 +181,7 @@ const Login: React.FC = () => {
           </div>
         </LoginForm>
       </div>
-      <Footer />
+      <Footer/>
     </div>
   );
 };

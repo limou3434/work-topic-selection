@@ -1,6 +1,6 @@
 import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { history, useModel } from '@umijs/max';
-import { Spin, message } from 'antd';
+import {Spin, message, Tooltip} from 'antd';
 import { createStyles } from 'antd-style';
 import { stringify } from 'querystring';
 import type { MenuInfo } from 'rc-menu/lib/interface';
@@ -15,10 +15,30 @@ export type GlobalHeaderRightProps = {
   children?: React.ReactNode;
 };
 
+
 export const AvatarName = () => {
   const { initialState } = useModel('@@initialState');
   const { currentUser } = initialState || {};
-  return <span className="anticon">{USER_ROLE_MAP[currentUser?.userRole as 0 | 1 | 2 | 3]} - {currentUser?.userName}</span>;
+  const displayText = currentUser
+    ? `${USER_ROLE_MAP[currentUser.userRole as 0 | 1 | 2 | 3]} - ${currentUser.userName}`
+    : '';
+
+  return (
+    <Tooltip title={displayText} placement="right">
+      <span
+        style={{
+          display: 'inline-block',
+          maxWidth: 120, // 可以根据布局调整
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          verticalAlign: 'middle',
+        }}
+      >
+        {displayText}
+      </span>
+    </Tooltip>
+  );
 };
 
 const useStyles = createStyles(({ token }) => {

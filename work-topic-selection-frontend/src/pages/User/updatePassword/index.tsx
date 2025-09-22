@@ -9,6 +9,7 @@ import React, { useRef, useState } from 'react';
 import Settings from '../../../../config/defaultSettings';
 import { sendCodeUsingPost, userUpdatePasswordUsingPost } from "@/services/work-topic-selection/userController";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const useStyles = createStyles(({ token }) => ({
   container: {
     display: 'flex',
@@ -63,14 +64,15 @@ const Register: React.FC = () => {
 
   // 提交修改密码
   const handleSubmit = async (values: any) => {
-    const { updatePassword, updatePassword2, userPassword, tempPasswordInput, userAccount } = values;
+    const { updatePassword, updatePassword2, userPassword, tempPasswordInput, userAccount, email } = values;
+
 
     if (updatePassword !== updatePassword2) {
       message.error('两次输入的密码不一致');
       return;
     }
 
-    const payload: any = { userAccount, updatePassword };
+    const payload: any = { userAccount, updatePassword, email }; // <-- 加上 email
 
     if (useTempPassword) {
       if (!tempPasswordInput) {
@@ -127,6 +129,16 @@ const Register: React.FC = () => {
                 fieldProps={{ size: 'large', prefix: <UserOutlined /> }}
                 placeholder="请输入账户"
                 rules={[{ required: true, message: '账号必填！' }]}
+              />
+
+              <ProFormText
+                name="email"
+                fieldProps={{ size: 'large', prefix: <UserOutlined /> }}
+                placeholder="请输入邮箱"
+                rules={[
+                  { required: true, message: '邮箱必填！' },
+                  { type: 'email', message: '请输入正确的邮箱格式' }
+                ]}
               />
 
               {!useTempPassword && (
