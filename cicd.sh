@@ -21,3 +21,6 @@ echo "前端编译..." && cd ../work-topic-selection-frontend/ && npm i && npm r
 # 部署项目
 echo "后端部署..." && sudo docker compose down work-topic-selection-backend && sudo docker compose up -d --build work-topic-selection-backend >/dev/null && echo "前端部署完成 ✅"
 echo "前端部署..." && sudo docker compose down work-topic-selection-frontend && sudo docker compose up -d --build work-topic-selection-frontend >/dev/null && echo "后端部署完成 ✅"
+
+# 重载网管
+sudo docker compose down work-caddy && sudo docker compose up -d work-caddy
