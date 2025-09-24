@@ -1,6 +1,6 @@
-import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { LogoutOutlined, SettingOutlined, UserOutlined, TeamOutlined, BankOutlined } from '@ant-design/icons';
 import { history, useModel } from '@umijs/max';
-import {Spin, message, Tooltip} from 'antd';
+import {Spin, message, Tooltip, Space, Typography} from 'antd';
 import { createStyles } from 'antd-style';
 import { stringify } from 'querystring';
 import type { MenuInfo } from 'rc-menu/lib/interface';
@@ -16,6 +16,8 @@ export type GlobalHeaderRightProps = {
 };
 
 
+const { Text } = Typography;
+
 export const AvatarName = () => {
   const { initialState } = useModel('@@initialState');
   const { currentUser } = initialState || {};
@@ -23,8 +25,30 @@ export const AvatarName = () => {
     ? `${USER_ROLE_MAP[currentUser.userRole as 0 | 1 | 2 | 3]} - ${currentUser.userName}`
     : '';
 
+  // 构建详细的tooltip内容
+  const tooltipContent = currentUser ? (
+    <div>
+      <div style={{ marginBottom: 4 }}>
+        <UserOutlined style={{ marginRight: 6 }} />
+        {`${USER_ROLE_MAP[currentUser.userRole as 0 | 1 | 2 | 3]} - ${currentUser.userName}`}
+      </div>
+      {currentUser.dept && (
+        <div style={{ marginBottom: 4 }}>
+          <BankOutlined style={{ marginRight: 6 }} />
+          系部：{currentUser.dept}
+        </div>
+      )}
+      {currentUser.project && (
+        <div>
+          <TeamOutlined style={{ marginRight: 6 }} />
+          专业：{currentUser.project}
+        </div>
+      )}
+    </div>
+  ) : '';
+
   return (
-    <Tooltip title={displayText} placement="right">
+    <Tooltip title={tooltipContent} placement="right">
       <span
         style={{
           display: 'inline-block',
@@ -127,7 +151,42 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
     return loading;
   }
 
+  // 用户基本信息菜单项
+  const userInfoItems = [
+    {
+      key: 'user-info',
+      type: 'group' as const,
+      label: (
+        <Space direction="vertical" size={2} style={{ width: '100%' }}>
+          <Text strong style={{ fontSize: '14px' }}>
+            <UserOutlined style={{ marginRight: 6 }} />
+            {currentUser.userName}
+          </Text>
+          <Text type="secondary" style={{ fontSize: '12px' }}>
+            {USER_ROLE_MAP[currentUser.userRole as 0 | 1 | 2 | 3]}
+          </Text>
+          {currentUser.dept && (
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              <BankOutlined style={{ marginRight: 4 }} />
+              {currentUser.dept}
+            </Text>
+          )}
+          {currentUser.project && (
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              <TeamOutlined style={{ marginRight: 4 }} />
+              {currentUser.project}
+            </Text>
+          )}
+        </Space>
+      ),
+    },
+    {
+      type: 'divider' as const,
+    },
+  ];
+
   const menuItems = [
+    ...userInfoItems,
     ...(menu
       ? [
           {
@@ -159,7 +218,11 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
         onClick: onMenuClick,
         items: menuItems,
       }}
-      overlayStyle={{ maxWidth: '200px', minWidth: 'auto' }} // 限制宽度
+      overlayStyle={{ 
+        maxWidth: '280px', 
+        minWidth: '220px',
+        padding: '8px 0'
+      }}
     >
       {children}
     </HeaderDropdown>

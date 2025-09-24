@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 
 const Toc: React.FC = () => {
   const [items, setItems] = useState<any[]>([]);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   useEffect(() => {
     const titles = document.querySelectorAll('h2, h3');

@@ -4,6 +4,7 @@ import {Card, Carousel, Collapse, Divider, Image, theme, Typography} from 'antd'
 import React from 'react';
 import WarningNotification from "@/components/WarningNotification";
 import {Toc} from "@/pages/Toc";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import {StatusPage} from "@/pages/StatusPage";
 
 const {Title, Paragraph, Text} = Typography;

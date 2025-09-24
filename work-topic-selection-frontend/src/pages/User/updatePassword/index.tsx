@@ -1,16 +1,16 @@
-import { Footer } from '@/components';
-import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { LoginForm, ProFormText } from '@ant-design/pro-components';
-import { useIntl } from '@ant-design/pro-provider';
-import { Helmet, Link, history } from '@umijs/max';
-import { Tabs, message } from 'antd';
-import { createStyles } from 'antd-style';
-import React, { useRef, useState } from 'react';
+import {Footer} from '@/components';
+import {InfoCircleOutlined, LockOutlined, UserOutlined} from '@ant-design/icons';
+import {LoginForm, ProFormText} from '@ant-design/pro-components';
+import {useIntl} from '@ant-design/pro-provider';
+import {Helmet, history, Link} from '@umijs/max';
+import {message, Tabs, Tooltip} from 'antd';
+import {createStyles} from 'antd-style';
+import React, {useRef, useState} from 'react';
 import Settings from '../../../../config/defaultSettings';
-import { sendCodeUsingPost, userUpdatePasswordUsingPost } from "@/services/work-topic-selection/userController";
+import {sendCodeUsingPost, userUpdatePasswordUsingPost} from "@/services/work-topic-selection/userController";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const useStyles = createStyles(({ token }) => ({
+const useStyles = createStyles(({token}) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
@@ -23,7 +23,7 @@ const useStyles = createStyles(({ token }) => ({
 }));
 
 const Register: React.FC = () => {
-  const { styles } = useStyles();
+  const {styles} = useStyles();
   useIntl();
 
   const [type, setType] = useState<string>('account');
@@ -40,7 +40,7 @@ const Register: React.FC = () => {
     }
 
     try {
-      const res = await sendCodeUsingPost({ userAccount });
+      const res = await sendCodeUsingPost({userAccount});
       if (res.code === 0) {
         message.success('临时密码已发送，请在下方输入');
         setCountdown(60);
@@ -64,7 +64,7 @@ const Register: React.FC = () => {
 
   // 提交修改密码
   const handleSubmit = async (values: any) => {
-    const { updatePassword, updatePassword2, userPassword, tempPasswordInput, userAccount, email } = values;
+    const {updatePassword, updatePassword2, userPassword, tempPasswordInput, userAccount, email} = values;
 
 
     if (updatePassword !== updatePassword2) {
@@ -72,7 +72,7 @@ const Register: React.FC = () => {
       return;
     }
 
-    const payload: any = { userAccount, updatePassword, email }; // <-- 加上 email
+    const payload: any = {userAccount, updatePassword, email}; // <-- 加上 email
 
     if (useTempPassword) {
       if (!tempPasswordInput) {
@@ -106,12 +106,12 @@ const Register: React.FC = () => {
       <Helmet>
         <title>{'修改密码'}- {Settings.title}</title>
       </Helmet>
-      <div style={{ flex: 1, padding: '32px 0' }}>
+      <div style={{flex: 1, padding: '32px 0'}}>
         <LoginForm
           formRef={formRef}
-          contentStyle={{ minWidth: 280, maxWidth: '75vw' }}
-          submitter={{ searchConfig: { submitText: '修改密码' } }}
-          logo={<img alt="logo" src="/logo_256.png" />}
+          contentStyle={{minWidth: 280, maxWidth: '75vw'}}
+          submitter={{searchConfig: {submitText: '修改密码'}}}
+          logo={<img alt="logo" src="/logo_256.png"/>}
           title="毕设选题系统"
           subTitle="智能大数据工作室"
           onFinish={async values => await handleSubmit(values)}
@@ -120,62 +120,72 @@ const Register: React.FC = () => {
             activeKey={type}
             onChange={setType}
             centered
-            items={[{ key: 'account', label: '修改密码' }]}
+            items={[{key: 'account', label: '修改密码'}]}
           />
           {type === 'account' && (
             <>
               <ProFormText
                 name="userAccount"
-                fieldProps={{ size: 'large', prefix: <UserOutlined /> }}
+                fieldProps={{size: 'large', prefix: <UserOutlined/>}}
                 placeholder="请输入账户"
-                rules={[{ required: true, message: '账号必填！' }]}
-              />
-
-              <ProFormText
-                name="email"
-                fieldProps={{ size: 'large', prefix: <UserOutlined /> }}
-                placeholder="请输入邮箱"
-                rules={[
-                  { required: true, message: '邮箱必填！' },
-                  { type: 'email', message: '请输入正确的邮箱格式' }
-                ]}
+                rules={[{required: true, message: '账号必填！'}]}
               />
 
               {!useTempPassword && (
                 <ProFormText.Password
                   name="userPassword"
-                  fieldProps={{ size: 'large', prefix: <LockOutlined /> }}
+                  fieldProps={{size: 'large', prefix: <LockOutlined/>}}
                   placeholder="请输入原密码"
-                  rules={[{ required: true, min: 8, message: '原密码不少于8位' }]}
+                  rules={[{required: true, min: 8, message: '原密码不少于8位'}]}
                 />
               )}
 
-              {useTempPassword && (
-                <ProFormText.Password
-                  name="tempPasswordInput"
-                  fieldProps={{ size: 'large', prefix: <LockOutlined /> }}
-                  placeholder="请输入临时密码"
-                  rules={[{ required: true, message: '临时密码必填' }]}
-                />
-              )}
+            {useTempPassword && (
+              <ProFormText.Password
+                name="tempPasswordInput"
+                fieldProps={{size: 'large', prefix: <LockOutlined/>}}
+                placeholder="请输入临时密码"
+                rules={[{required: true, message: '临时密码必填'}]}
+              />
+            )}
 
               <ProFormText.Password
                 name="updatePassword"
-                fieldProps={{ size: 'large', prefix: <LockOutlined /> }}
+                fieldProps={{size: 'large', prefix: <LockOutlined/>}}
                 placeholder="请输入新密码"
-                rules={[{ required: true, min: 8, message: '新密码不少于8位' }]}
+                rules={[{required: true, min: 8, message: '新密码不少于8位'}]}
               />
               <ProFormText.Password
                 name="updatePassword2"
-                fieldProps={{ size: 'large', prefix: <LockOutlined /> }}
+                fieldProps={{size: 'large', prefix: <LockOutlined/>}}
                 placeholder="请再次输入新密码"
-                rules={[{ required: true, min: 8, message: '新密码不少于8位' }]}
+                rules={[{required: true, min: 8, message: '新密码不少于8位'}]}
               />
+
+              <ProFormText
+                name="email"
+                fieldProps={{
+                  size: 'large', prefix: <UserOutlined/>, suffix: (
+                    <Tooltip
+                      title="如果不填写，忘记密码时无法通过邮箱获取临时密码，或者邮箱填写错误无法解绑，需要联系管理员 898738804@qq.com 进行修改。"
+                      placement="right"
+                    >
+                      <InfoCircleOutlined style={{color: 'rgba(0,0,0,.45)'}}/>
+                    </Tooltip>
+                  ),
+                }}
+                placeholder="请输入 QQ 邮箱（选填）"
+                rules={[
+                  {required: false, message: '邮箱选填！'},
+                  {type: 'email', message: '请输入正确的邮箱格式'}
+                ]}
+              />
+
             </>
           )}
 
-          <div style={{ marginBottom: 60 }}>
-            <div style={{ marginBottom: 60, display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{marginBottom: 60}}>
+            <div style={{marginBottom: 60, display: 'flex', justifyContent: 'space-between'}}>
               <a
                 style={{
                   cursor: countdown > 0 ? 'not-allowed' : 'pointer',
@@ -185,14 +195,14 @@ const Register: React.FC = () => {
               >
                 {countdown > 0 ? `重新获取(${countdown}s)` : '忘记密码？获取临时密码！'}
               </a>
-              <Link to="/user/login" style={{ float: 'right' }}>
+              <Link to="/user/login" style={{float: 'right'}}>
                 返回登录页面
               </Link>
             </div>
           </div>
         </LoginForm>
       </div>
-      <Footer />
+      <Footer/>
     </div>
   );
 };

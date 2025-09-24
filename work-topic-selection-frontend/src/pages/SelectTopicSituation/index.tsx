@@ -105,13 +105,12 @@ const YourComponent = () => {
   };
 
   return (
-    <div style={{ padding: 24, maxWidth: 1600, margin: '0 auto' }}>
-      <FloatButton
+    <div style={{ padding: 12, maxWidth: '100%' }}>
+    <FloatButton
         icon={<FileTextOutlined />}
         description="导出已选名单"
         shape="square"
         type="primary"
-        style={{ insetInlineEnd: 24, width: 40 }} // 不一定生效
         onClick={exportSelectedStudents}
       />
       <RcResizeObserver onResize={() => {}}>
@@ -152,7 +151,9 @@ const YourComponent = () => {
             <div
               key={title}
               style={{
-                width: 500,
+                flex: 1,
+                minWidth: 280,
+                maxWidth: 500,
                 background: '#fff',
                 borderRadius: 12,
                 overflow: 'hidden',
@@ -171,7 +172,16 @@ const YourComponent = () => {
                 chart={
                   <ReactECharts
                     option={chartOption}
-                    style={{ height: 400, width: '100%', marginTop: 12 }}
+                    style={{
+                      width: '100%',
+                      height: '40vw', // 高度按屏幕宽度比例缩放（手机上会更矮）
+                      maxHeight: 400, // PC 上不会无限变高
+                      minHeight: 240, // 保底
+                      marginTop: 12,
+                    }}
+                    opts={{ renderer: 'svg' }} // 移动端 SVG 更清晰
+                    notMerge={true}
+                    lazyUpdate={true}
                   />
                 }
                 bodyStyle={{ padding: 24 }}
