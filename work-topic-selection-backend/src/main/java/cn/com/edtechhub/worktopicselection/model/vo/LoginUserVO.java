@@ -28,6 +28,16 @@ public class LoginUserVO implements Serializable {
     private Integer userRole;
 
     /**
+     * 用户系部
+     */
+    private String dept;
+
+    /**
+     * 用户专业
+     */
+    private String project;
+
+    /**
      * 创建时间
      */
     private Date createTime;

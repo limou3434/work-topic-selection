@@ -38,6 +38,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
@@ -114,6 +115,8 @@ public class FileController {
         String filename = multipartFile.getOriginalFilename();
         ThrowUtils.throwIf(filename == null || !filename.toLowerCase().endsWith(".csv"), CodeBindMessageEnums.PARAMS_ERROR, "只允许上传 CSV 文件");
 
+        AtomicLong i = new AtomicLong();
+
         // 批量添加用户账号
         return transactionTemplate.execute(transactionStatus -> {
             try (
@@ -121,14 +124,24 @@ public class FileController {
                     CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader)
             ) {
                 for (CSVRecord record : csvParser) {
+                    i.getAndIncrement();
+
                     // 获取表格数据
                     String userAccount = record.get(0).trim();
                     String name = record.get(1).trim();
                     String department = record.get(2).trim();
-                    String project = ""; // 教师账号没专业, 学生账号有专业
-                    if (record.size() == 4) {
-                        project = record.get(3).trim();
+                    String project = record.get(3).trim();
+                    String topicAmount = "";
+                    if (record.size() == 5) {
+                        // 说明导入名单使用教师帐号
+                        userAccount = "JSZH20250000" + i;
+                        topicAmount = record.get(4).trim();
+                        ThrowUtils.throwIf(StringUtils.isBlank(topicAmount), CodeBindMessageEnums.PARAMS_ERROR, "表中第 " + i + " 行数据没有填写该教师的最大出题数量, 请检查后重新上传: " + record);
+                        ThrowUtils.throwIf(StringUtils.isNotBlank(topicAmount) && !StringUtils.isNumeric(topicAmount), CodeBindMessageEnums.PARAMS_ERROR, "表中第 " + i + " 行数据填写的该教师最大出题数量有误, 必须是正整数, 请检查后重新上传: " + record);
                     }
+
+                    // 检查表格空白填写的问题
+                    ThrowUtils.throwIf(StringUtils.isAllBlank(userAccount, name, department, project), CodeBindMessageEnums.PARAMS_ERROR, "表中第 " + i + " 行数据有空白天蝎, 请检查后重新上传: " + record);
 
                     // 检查用户账号是否已存在, 存在则跳过
                     User user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
@@ -144,13 +157,14 @@ public class FileController {
                     user.setUserRole(request.getStatus());
                     user.setDept(department);
                     user.setProject(project);
+                    user.setTopicAmount(StringUtils.isBlank(topicAmount) ? null : Integer.parseInt(topicAmount));
 
                     // 保存之前先检查用户填写的系部和专业是否存在, 不存在直接抛出异常回滚
                     if (StringUtils.isNotBlank(department)) {
-                        ThrowUtils.throwIf(deptService.getOne(new QueryWrapper<Dept>().eq("deptName", department)) == null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "导入用户 " + "[" + userAccount + ", " + name + "]" + "时, 系部 [" + department + "] 在系统中不存在, 请添加该系部或修改表格");
+                        ThrowUtils.throwIf(deptService.getOne(new QueryWrapper<Dept>().eq("deptName", department)) == null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "表中第 " + i + "行, 导入用户 " + "[" + userAccount + ", " + name + "] " + "时, 系部 [" + department + "] 在系统中不存在, 请添加该系部或修改表格");
                     }
                     if (StringUtils.isNotBlank(project)) {
-                        ThrowUtils.throwIf(projectService.getOne(new QueryWrapper<Project>().eq("projectName", project)) == null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "导入用户 " + "[" + userAccount + ", " + name + "]" + "时, 专业 [" + project + "] 在系统中不存在, 请添加该专业或修改表格");
+                        ThrowUtils.throwIf(projectService.getOne(new QueryWrapper<Project>().eq("projectName", project)) == null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "表中第 " + i + "行, 导入用户 " + "[" + userAccount + ", " + name + "]" + "时, 专业 [" + project + "] 在系统中不存在, 请添加该专业或修改表格");
                     }
 
                     // 保存用户

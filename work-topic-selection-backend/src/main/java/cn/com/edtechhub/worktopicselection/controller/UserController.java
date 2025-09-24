@@ -163,7 +163,14 @@ public class UserController {
         ThrowUtils.throwIf(userRoleEnum == null, CodeBindMessageEnums.PARAMS_ERROR, "本系统不存在该用户角色");
 
         String userDeptName = request.getDeptName();
+        ThrowUtils.throwIf(StringUtils.isBlank(userDeptName), CodeBindMessageEnums.PARAMS_ERROR, "缺少系部名称");
+
+        // 如果有选择专业则必须选择系部所属的专业
         String userProject = request.getProject();
+        if (StringUtils.isNotBlank(userProject)) {
+            Project project = projectService.getOne(new QueryWrapper<Project>().eq("projectName", userProject));
+            ThrowUtils.throwIf(!project.getDeptName().equals(userDeptName), CodeBindMessageEnums.PARAMS_ERROR, "[" + project.getProjectName() + "] 专业属于 [" + project.getDeptName() + "] 系部, 请正确选择系部和专业");
+        }
 
         // 如果是添加学生则需要检查是否设置了系部和专业
         if (userRoleEnum == UserRoleEnum.STUDENT) {
@@ -420,13 +427,13 @@ public class UserController {
         ThrowUtils.throwIf(StringUtils.isBlank(userPassword), CodeBindMessageEnums.PARAMS_ERROR, "缺少登陆时所需要的密码");
 
         User user = userService.userIsExist(userAccount);
-        ThrowUtils.throwIf(user == null, CodeBindMessageEnums.PARAMS_ERROR, "用户不存在, 请发邮件 898738804@qq.com 向管理员确认您的账号是否未被学院导入");
+        ThrowUtils.throwIf(user == null, CodeBindMessageEnums.PARAMS_ERROR, "用户不存在, 请发邮件向管理员确认您的账号是否未被学院导入");
         assert user != null;
 
         String encryptPassword = DigestUtils.md5DigestAsHex((UserConstant.SALT + userPassword).getBytes()); // 提前得到加密密码
         ThrowUtils.throwIf(!Objects.equals(user.getUserPassword(), encryptPassword), CodeBindMessageEnums.PARAMS_ERROR, "用户密码不正确");
 
-        ThrowUtils.throwIf(StringUtils.isBlank(user.getStatus()), CodeBindMessageEnums.USER_INIT_PASSWD, "您的密码为系统默认密码, 请先绑定自己的 qq 邮箱并且修改密码后再登陆");
+        ThrowUtils.throwIf(StringUtils.isBlank(user.getStatus()), CodeBindMessageEnums.USER_INIT_PASSWD, "您的密码为系统默认密码, 请修改密码后再登陆");
 
         // 用户登陆
         String device = DeviceUtils.getRequestDevice(httpServletrequest); // 登陆设备
@@ -546,15 +553,15 @@ public class UserController {
         }
         assert user != null;
 
-        // 如果邮箱为空则需要绑定邮箱
-        if (StringUtils.isBlank(user.getEmail())) {
-            String email = request.getEmail();
-            ThrowUtils.throwIf(StringUtils.isBlank(email), CodeBindMessageEnums.PARAMS_ERROR, "首次登陆必须绑定邮箱");
-            user.setStatus("老用户");
+        // 如果邮箱不为空并且用户还尚未注册绑定邮箱则需要绑定邮箱
+        String email = request.getEmail();
+        if (StringUtils.isNotBlank(email)) {
+            ThrowUtils.throwIf(StringUtils.isNotBlank(user.getEmail()), CodeBindMessageEnums.PARAMS_ERROR, "用户已绑定邮箱, 请不要重复绑定, 解绑请联系管理员 898738804@qq.com");
             user.setEmail(email);
-        } else {
-            ThrowUtils.throwIf(!user.getEmail().equals(request.getEmail()), CodeBindMessageEnums.PARAMS_ERROR, "输入的邮箱和账户绑定的邮箱不匹配");
         }
+
+        // 更新状态避免重复修改密码
+        user.setStatus("老用户");
 
         // 更新用户
         User finalUser = user;
@@ -591,7 +598,7 @@ public class UserController {
         assert user != null;
 
         String email = user.getEmail();
-        ThrowUtils.throwIf(StringUtils.isBlank(email), CodeBindMessageEnums.PARAMS_ERROR, "当前用户还没有绑定邮箱");
+        ThrowUtils.throwIf(StringUtils.isBlank(email), CodeBindMessageEnums.PARAMS_ERROR, "当前用户还没有绑定邮箱，如果无法修改密码请联系管理员 898738804@qq.com");
 
         // 如果缓存中有临时立马则直接使用, 如果没有就新缓存一个
         String code = redisManager.getValue("code:" + userAccount);
@@ -616,8 +623,6 @@ public class UserController {
         }
         return TheResult.success(CodeBindMessageEnums.SUCCESS, "发送成功, 请在您的 QQ 邮箱中查收!");
     }
-
-    // TODO: 添加用户封禁接口 (还有自动检测用户在一分钟内是否多次恶意请求，如果是就自动封禁 1 分钟，并且上报 qq 邮箱)
 
     /// 系部专业相关接口 ///
 

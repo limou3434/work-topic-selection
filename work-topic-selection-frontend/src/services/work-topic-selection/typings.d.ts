@@ -234,8 +234,10 @@ declare namespace API {
 
   type LoginUserVO = {
     createTime?: string;
+    dept?: string;
     email?: string;
     id?: number;
+    project?: string;
     updateTime?: string;
     userAvatar?: string;
     userName?: string;
