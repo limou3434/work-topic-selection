@@ -210,8 +210,12 @@ declare namespace API {
   };
 
   type GetTopicReviewLevelRequest = {
-    topicContent?: string;
-    topicTitle?: string;
+    deptName?: string;
+    deptTeacher?: string;
+    description?: string;
+    requirement?: string;
+    topic?: string;
+    type?: string;
   };
 
   type getUserByIdUsingGETParams = {
@@ -505,6 +509,7 @@ declare namespace API {
 
   type UserUpdatePassword = {
     code?: string;
+    email?: string;
     updatePassword?: string;
     userAccount?: string;
     userPassword?: string;

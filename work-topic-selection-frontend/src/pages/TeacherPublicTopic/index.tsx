@@ -6,15 +6,17 @@ import {
   getDeptListUsingPost,
   getTeacherUsingPost1,
   getTopicListUsingPost,
+  getTopicReviewLevelUsingPost,
   updateTopicUsingPost,
 } from '@/services/work-topic-selection/userController';
-import {ExclamationCircleOutlined, PlusOutlined, UploadOutlined} from '@ant-design/icons';
+import {AntDesignOutlined, ExclamationCircleOutlined, PlusOutlined, UploadOutlined} from '@ant-design/icons';
 import {ActionType, ProColumns, ProFormText, ProTable} from '@ant-design/pro-components';
 import {ModalForm, ProFormSelect, ProFormTextArea, ProFormUploadButton,} from '@ant-design/pro-form';
-import {Button, message, Modal, Tooltip} from 'antd';
+import {Button, ConfigProvider, Divider, message, Modal, Tag, Tooltip, Typography} from 'antd';
 import {useRef, useState} from 'react';
 // @ts-ignore
 import {useNavigate} from 'react-router-dom';
+import {createStyles} from "antd-style";
 
 type GithubIssueItem = {
   id: number;
@@ -30,6 +32,30 @@ type GithubIssueItem = {
   status?: number;
   reason?: string;
 };
+
+const useStyle = createStyles(({prefixCls, css}) => ({
+  linearGradientButton: css`
+    &.${prefixCls}-btn-primary:not([disabled]):not(.${prefixCls}-btn-dangerous) {
+      > span {
+        position: relative;
+      }
+
+      &::before {
+        content: '';
+        background: linear-gradient(135deg, #6253e1, #04befe);
+        position: absolute;
+        inset: -1px;
+        opacity: 1;
+        transition: all 0.3s;
+        border-radius: inherit;
+      }
+
+      &:hover::before {
+        opacity: 0;
+      }
+    }
+  `,
+}));
 
 export default () => {
   const actionRef = useRef<ActionType>();
@@ -194,10 +220,10 @@ export default () => {
 
       const modal = Modal.confirm({
         title: "提示",
-        icon: <ExclamationCircleOutlined />,
+        icon: <ExclamationCircleOutlined/>,
         content: "请严格按照格式填写模板文件，同时去除模板中的示例内容，并且注意文件是 .csv 格式，不是 .xlsx 格式或者 .xls 格式，可以把表格文件中的数据复制到 .csv 文件中，也可以直接填写 .csv 文件。",
-        okText: `下载 (${second}s)`,
-        okButtonProps: { disabled: true },
+        okText: ` 下载 (${second}s)`,
+        okButtonProps: {disabled: true},
         cancelText: "取消",
         onOk: () => {
           window.open(
@@ -211,16 +237,32 @@ export default () => {
         second -= 1;
 
         modal.update({
-          okText: second > 0 ? `下载 (${second}s)` : "下载",
-          okButtonProps: { disabled: second > 0 },
+          okText: second > 0 ? ` 下载 (${second}s)` : "下载",
+          okButtonProps: {disabled: second > 0},
         });
 
         if (second <= 0) clearInterval(timer);
       }, 1000);
     };
 
-    return <Button type="primary" onClick={handleClick}>下载模板</Button>;
+    return <Button type="primary" onClick={handleClick}> 下载模板 </Button>;
   };
+
+  const {styles} = useStyle();
+
+  const levelTextMap: Record<string | number, string> = {
+    0: "容易",
+    1: "轻微",
+    2: "严重",
+  };
+
+  const levelColorMap: Record<string | number, string> = {
+    0: "green",
+    1: "orange",
+    2: "red",
+  };
+
+  const [checking, setChecking] = useState(false); // 按钮加载状态
 
   return (
     <ProTable<GithubIssueItem>
@@ -312,7 +354,7 @@ export default () => {
       toolBarRender={() => [
         <>
           <Tooltip title="请严格按照格式填写模板文件，并且去除模板中的示例内容" placement="left">
- <DownloadButton/>
+            <DownloadButton/>
           </Tooltip>
           <ModalForm<{ file: any }>
             title="批量添加题目"
@@ -349,10 +391,9 @@ export default () => {
               max={1}
               required
             >
-              <Button icon={<UploadOutlined/>}>选择文件</Button>
+              <Button icon={<UploadOutlined/>}> 选择文件 </Button>
             </ProFormUploadButton>
           </ModalForm>
-
           <ModalForm<{
             topic: string;
             type: string;
@@ -388,6 +429,58 @@ export default () => {
             initialValues={JSON.parse(localStorage.getItem("addTopicForm") || "{}")}
             onValuesChange={(_, allValues) => {
               localStorage.setItem("addTopicForm", JSON.stringify(allValues));
+            }}
+            submitter={{
+              // 自定义渲染底部按钮
+              render: (props, defaultDoms) => (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {defaultDoms[0]}
+                  {defaultDoms[1]}
+                  <ConfigProvider
+                    key="check"
+                    button={{
+                      className: styles.linearGradientButton,
+                    }}
+                  >
+                    <Button
+                      type="primary"
+                      icon={<AntDesignOutlined/>}
+                      loading={checking} // 绑定 loading 状态
+                      onClick={async () => {
+                        setChecking(true); // 开始加载
+                        const values = await props.form?.validateFields(); // 校验表单并获得数据
+                        const res = await getTopicReviewLevelUsingPost(values);
+                        if (res.code === 0) {
+                          message.success("成功得到检测结果");
+                          const level = res?.data?.level ?? 0;
+                          Modal.info({
+                            title: "AI 检测结果",
+                            content: (
+                              <div>
+                                <Divider/>
+                                <Typography.Paragraph>
+                                  <Typography.Text strong> 通过难度：</Typography.Text>
+                                  <Tag color={levelColorMap[level]}>{levelTextMap[level]}</Tag>
+                                </Typography.Paragraph>
+                                <Typography.Paragraph>
+                                  <Typography.Text strong> 结果说明：</Typography.Text>
+                                  <Typography.Text>{res?.data?.description || "无说明"}</Typography.Text>
+                                </Typography.Paragraph>
+                              </div>
+                            ),
+                            okText: "知道了",
+                          });
+                        } else {
+                          message.error(res.message);
+                        }
+                        setChecking(false); // 结束加载
+                      }}
+                    >
+                      AI 检测选题相似度（参考）
+                    </Button>
+                  </ConfigProvider>
+                </div>
+              ),
             }}
           >
             <ProFormText width="md" name="topic" label="题目标题" colProps={{xs: 24, sm: 12}} required/>

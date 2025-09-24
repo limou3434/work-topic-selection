@@ -41,7 +41,7 @@ public class AIManager {
             String userContent
     ) {
         // 请求 AI
-        String response = this.sendAiRequest(userId, userId, userContent + aiConfig.getSystemRole());
+        String response = this.sendAiRequest(userId, userId, userContent);
 
         // 转化为包含 Map 事件的对象
         AIResponse aiResponse = this.mapToAiResponse(response);

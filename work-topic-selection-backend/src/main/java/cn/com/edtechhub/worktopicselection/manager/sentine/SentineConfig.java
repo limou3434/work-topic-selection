@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 
 /**
- * Redis 配置类
+ * Sentine 配置类
  *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
@@ -27,12 +27,12 @@ public class SentineConfig {
     private double p = 0.5;
 
     /**
-     * 每个在线用户每秒平均请求某个接口的次数, 接口特性, 比如验证码 0.016/1s 一次(当前给出 1/0.5s)
+     * 每个在线用户每秒平均请求某个接口的次数, 接口特性
      */
-    private double r = 1/0.5;
+    private double r = 2;
 
     /**
-     * 安全系数, 防止突发流量, 通常 1~2(当前给出 2)
+     * 安全系数, 防止突发流量, 通常 1~2(当前给出 1)
      */
     private double safety = 1;
 

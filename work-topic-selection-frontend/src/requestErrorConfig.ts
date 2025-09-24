@@ -103,7 +103,7 @@ export const errorConfig: RequestConfig = {
 
       console.log(data);
       if (data?.code !== 0) {
-        message.error(data?.message);
+        console.log( data);
       }
 
       if (data?.success === false) {

@@ -1,18 +1,15 @@
 package cn.com.edtechhub.worktopicselection.controller;
 
 import cn.com.edtechhub.worktopicselection.constant.UserConstant;
+import cn.com.edtechhub.worktopicselection.exception.BusinessException;
 import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
 import cn.com.edtechhub.worktopicselection.manager.sentine.SentineManager;
 import cn.com.edtechhub.worktopicselection.model.dto.file.UploadFileRequest;
-import cn.com.edtechhub.worktopicselection.model.entity.StudentTopicSelection;
-import cn.com.edtechhub.worktopicselection.model.entity.Topic;
-import cn.com.edtechhub.worktopicselection.model.entity.User;
+import cn.com.edtechhub.worktopicselection.model.entity.*;
 import cn.com.edtechhub.worktopicselection.model.enums.TopicStatusEnum;
 import cn.com.edtechhub.worktopicselection.response.BaseResponse;
 import cn.com.edtechhub.worktopicselection.response.TheResult;
-import cn.com.edtechhub.worktopicselection.service.StudentTopicSelectionService;
-import cn.com.edtechhub.worktopicselection.service.TopicService;
-import cn.com.edtechhub.worktopicselection.service.UserService;
+import cn.com.edtechhub.worktopicselection.service.*;
 import cn.com.edtechhub.worktopicselection.utils.ThrowUtils;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
@@ -77,6 +74,18 @@ public class FileController {
     private TopicService topicService;
 
     /**
+     * 注入系部服务依赖
+     */
+    @Resource
+    private DeptService deptService;
+
+    /**
+     * 注入专业服务依赖
+     */
+    @Resource
+    private ProjectService projectService;
+
+    /**
      * 注入学生关联关联服务依赖
      */
     @Resource
@@ -112,31 +121,43 @@ public class FileController {
                     CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader)
             ) {
                 for (CSVRecord record : csvParser) {
+                    // 获取表格数据
                     String userAccount = record.get(0).trim();
                     String name = record.get(1).trim();
                     String department = record.get(2).trim();
-                    String project = "";
-
-                    // 如果是学生就会多一些
+                    String project = ""; // 教师账号没专业, 学生账号有专业
                     if (record.size() == 4) {
                         project = record.get(3).trim();
                     }
 
-                    // 获取或创建用户
+                    // 检查用户账号是否已存在, 存在则跳过
                     User user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
-                    if (user == null) {
-                        user = new User();
-                        user.setUserAccount(userAccount);
-                        String encryptPassword = DigestUtils.md5DigestAsHex((UserConstant.SALT + UserConstant.DEFAULT_PASSWD).getBytes());
-                        user.setUserPassword(encryptPassword);
+                    if (user != null) {
+                        continue;
                     }
 
+                    // 创建新的用户
+                    user = new User();
+                    user.setUserAccount(userAccount);
+                    user.setUserPassword(DigestUtils.md5DigestAsHex((UserConstant.SALT + UserConstant.DEFAULT_PASSWD).getBytes()));
                     user.setUserName(name);
-                    user.setDept(department);
                     user.setUserRole(request.getStatus());
+                    user.setDept(department);
                     user.setProject(project);
+
+                    // 保存之前先检查用户填写的系部和专业是否存在, 不存在直接抛出异常回滚
+                    if (StringUtils.isNotBlank(department)) {
+                        ThrowUtils.throwIf(deptService.getOne(new QueryWrapper<Dept>().eq("deptName", department)) == null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "导入用户 " + "[" + userAccount + ", " + name + "]" + "时, 系部 [" + department + "] 在系统中不存在, 请添加该系部或修改表格");
+                    }
+                    if (StringUtils.isNotBlank(project)) {
+                        ThrowUtils.throwIf(projectService.getOne(new QueryWrapper<Project>().eq("projectName", project)) == null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "导入用户 " + "[" + userAccount + ", " + name + "]" + "时, 专业 [" + project + "] 在系统中不存在, 请添加该专业或修改表格");
+                    }
+
+                    // 保存用户
                     userService.saveOrUpdate(user);
                 }
+            } catch (BusinessException e) {
+                ThrowUtils.throwIf(true, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, e.getExceptionMessage());
             } catch (Exception e) {
                 transactionStatus.setRollbackOnly(); // 确保失败回滚
                 ThrowUtils.throwIf(true, CodeBindMessageEnums.OPERATION_ERROR, "批量添加失败");
@@ -147,7 +168,7 @@ public class FileController {
     }
 
     /**
-     * 上传批量添加教师题目的模板文件
+     * 上传批量添加毕设选题的模板文件
      */
     @SaCheckLogin
     @SaCheckRole(value = {"teacher"}, mode = SaMode.OR)

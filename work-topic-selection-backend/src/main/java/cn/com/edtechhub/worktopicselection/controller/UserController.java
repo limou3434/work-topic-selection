@@ -68,6 +68,12 @@ import java.util.stream.Collectors;
 public class UserController {
 
     /**
+     * 注入 SentineManager 依赖
+     */
+    @Resource
+    SentineManager sentineManager;
+
+    /**
      * 注入事务管理依赖
      */
     @Resource
@@ -78,12 +84,6 @@ public class UserController {
      */
     @Resource
     RedisManager redisManager;
-
-    /**
-     * 注入 Redis 管理依赖
-     */
-    @Resource
-    SentineManager sentineManager;
 
     /**
      * 注入 AI 管理依赖
@@ -794,7 +794,9 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, deptPage);
     }
 
-    // 获取系部列表数据
+    /**
+     * 获取系部列表数据（非管理员只能获取和当前登陆用户系部相同的系部）
+     */
     @SaCheckLogin
     @PostMapping("/get/dept/list")
     public BaseResponse<List<DeptVO>> getDeptList(@RequestBody DeptQueryRequest request) throws BlockException {
@@ -807,8 +809,14 @@ public class UserController {
         // 参数检查
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
 
+        // 获取当前用户
+        User user = userService.userGetCurrentLoginUser();
+
+        // 获取当前用户的系部
+        String deptName = user.getDept();
+
         // 查询所有 dept 列表
-        List<Dept> deptList = deptService.list();
+        List<Dept> deptList = deptService.list(userService.userIsAdmin(user) ? null : new QueryWrapper<Dept>().eq("deptName", deptName));
 
         // 脱敏数据
         List<DeptVO> deptVOList = new ArrayList<>();
@@ -843,7 +851,9 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, projectPage);
     }
 
-    // 获取专业列表数据
+    /**
+     * 获取专业列表数据（非管理员只能获取和当前登陆用户系部相同的系部）
+     */
     @SaCheckLogin
     @PostMapping("/get/project/list")
     public BaseResponse<List<ProjectVO>> getProjectList(@RequestBody ProjectQueryRequest request) throws BlockException {
@@ -1797,15 +1807,17 @@ public class UserController {
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
         assert request != null;
 
-        String topicTitle = request.getTopicTitle();
+        String topicTitle = request.getTopic();
         ThrowUtils.throwIf(topicTitle == null, CodeBindMessageEnums.PARAMS_ERROR, "题目标题不能为空");
 
-        String topicContent = request.getTopicContent();
+        String topicContent = request.getDescription();
         ThrowUtils.throwIf(topicContent == null || topicContent.length() < 5, CodeBindMessageEnums.PARAMS_ERROR, "题目内容不能为空");
 
         // 获取当前登陆用户的 id 并且转化为 UUID
         Long id = userService.userGetCurrentLoginUser().getId();
-        String userId = UUID.nameUUIDFromBytes(String.valueOf(id).getBytes(StandardCharsets.UTF_8)).toString();
+        String factor = "work-topic-selection-backend"; // 调整因子，可以是随机值、时间戳、业务常量
+        String raw = id + "-" + factor;
+        String userId = UUID.nameUUIDFromBytes(raw.getBytes(StandardCharsets.UTF_8)).toString();
 
         AIResult aiResult = aiManager.sendAi(userId, topicTitle + topicContent);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, aiResult);
