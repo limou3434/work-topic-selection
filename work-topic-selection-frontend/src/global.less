@@ -50,7 +50,49 @@ ol {
       }
     }
   }
+
+  // 移动端导航栏透明度保护
+  .ant-pro-global-header {
+    background-color: #fff !important;
+    opacity: 1 !important;
+    z-index: 1000 !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    
+    &.ant-pro-global-header-layout-mix {
+      background-color: #fff !important;
+    }
+  }
+
+  // 确保头部内容不透明
+  .ant-pro-global-header .ant-pro-global-header-content {
+    opacity: 1 !important;
+  }
+
+  // 暗色主题下的保护
+  [data-theme='dark'] .ant-pro-global-header {
+    background-color: #141414 !important;
+  }
 }
 .margin-16{
   margin-bottom: 16px;
+}
+
+// 导航栏稳定性保护（防止意外透明）
+.ant-pro-global-header {
+  position: relative;
+  z-index: 1000;
+  transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  
+  // 确保背景不会意外透明
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: inherit;
+    z-index: -1;
+  }
 }
