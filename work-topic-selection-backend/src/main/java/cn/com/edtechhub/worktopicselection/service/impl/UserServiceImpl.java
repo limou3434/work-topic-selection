@@ -69,18 +69,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public User userGetSessionById(Long id) {
-        SaSession session = StpUtil.getSessionByLoginId(id);
-        ThrowUtils.throwIf(session == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "无法获取会话");
-        User user = (User) session.get(UserConstant.USER_LOGIN_STATE);
-        ThrowUtils.throwIf(user == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "该用户尚未登录没有会话资源");
-        return user;
-    }
-
-    @Override
     public User userGetCurrentLoginUser() {
         Long loginUserId = this.userGetCurrentLonginUserId();
-        return this.userGetSessionById(loginUserId);
+//        return this.userGetSessionById(loginUserId); // 缓存是有些更新问题的(如果性能要求较高, 则可以考虑使用)
+        return this.getById(loginUserId); // 最好是通过数据库查询实时更新, 否则某些场景是有问题的
     }
 
     @Override

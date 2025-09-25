@@ -72,7 +72,7 @@ export default () => {
       valueType: 'indexBorder',
     },
     {
-      title: '题目',
+      title: '题目标题',
       dataIndex: 'topic',
     },
     {
@@ -85,7 +85,7 @@ export default () => {
       valueType: 'textarea',
     },
     {
-      title: '对学生的要求',
+      title: '题目要求',
       dataIndex: 'requirement',
       valueType: 'textarea',
     },
@@ -133,13 +133,13 @@ export default () => {
         let text = '未知状态';
         if (record.status === -1) {
           color = 'orange';
-          text = '待审核';
+          text = '等待审核';
         } else if (record.status === 0) {
           color = 'blue';
-          text = '没发布（没有设置时间）';
+          text = '等待发布';
         } else if (record.status === 1) {
           color = 'green';
-          text = '已发布';
+          text = '已经发布';
         } else if (record.status === -2) {
           color = 'red';
           text = '打回';

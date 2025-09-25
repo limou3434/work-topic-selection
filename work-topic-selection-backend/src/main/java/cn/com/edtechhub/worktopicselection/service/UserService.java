@@ -28,12 +28,8 @@ public interface UserService extends IService<User> {
     // 获取当前登陆用户标识
     Long userGetCurrentLonginUserId();
 
-    // 获取指定登陆用户会话
-    User userGetSessionById(Long id);
-
     // 获取当前登陆用户会话
     User userGetCurrentLoginUser();
-
 
     // 检查用户是否是管理员
     Boolean userIsAdmin(User user);
