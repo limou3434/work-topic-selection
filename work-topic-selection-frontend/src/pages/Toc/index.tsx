@@ -42,7 +42,7 @@ const Toc: React.FC = () => {
         position: 'fixed',
         right: 24,
         top: 100,
-        zIndex: 1000,
+        zIndex: 999, // 降低层级，避免与导航栏冲突
       }}
     >
       {collapsed ? (
