@@ -311,8 +311,7 @@ public class UserController {
         SphU.entry(entryName);
 
         // 获取当前登录用户
-        Long loginUserId = userService.userGetCurrentLonginUserId();
-        User user = userService.userGetSessionById(loginUserId);
+        User user = userService.userGetCurrentLoginUser();
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userService.getLoginUserVO(user));
     }
 
