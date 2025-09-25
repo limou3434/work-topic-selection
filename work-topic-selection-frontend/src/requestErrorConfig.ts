@@ -102,8 +102,9 @@ export const errorConfig: RequestConfig = {
       const { data } = response as unknown as ResponseStructure;
 
       console.log(data);
-      if (data?.code !== 0) {
-        console.log( data);
+
+      if (data?.code === 40103) {
+        message.error('您有恶意访问本站的倾向, 处于保护需求, 本站将您临时封禁, 已经向管理员报备您的动向').then(() =>  {});
       }
 
       if (data?.success === false) {

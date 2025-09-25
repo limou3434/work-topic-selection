@@ -43,6 +43,7 @@ public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic> implements
     @Override
     public QueryWrapper<Topic> getQueryWrapper(TopicQueryRequest topicQueryRequest) {
         ThrowUtils.throwIf(topicQueryRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求参数为空");
+        assert topicQueryRequest != null;
 
         User loginUser = userService.userGetCurrentLoginUser();
         Integer userRole = loginUser.getUserRole();
@@ -51,21 +52,15 @@ public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic> implements
         String sortOrder = topicQueryRequest.getSortOrder();
         QueryWrapper<Topic> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(status != null, "status", status);
-        if (loginUser.getUserRole() == 2) {
+        if (userRole == 2) {
             queryWrapper.eq(StringUtils.isNotBlank(loginUser.getDept()), "deptName", loginUser.getDept());
         }
-        if (loginUser.getUserRole() == 1) {
+        if (userRole == 1) {
             queryWrapper.eq("teacherName", loginUser.getUserName());
         }
-        if (loginUser.getUserRole() == 0) {
-            // 如果是学生检查是否有关联过题目, 如果有就不允许显示这些被关联的题目
-            List<StudentTopicSelection> selections = studentTopicSelectionService.list(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()));
-            if (!selections.isEmpty()) {
-                List<Long> topicIds = selections.stream()
-                        .map(StudentTopicSelection::getTopicId)
-                        .collect(Collectors.toList());
-                queryWrapper.notIn("id", topicIds);
-            }
+        if (userRole == 0) {
+            // 如果是学生, 只能看到和自己同系部的选题
+            queryWrapper.eq("deptName", loginUser.getDept());
         }
         queryWrapper.like(StringUtils.isNotBlank(topicQueryRequest.getTopic()), "topic", topicQueryRequest.getTopic());
         queryWrapper.like(StringUtils.isNotBlank(topicQueryRequest.getType()), "type", topicQueryRequest.getType());
