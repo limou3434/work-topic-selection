@@ -1,15 +1,15 @@
-import { ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, message, Space, Table, Switch, Row, Col, Typography } from 'antd';
-import React, { useState, useEffect } from "react";
+import {ProColumns, ProTable} from '@ant-design/pro-components';
+import {Button, Col, message, Row, Space, Switch, Table, Typography} from 'antd';
+import React, {useEffect, useState} from "react";
 import {
-  getTopicListUsingPost,
-  setTimeByIdUsingPost,
   getCrossTopicStatusUsingGet,
-  setCrossTopicStatusUsingPost
+  getTopicListUsingPost,
+  setCrossTopicStatusUsingPost,
+  setTimeByIdUsingPost
 } from "@/services/work-topic-selection/userController";
-import { PlusOutlined } from "@ant-design/icons";
-import { ModalForm } from "@ant-design/pro-form/lib";
-import { ProFormDateTimePicker } from "@ant-design/pro-form";
+import {PlusOutlined} from "@ant-design/icons";
+import {ModalForm} from "@ant-design/pro-form/lib";
+import {ProFormDateTimePicker} from "@ant-design/pro-form";
 
 export type TableListItem = {
   id: number;
@@ -82,14 +82,15 @@ export default () => {
       }
     };
 
-    fetchCrossTopicStatus();
+    fetchCrossTopicStatus().then(() => {
+    });
   }, []);
 
   // 更新跨系开关状态
   const handleCrossTopicStatusChange = async (checked: boolean) => {
     try {
       setLoading(true);
-      await setCrossTopicStatusUsingPost({ enabled: checked });
+      await setCrossTopicStatusUsingPost({enabled: checked});
       setCrossTopicStatus(checked);
       message.success(`跨系功能已${checked ? "开启" : "关闭"}`);
     } catch (error) {
@@ -103,10 +104,10 @@ export default () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 25 }}>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+    <div style={{display: 'flex', flexDirection: 'column', gap: 25}}>
+      <Row justify="space-between" align="middle" style={{marginBottom: 16}}>
         <Col>
-          <Typography.Title level={4} style={{ margin: 0 }}>
+          <Typography.Title level={4} style={{margin: 0}}>
             设置选题开放时间（这里都是已经通过审核的选题）
           </Typography.Title>
         </Col>
@@ -150,14 +151,14 @@ export default () => {
             };
           } catch (err) {
             console.error(err);
-            return { data: [], total: 0, success: false };
+            return {data: [], total: 0, success: false};
           }
         }}
-        tableAlertRender={({ selectedRowKeys, onCleanSelected }) => (
+        tableAlertRender={({selectedRowKeys, onCleanSelected}) => (
           <Space size={24}>
             <span>
               已选 {selectedRowKeys.length} 项
-              <a style={{ marginInlineStart: 8 }} onClick={onCleanSelected}>
+              <a style={{marginInlineStart: 8}} onClick={onCleanSelected}>
                 取消选择
               </a>
             </span>
@@ -168,7 +169,7 @@ export default () => {
             title="设置时间"
             trigger={
               <Button type="primary">
-                <PlusOutlined />
+                <PlusOutlined/>
                 添加时间
               </Button>
             }
@@ -192,13 +193,13 @@ export default () => {
               }
             }}
           >
-            <ProFormDateTimePicker name="startTime" label="开始时间" width="md" />
-            <ProFormDateTimePicker name="endTime" label="结束时间" width="md" />
+            <ProFormDateTimePicker name="startTime" label="开始时间" width="md"/>
+            <ProFormDateTimePicker name="endTime" label="结束时间" width="md"/>
           </ModalForm>
         )}
-        scroll={{ x: 1300 }}
+        scroll={{x: 1300}}
         options={false}
-        search={{ labelWidth: 'auto' }}
+        search={{labelWidth: 'auto'}}
         pagination={{
           pageSize: pageSize0,
           current: pageNum0,
@@ -241,10 +242,10 @@ export default () => {
             };
           } catch (err) {
             console.error(err);
-            return { data: [], total: 0, success: false };
+            return {data: [], total: 0, success: false};
           }
         }}
-        scroll={{ x: 1300 }}
+        scroll={{x: 1300}}
         options={false}
         search={false}
         pagination={{
