@@ -80,6 +80,7 @@ export default () => {
           try {
             const res = await getTopicListUsingPost({
               ...params,
+              // @ts-ignore
               pageNumber: current,
               pageSize: size,
               status: 0,
