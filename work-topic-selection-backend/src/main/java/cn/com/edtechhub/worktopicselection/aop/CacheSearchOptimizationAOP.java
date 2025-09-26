@@ -68,7 +68,7 @@ public class CacheSearchOptimizationAOP {
         log.debug("[CacheSearchOptimization] Redis 键名为 {}, 而检测到需要缓存的结果类型为 {} 包裹 {}", redisKey, typeReference, modelClass);
 
         // 本地缓存尝试
-        String localCachedValue = caffeineManager.get(redisKey);
+        String localCachedValue = (String) caffeineManager.get(redisKey);
         if (localCachedValue != null) {
             log.debug("[CacheSearchOptimization] 本地缓存命中");
             Page<?> cachedPage = JSONUtil.toBean(localCachedValue, typeReference, false);

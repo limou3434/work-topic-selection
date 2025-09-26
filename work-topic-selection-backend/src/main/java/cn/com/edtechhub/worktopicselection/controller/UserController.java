@@ -82,7 +82,9 @@ import java.util.stream.Collectors;
  * TODO: 排序按照创建时间来排序返回, 优化用户体验
  * TODO: 我感觉挺奇葩的, 教务处要求每个用户只能预先一个题目...
  * TODO: /get/vo 这个接口感觉没有使用, 但是竟然给了前端未脱敏的数据...
- *
+ * TODO: 查看指定教师的选题上限
+ * TODO: 设置指定教师的选题上限
+ * TODO: 重点检查选题逻辑, 可能有些问题
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 @RestController
@@ -149,6 +151,13 @@ public class UserController {
      */
     @Resource
     private MailService mailService;
+
+    /**
+     * 引入开关服务依赖
+     */
+    @Resource
+    private SwitchService switchService;
+
 
     /// 用户相关接口 ///
 
@@ -920,8 +929,6 @@ public class UserController {
 
     /// 选题题目相关接口 ///
 
-    // TODO: 重点检查, 这里的逻辑有些问题
-
     /**
      * 添加选题
      */
@@ -1501,7 +1508,8 @@ public class UserController {
         User loginUser = userService.userGetCurrentLoginUser();
 
         // 获取总人数
-        QueryWrapper<User> queryWrapper = new QueryWrapper<User>().eq("userRole", UserRoleEnum.STUDENT.getCode()) // 只获取学生记录
+        QueryWrapper<User> queryWrapper = new QueryWrapper<User>()
+                .eq("userRole", UserRoleEnum.STUDENT.getCode()) // 只获取学生记录
                 .eq(!userService.userIsAdmin(loginUser), "dept", loginUser.getDept()) // 获取当前登陆用户系部相同的学生, 但是管理员可以获取所有学生
                 ;
         int totalStudents = (int) userService.count(queryWrapper);
@@ -1519,17 +1527,11 @@ public class UserController {
         // 获取未选题人数
         int unselectedStudents = totalStudents - selectedStudents;
 
-        // 非超级管理员则过滤掉测试学生
-        if (!loginUser.getId().equals(1L)) {
-            unselectedStudents = unselectedStudents - 14;
-            totalStudents = totalStudents - 14;
-        }
-
         // 封装返回数据
         SituationVO situationVO = new SituationVO();
+        situationVO.setAmount(totalStudents);
         situationVO.setSelectAmount(selectedStudents);
         situationVO.setUnselectAmount(unselectedStudents);
-        situationVO.setAmount(totalStudents);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, situationVO);
     }
 
@@ -1887,8 +1889,25 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, aiResult);
     }
 
-    // TODO: 添加两个原子事务接口
-    // TODO: 查看指定教师的选题上限
-    // TODO: 设置指定教师的选题上限
+    /**
+     * 查询跨选题功能是否开启
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @GetMapping("/cross_topic")
+    public BaseResponse<Boolean> getCrossTopicStatus() {
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, switchService.isCrossTopicEnabled());
+    }
+
+    /**
+     * 设置跨选题功能开关
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/cross_topic")
+    public BaseResponse<String> setCrossTopicStatus(@RequestParam boolean enabled) {
+        switchService.setCrossTopicEnabled(enabled);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, "跨选题功能已" + (enabled ? "开启" : "关闭"));
+    }
 
 }

@@ -28,7 +28,7 @@ public class CaffeineManager {
     /**
      * 需要后续初始化的缓存对象
      */
-    private Cache<String, String> cache;
+    private Cache<String, Object> cache;
 
     /**
      * 构造 Caffeine 缓存器实例
@@ -49,7 +49,7 @@ public class CaffeineManager {
      * @param key   键
      * @param value 值
      */
-    public void put(String key, String value) {
+    public void put(String key, Object value) {
         this.cache.put(key, value);
     }
 
@@ -58,7 +58,7 @@ public class CaffeineManager {
      *
      * @param key 键
      */
-    public String get(String key) {
+    public Object get(String key) {
         return this.cache.getIfPresent(key);
     }
 
@@ -81,7 +81,7 @@ public class CaffeineManager {
     /**
      * 查看所有键值对
      */
-    public Map<String, String> dumpCache() {
+    public Map<String, Object> dumpCache() {
         return this.cache.asMap();
     }
 

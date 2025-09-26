@@ -374,6 +374,11 @@ declare namespace API {
     userAccount?: string;
   };
 
+  type setCrossTopicStatusUsingPOSTParams = {
+    /** enabled */
+    enabled: boolean;
+  };
+
   type SetTimeRequest = {
     endTime?: string;
     startTime?: string;
