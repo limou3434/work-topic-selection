@@ -57,14 +57,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               height: 200,
               borderRadius: "50%",
               transform: "translate(-50%, -50%)",
-              zIndex: 1050, // 低于导航栏但高于其他内容
+              zIndex: 999,
               pointerEvents: "none",
             }}
           />
         )}
 
         {/* 使用 FloatButton 并包裹一个 div 以便获取位置 */}
-        <div ref={buttonRef} style={{ position: "fixed", bottom: 80, right: 20, zIndex: 1001 }}>
+        <div ref={buttonRef} style={{ position: "fixed", bottom: 80, right: 20, zIndex: 1000 }}>
           <FloatButton
             icon={isDark ? <BulbOutlined /> : <MoonOutlined />}
             onClick={toggleTheme}

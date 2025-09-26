@@ -36,11 +36,6 @@ ol {
 }
 
 @media (max-width: 768px) {
-  // 确保页面内容不被固定导航栏遮挡
-  .ant-pro-layout-content {
-    padding-top: 64px !important; // 给导航栏预留空间
-  }
-
   .ant-table {
     width: 100%;
     overflow-x: auto;
@@ -55,68 +50,7 @@ ol {
       }
     }
   }
-
-  // 移动端导航栏透明度保护
-  .ant-pro-global-header {
-    background-color: #fff !important;
-    opacity: 1 !important;
-    z-index: 1100 !important; // 提高层级，确保在所有内容之上
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    position: fixed !important; // 确保固定定位
-    
-    &.ant-pro-global-header-layout-mix {
-      background-color: #fff !important;
-    }
-  }
-
-  // 确保头部内容不透明
-  .ant-pro-global-header .ant-pro-global-header-content {
-    opacity: 1 !important;
-  }
-
-  // 暗色主题下的保护
-  [data-theme='dark'] .ant-pro-global-header {
-    background-color: #141414 !important;
-  }
-  
-  // 优化 RangePicker 在移动端的显示
-  .ant-picker-dropdown {
-    .ant-picker-panels {
-      flex-direction: column;
-    }
-    
-    .ant-picker-panel-container {
-      overflow-x: auto;
-    }
-  }
 }
 .margin-16{
   margin-bottom: 16px;
-}
-
-// 导航栏稳定性保护（防止意外透明和被覆盖）
-.ant-pro-global-header {
-  position: fixed !important; // 确保固定定位
-  z-index: 1100 !important; // 提高层级以避免被覆盖
-  transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
-  width: 100% !important;
-  
-  // 确保背景不会意外透明
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: inherit;
-    z-index: -1;
-  }
-
-  // 移动端特殊处理
-  @media (max-width: 768px) {
-    z-index: 1200 !important; // 移动端更高的层级
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
 }

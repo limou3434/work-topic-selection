@@ -12,7 +12,7 @@ const Settings: ProLayoutProps & {
   colorPrimary: '#1890ff',
   layout: 'mix',
   contentWidth: 'Fluid',
-  fixedHeader: true,
+  fixedHeader: false,
   fixSiderbar: true,
   colorWeak: false,
   title: '毕业设计选题系统',
