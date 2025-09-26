@@ -92,6 +92,8 @@ const TopicReviewTable: React.FC = () => {
       <ProTable<TableListItem>
         columns={columns}
         actionRef={actionRef}
+        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         request={async (params = {}, sort, filter) => {
           try {
             const current = params.current || 1;
@@ -104,6 +106,7 @@ const TopicReviewTable: React.FC = () => {
               pageNumber: current,
               pageSize: size,
             };
+            // @ts-ignore
             const response = await getTopicListUsingPost(paramsWithFormName);
             const data = response.data?.records || [];
             const total = response.data?.total || 0;
@@ -157,6 +160,7 @@ const TopicReviewTable: React.FC = () => {
             message.success('打回成功');
             setModalVisible(false);
             setCurrentRecord(null);
+            // @ts-ignore
             actionRef.current?.reload();
             return true;
           } else {

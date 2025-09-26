@@ -79,6 +79,17 @@ ol {
   [data-theme='dark'] .ant-pro-global-header {
     background-color: #141414 !important;
   }
+  
+  // 优化 RangePicker 在移动端的显示
+  .ant-picker-dropdown {
+    .ant-picker-panels {
+      flex-direction: column;
+    }
+    
+    .ant-picker-panel-container {
+      overflow-x: auto;
+    }
+  }
 }
 .margin-16{
   margin-bottom: 16px;

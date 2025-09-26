@@ -9,7 +9,7 @@ import {
 } from "@/services/work-topic-selection/userController";
 import {PlusOutlined} from "@ant-design/icons";
 import {ModalForm} from "@ant-design/pro-form/lib";
-import {ProFormDateTimePicker} from "@ant-design/pro-form";
+import {ProFormDateRangePicker} from '@ant-design/pro-form';
 
 export type TableListItem = {
   id: number;
@@ -165,7 +165,7 @@ export default () => {
           </Space>
         )}
         tableAlertOptionRender={(dataSource) => (
-          <ModalForm<{ startTime: string; endTime: string }>
+          <ModalForm<{ timeRange: [string, string] }>
             title="设置时间"
             trigger={
               <Button type="primary">
@@ -176,11 +176,19 @@ export default () => {
             autoFocusFirstInput
             modalProps={{
               destroyOnClose: true,
+              width: '90%',
+              style: {
+                maxWidth: 520,
+              },
             }}
             submitTimeout={2000}
             onFinish={async (values) => {
+              // 从时间范围中提取开始时间和结束时间
+              const [startTime, endTime] = values.timeRange || [];
+              
               const res = await setTimeByIdUsingPost({
-                ...values,
+                startTime,
+                endTime,
                 topicList: dataSource.selectedRows,
               });
               if (res.code === 0) {
@@ -193,8 +201,13 @@ export default () => {
               }
             }}
           >
-            <ProFormDateTimePicker name="startTime" label="开始时间" width="md"/>
-            <ProFormDateTimePicker name="endTime" label="结束时间" width="md"/>
+            <ProFormDateRangePicker 
+              name="timeRange" 
+              label="时间范围" 
+              style={{ width: '100%' }}
+              placeholder={['开始时间', '结束时间']}
+              separator="至"
+            />
           </ModalForm>
         )}
         scroll={{x: 1300}}
