@@ -16,6 +16,7 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TopicQueryRequest extends PageRequest implements Serializable {
+
     /**
      * 题目
      */

@@ -1,13 +1,14 @@
 import {ProColumns, ProTable} from '@ant-design/pro-components';
-import {Button, Col, message, Row, Space, Switch, Table, Typography} from 'antd';
+import {Button, Col, message, Row, Space, Switch, Table, Typography, Tabs} from 'antd';
 import React, {useEffect, useState} from "react";
 import {
   getCrossTopicStatusUsingGet,
   getTopicListUsingPost,
   setCrossTopicStatusUsingPost,
-  setTimeByIdUsingPost
+  setTimeByIdUsingPost,
+  unsetTimeByIdUsingPost
 } from "@/services/work-topic-selection/userController";
-import {PlusOutlined} from "@ant-design/icons";
+import {MinusOutlined, PlusOutlined, ClockCircleOutlined, EyeOutlined} from "@ant-design/icons";
 import {ModalForm} from "@ant-design/pro-form/lib";
 import {ProFormDateRangePicker} from '@ant-design/pro-form';
 
@@ -103,17 +104,13 @@ export default () => {
     }
   };
 
+  // @ts-ignore
   return (
     <div style={{display: 'flex', flexDirection: 'column', gap: 25}}>
       <Row justify="space-between" align="middle" style={{marginBottom: 16}}>
         <Col>
-          <Typography.Title level={4} style={{margin: 0}}>
-            设置选题开放时间（这里都是已经通过审核的选题）
-          </Typography.Title>
-        </Col>
-        <Col>
           <Space>
-            <span>跨系开关：</span>
+            <span>是否允许跨系：</span>
             <Switch
               checked={crossTopicStatus}
               onChange={handleCrossTopicStatusChange}
@@ -122,158 +119,218 @@ export default () => {
           </Space>
         </Col>
       </Row>
-      <ProTable<TableListItem>
-        columns={columns}
-        rowSelection={{
-          selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
-        }}
-        // @ts-ignore
-        request={async (params = {}) => {
-          const current = params.current || 1;
-          const size = params.pageSize || 10;
-          setPageNum0(current);
-          setPageSize0(size);
-          try {
-            const res = await getTopicListUsingPost({
-              ...params,
-              // @ts-ignore
-              pageNumber: current,
-              pageSize: size,
-              status: 0,
-            });
-            const data = res.data?.records || [];
-            const total = res.data?.total || 0;
-            setTotal0(total);
-            return {
-              data,
-              total,
-              success: true,
-            };
-          } catch (err) {
-            console.error(err);
-            return {data: [], total: 0, success: false};
-          }
-        }}
-        tableAlertRender={({selectedRowKeys, onCleanSelected}) => (
-          <Space size={24}>
-            <span>
-              已选 {selectedRowKeys.length} 项
-              <a style={{marginInlineStart: 8}} onClick={onCleanSelected}>
-                取消选择
-              </a>
-            </span>
-          </Space>
-        )}
-        tableAlertOptionRender={(dataSource) => (
-          <ModalForm<{ timeRange: [string, string] }>
-            title="设置时间"
-            trigger={
-              <Button type="primary">
-                <PlusOutlined/>
-                添加时间
-              </Button>
-            }
-            autoFocusFirstInput
-            modalProps={{
-              destroyOnClose: true,
-              width: '90%',
-              style: {
-                maxWidth: 520,
-              },
-            }}
-            submitTimeout={2000}
-            onFinish={async (values) => {
-              // 从时间范围中提取开始时间和结束时间
-              const [startTime, endTime] = values.timeRange || [];
-              
-              const res = await setTimeByIdUsingPost({
-                startTime,
-                endTime,
-                topicList: dataSource.selectedRows,
-              });
-              if (res.code === 0) {
-                message.success(res.message);
-                window.location.reload();
-                return true;
-              } else {
-                message.error(res.message);
-                return false;
-              }
-            }}
-          >
-            <ProFormDateRangePicker 
-              name="timeRange" 
-              label="时间范围" 
-              style={{ width: '100%' }}
-              placeholder={['开始时间', '结束时间']}
-              separator="至"
-            />
-          </ModalForm>
-        )}
-        scroll={{x: 1300}}
-        options={false}
-        search={{labelWidth: 'auto'}}
-        pagination={{
-          pageSize: pageSize0,
-          current: pageNum0,
-          total: total0,
-          showSizeChanger: true,
-          pageSizeOptions: ['10', '20', '50', '100'],
-          onChange: (page, size) => {
-            setPageNum0(page);
-            setPageSize0(size);
-          },
-        }}
-        rowKey="id"
-        headerTitle="设置选题开放时间（这里都是已经通过审核的选题）"
-      />
+      <Tabs
+        defaultActiveKey="1"
+        centered
+        items={[
+          {
+            key: '1',
+            label: (
+              <span>
+                <ClockCircleOutlined />
+                设置选题的开放时间
+              </span>
+            ),
+            children: (
+              <ProTable<TableListItem>
+                columns={columns}
+                rowSelection={{
+                  selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
+                }}
+                // @ts-ignore
+                request={async (params = {}) => {
+                  const current = params.current || 1;
+                  const size = params.pageSize || 10;
+                  setPageNum0(current);
+                  setPageSize0(size);
+                  try {
+                    const res = await getTopicListUsingPost({
+                      ...params,
+                      // @ts-ignore
+                      pageNumber: current,
+                      pageSize: size,
+                      status: 0,
+                    });
+                    const data = res.data?.records || [];
+                    const total = res.data?.total || 0;
+                    setTotal0(total);
+                    return {
+                      data,
+                      total,
+                      success: true,
+                    };
+                  } catch (err) {
+                    console.error(err);
+                    return {data: [], total: 0, success: false};
+                  }
+                }}
+                tableAlertRender={({selectedRowKeys, onCleanSelected}) => (
+                  <Space size={24}>
+                    <span>
+                      已选 {selectedRowKeys.length} 项
+                      <a style={{marginInlineStart: 8}} onClick={onCleanSelected}>
+                        取消选择
+                      </a>
+                    </span>
+                  </Space>
+                )}
+                tableAlertOptionRender={(dataSource) => (
+                  <ModalForm<{ timeRange: [string, string] }>
+                    title="设置时间"
+                    trigger={
+                      <Button type="primary">
+                        <PlusOutlined/>
+                        添加时间
+                      </Button>
+                    }
+                    autoFocusFirstInput
+                    modalProps={{
+                      destroyOnClose: true,
+                      width: '90%',
+                      style: {
+                        maxWidth: 520,
+                      },
+                    }}
+                    submitTimeout={2000}
+                    onFinish={async (values) => {
+                      // 从时间范围中提取开始时间和结束时间
+                      const [startTime, endTime] = values.timeRange || [];
 
-      {/* 第二个列表，status = 1 */}
-      <ProTable<TableListItem>
-        columns={columns}
-        // @ts-ignore
-        request={async (params = {}) => {
-          const current = params.current || 1;
-          const size = params.pageSize || 10;
-          setPageNum1(current);
-          setPageSize1(size);
-          try {
-            const res = await getTopicListUsingPost({
-              ...params,
-              // @ts-ignore
-              pageNumber: current,
-              pageSize: size,
-              status: 1,
-            });
-            const data = res.data?.records || [];
-            const total = res.data?.total || 0;
-            setTotal1(total);
-            return {
-              data,
-              total,
-              success: true,
-            };
-          } catch (err) {
-            console.error(err);
-            return {data: [], total: 0, success: false};
-          }
-        }}
-        scroll={{x: 1300}}
-        options={false}
-        search={false}
-        pagination={{
-          pageSize: pageSize1,
-          current: pageNum1,
-          total: total1,
-          showSizeChanger: true,
-          pageSizeOptions: ['10', '20', '50', '100'],
-          onChange: (page, size) => {
-            setPageNum1(page);
-            setPageSize1(size);
+                      const res = await setTimeByIdUsingPost({
+                        startTime,
+                        endTime,
+                        topicList: dataSource.selectedRows,
+                      });
+                      if (res.code === 0) {
+                        message.success(res.message);
+                        window.location.reload();
+                        return true;
+                      } else {
+                        message.error(res.message);
+                        return false;
+                      }
+                    }}
+                  >
+                    <ProFormDateRangePicker
+                      name="timeRange"
+                      label="时间范围"
+                      style={{ width: '100%' }}
+                      placeholder={['开始时间', '结束时间']}
+                      // @ts-ignore
+                      separator="至"
+                    />
+                  </ModalForm>
+                )}
+                scroll={{x: 1300}}
+                options={false}
+                search={{labelWidth: 'auto'}}
+                pagination={{
+                  pageSize: pageSize0,
+                  current: pageNum0,
+                  total: total0,
+                  showSizeChanger: true,
+                  pageSizeOptions: ['10', '20', '50', '100'],
+                  onChange: (page, size) => {
+                    setPageNum0(page);
+                    setPageSize0(size);
+                  },
+                }}
+                rowKey="id"
+                headerTitle="设置选题的开放时间"
+              />
+            ),
           },
-        }}
-        rowKey="id"
-        headerTitle="只查看已发布选题（这里都是已经设置开放的选题）"
+          {
+            key: '2',
+            label: (
+              <span>
+                <EyeOutlined />
+                查看已经发布的选题
+              </span>
+            ),
+            children: (
+              <ProTable<TableListItem>
+                columns={columns}
+                rowSelection={{
+                  selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
+                }}
+                // @ts-ignore
+                request={async (params = {}) => {
+                  const current = params.current || 1;
+                  const size = params.pageSize || 10;
+                  setPageNum1(current);
+                  setPageSize1(size);
+                  try {
+                    const res = await getTopicListUsingPost({
+                      ...params,
+                      // @ts-ignore
+                      pageNumber: current,
+                      pageSize: size,
+                      status: 1,
+                    });
+                    const data = res.data?.records || [];
+                    const total = res.data?.total || 0;
+                    setTotal1(total);
+                    return {
+                      data,
+                      total,
+                      success: true,
+                    };
+                  } catch (err) {
+                    console.error(err);
+                    return {data: [], total: 0, success: false};
+                  }
+                }}
+                tableAlertRender={({selectedRowKeys, onCleanSelected}) => (
+                  <Space size={24}>
+                    <span>
+                      已选 {selectedRowKeys.length} 项
+                      <a style={{marginInlineStart: 8}} onClick={onCleanSelected}>
+                        取消选择
+                      </a>
+                    </span>
+                  </Space>
+                )}
+                tableAlertOptionRender={(dataSource) => (
+                  <Button
+                    type="primary"
+                    danger
+                    onClick={async () => {
+                      const res = await unsetTimeByIdUsingPost({
+                        topicList: dataSource.selectedRows,
+                      });
+                      if (res.code === 0) {
+                        message.success(res.message);
+                        window.location.reload();
+                      } else {
+                        message.error(res.message);
+                      }
+                    }}
+                  >
+                    <MinusOutlined />
+                    取消发布
+                  </Button>
+                )}
+                scroll={{x: 1300}}
+                options={false}
+                search={{labelWidth: 'auto'}}
+                pagination={{
+                  pageSize: pageSize1,
+                  current: pageNum1,
+                  total: total1,
+                  showSizeChanger: true,
+                  pageSizeOptions: ['10', '20', '50', '100'],
+                  onChange: (page, size) => {
+                    setPageNum1(page);
+                    setPageSize1(size);
+                  },
+                }}
+                rowKey="id"
+                headerTitle="查看已经发布的选题"
+              />
+            ),
+          },
+        ]}
       />
     </div>
   );
