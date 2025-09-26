@@ -53,6 +53,9 @@ spring:
           starttls:
             enable: true
             required: true
+  ## 配置日志
+  jackson:
+    time-zone: Asia/Shanghai
 
 # 配置服务
 server:

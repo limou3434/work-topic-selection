@@ -2,4 +2,4 @@
 FROM openjdk:8-jdk-slim
 COPY ./target/*.jar ./app.jar
 EXPOSE 8000
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-Duser.timezone=Asia/Shanghai", "-jar", "app.jar"]
