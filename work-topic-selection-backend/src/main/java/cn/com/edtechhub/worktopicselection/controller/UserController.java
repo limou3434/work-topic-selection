@@ -19,6 +19,7 @@ import cn.com.edtechhub.worktopicselection.model.dto.project.DeleteProjectReques
 import cn.com.edtechhub.worktopicselection.model.dto.project.ProjectAddRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.project.ProjectQueryRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.schedule.SetTimeRequest;
+import cn.com.edtechhub.worktopicselection.model.dto.schedule.UnSetTimeRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.studentTopicSelection.SelectStudentRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.studentTopicSelection.SelectTopicByIdRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.topic.*;
@@ -1099,7 +1100,40 @@ public class UserController {
                 boolean result = topicService.updateById(topic);
                 ThrowUtils.throwIf(!result, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "无法开放该选题, 请联系管理员 898738804@qq.com");
             }
-            return TheResult.success(CodeBindMessageEnums.SUCCESS, "成功开放选题!");
+            return TheResult.success(CodeBindMessageEnums.SUCCESS, "成功开放题目!");
+        });
+    }
+
+    /**
+     * 根据题目 id 添加开放的开始时间和结束时间来进行发布
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/unset/time/by/id")
+    public BaseResponse<String> unsetTimeById(@RequestBody UnSetTimeRequest request) throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        // 参数检查
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
+
+        List<Topic> topicList = request.getTopicList();
+        ThrowUtils.throwIf(topicList == null || topicList.isEmpty(), CodeBindMessageEnums.PARAMS_ERROR, "请先选择要开放的题目");
+
+        // 遍历选题列表开始取消开放
+        return transactionTemplate.execute(transactionStatus -> {
+            for (Topic topic : request.getTopicList()) {
+                topic.setStatus(TopicStatusEnum.NOT_PUBLISHED.getCode());
+                topic.setStartTime(null);
+                topic.setEndTime(null);
+                boolean result = topicService.updateById(topic);
+                ThrowUtils.throwIf(!result, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "无法开放该选题, 请联系管理员 898738804@qq.com");
+            }
+            return TheResult.success(CodeBindMessageEnums.SUCCESS, "成功取消发布!");
         });
     }
 
@@ -1673,7 +1707,7 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, unselectedUsers);
     }
 
-    // 获取管理员获取题目
+    // 管理员获取题目
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/get/topic/list/by/admin")

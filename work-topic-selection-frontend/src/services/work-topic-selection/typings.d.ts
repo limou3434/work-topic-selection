@@ -447,6 +447,10 @@ declare namespace API {
     type?: string;
   };
 
+  type UnSetTimeRequest = {
+    topicList?: Topic[];
+  };
+
   type UpdateTopicListRequest = {
     deptName?: string;
     deptTeacher?: string;

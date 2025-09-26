@@ -577,6 +577,21 @@ export async function setTimeByIdUsingPost(
   });
 }
 
+/** unsetTimeById POST /user/unset/time/by/id */
+export async function unsetTimeByIdUsingPost(
+  body: API.UnSetTimeRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseString_>('/user/unset/time/by/id', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** userUpdatePassword POST /user/updata/password */
 export async function userUpdatePasswordUsingPost(
   body: API.UserUpdatePassword,
