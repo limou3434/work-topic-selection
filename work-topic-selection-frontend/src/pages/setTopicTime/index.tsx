@@ -71,6 +71,7 @@ export default () => {
         rowSelection={{
           selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
         }}
+        // @ts-ignore
         request={async (params = {}) => {
           const current = params.current || 1;
           const size = params.pageSize || 10;
