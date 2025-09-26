@@ -158,7 +158,6 @@ public class UserController {
     @Resource
     private SwitchService switchService;
 
-
     /// 用户相关接口 ///
 
     /**

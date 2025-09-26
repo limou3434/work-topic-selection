@@ -1,9 +1,11 @@
 import { ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, message, Space, Table } from 'antd';
-import React, { useState } from "react";
+import { Button, message, Space, Table, Switch, Row, Col, Typography } from 'antd';
+import React, { useState, useEffect } from "react";
 import {
   getTopicListUsingPost,
-  setTimeByIdUsingPost
+  setTimeByIdUsingPost,
+  getCrossTopicStatusUsingGet,
+  setCrossTopicStatusUsingPost
 } from "@/services/work-topic-selection/userController";
 import { PlusOutlined } from "@ant-design/icons";
 import { ModalForm } from "@ant-design/pro-form/lib";
@@ -63,9 +65,62 @@ export default () => {
   const [pageSize1, setPageSize1] = useState(10);
   const [total1, setTotal1] = useState(0);
 
+  // 跨系开关状态
+  const [crossTopicStatus, setCrossTopicStatus] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // 获取跨系开关状态
+  useEffect(() => {
+    const fetchCrossTopicStatus = async () => {
+      try {
+        const res = await getCrossTopicStatusUsingGet();
+        setCrossTopicStatus(res.data || false);
+      } catch (error) {
+        console.error("获取跨系开关状态失败:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCrossTopicStatus();
+  }, []);
+
+  // 更新跨系开关状态
+  const handleCrossTopicStatusChange = async (checked: boolean) => {
+    try {
+      setLoading(true);
+      await setCrossTopicStatusUsingPost({ enabled: checked });
+      setCrossTopicStatus(checked);
+      message.success(`跨系功能已${checked ? "开启" : "关闭"}`);
+    } catch (error) {
+      console.error("更新跨系开关状态失败:", error);
+      message.error("操作失败，请重试");
+      // 恢复开关状态
+      setCrossTopicStatus(!checked);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 25 }}>
-      {/* 第一个列表，status = 0 */}
+      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+        <Col>
+          <Typography.Title level={4} style={{ margin: 0 }}>
+            设置选题开放时间（这里都是已经通过审核的选题）
+          </Typography.Title>
+        </Col>
+        <Col>
+          <Space>
+            <span>跨系开关：</span>
+            <Switch
+              checked={crossTopicStatus}
+              onChange={handleCrossTopicStatusChange}
+              loading={loading}
+            />
+          </Space>
+        </Col>
+      </Row>
       <ProTable<TableListItem>
         columns={columns}
         rowSelection={{
@@ -162,6 +217,7 @@ export default () => {
       {/* 第二个列表，status = 1 */}
       <ProTable<TableListItem>
         columns={columns}
+        // @ts-ignore
         request={async (params = {}) => {
           const current = params.current || 1;
           const size = params.pageSize || 10;
@@ -170,6 +226,7 @@ export default () => {
           try {
             const res = await getTopicListUsingPost({
               ...params,
+              // @ts-ignore
               pageNumber: current,
               pageSize: size,
               status: 1,
