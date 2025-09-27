@@ -1254,6 +1254,9 @@ public class UserController {
         sentineManager.initFlowRules(entryName);
         SphU.entry(entryName);
 
+        // 检查当前单选模式能否可预选
+        ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.SWITCH_SINGLE_CHOICE), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前模式为教师选择学生模式, 无法选题");
+
         // 参数检查
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
 
@@ -1399,10 +1402,21 @@ public class UserController {
         });
     }
 
-    // 教师直接帮助学生确认提交题目
+    /**
+     * 教师直接帮助学生确认提交题目
+     */
     @SaCheckRole(value = {"teacher"}, mode = SaMode.OR)
     @PostMapping("/select/student")
     public BaseResponse<String> selectStudent(@RequestBody SelectStudentRequest request) throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        // 检查当前单选模式能否可预选
+        ThrowUtils.throwIf(switchService.isEnabled(TopicConstant.SWITCH_SINGLE_CHOICE), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前模式为学生选择教师模式, 无法双选");
+
         // 检查请求参数是否为空
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
         assert request != null;
@@ -1415,9 +1429,11 @@ public class UserController {
 
         Topic topic = topicService.getOne(new QueryWrapper<Topic>().eq("topic", topicName));
         ThrowUtils.throwIf(topic == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "未找到对应的课题");
+        assert topic != null;
 
         Long topicId = topic.getId();
         ThrowUtils.throwIf(topicId == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "未找到对应的课题");
+        assert topicId != null;
 
         // 教师直接分配题目给学生
         synchronized (topicId) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
@@ -1439,7 +1455,8 @@ public class UserController {
                 ThrowUtils.throwIf(!saveSuccess, CodeBindMessageEnums.OPERATION_ERROR, "保存学生选题信息失败");
 
                 // 更新课题的剩余数量并保存
-                topic.setSurplusQuantity(0);
+                topic.setSurplusQuantity(topic.getSurplusQuantity() - 1);
+                topic.setSelectAmount(topic.getSelectAmount() + 1);
                 boolean topicSaveSuccess = topicService.saveOrUpdate(topic);
                 ThrowUtils.throwIf(!topicSaveSuccess, CodeBindMessageEnums.OPERATION_ERROR, "更新课题剩余数量失败");
 
@@ -1563,6 +1580,9 @@ public class UserController {
             if (!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH)) {
                 queryWrapper.eq("deptName", loginUser.getDept());
             }
+
+            // 而且只能看到审核通过的题目
+            queryWrapper.eq("status", TopicStatusEnum.NOT_PUBLISHED.getCode());
         }
 
         // 获取选题数据
@@ -1575,7 +1595,13 @@ public class UserController {
     @SaCheckLogin
     @SaCheckRole(value = {"admin", "dept"}, mode = SaMode.OR)
     @PostMapping("/get/select/topic/situation")
-    public BaseResponse<SituationVO> getSelectTopicSituation() {
+    public BaseResponse<SituationVO> getSelectTopicSituation() throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
         // 获取当前登陆用户
         User loginUser = userService.userGetCurrentLoginUser();
 
@@ -1659,7 +1685,7 @@ public class UserController {
             QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
             topicQueryWrapper
                     .eq("teacherName", userName)
-                    .eq("status", TopicStatusEnum.PUBLISHED.getCode()); // 学生只能查看已经开放的选题
+                    .eq("status", TopicStatusEnum.NOT_PUBLISHED.getCode()); // 学生只能查看已经审核通过的选题
             int count = (int) topicService.count(topicQueryWrapper);
             List<Topic> topicList = topicService.list(topicQueryWrapper);
 
@@ -1694,7 +1720,13 @@ public class UserController {
     @SaCheckLogin
     @SaCheckRole(value = {"student"}, mode = SaMode.OR)
     @PostMapping("/get/preselect/topic")
-    public BaseResponse<List<Topic>> getPreTopic() {
+    public BaseResponse<List<Topic>> getPreTopic() throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
         // 获取当前登陆用户
         User loginUser = userService.userGetCurrentLoginUser();
 
@@ -1725,7 +1757,13 @@ public class UserController {
     @SaCheckLogin
     @SaCheckRole(value = {"student"}, mode = SaMode.OR)
     @PostMapping("get/select/topic")
-    public BaseResponse<List<Topic>> getSelectTopic() {
+    public BaseResponse<List<Topic>> getSelectTopic() throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
         // 获取当前登陆用户
         User loginUser = userService.userGetCurrentLoginUser();
         String userAccount = loginUser.getUserAccount();
@@ -1749,7 +1787,13 @@ public class UserController {
     @SaCheckLogin
     @SaCheckRole(value = {"dept"}, mode = SaMode.OR)
     @PostMapping("/get/unselect/topic/student/list")
-    public BaseResponse<List<User>> getUnSelectTopicStudentList() {
+    public BaseResponse<List<User>> getUnSelectTopicStudentList() throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
         // 获取当前登陆用户
         User loginUser = userService.userGetCurrentLoginUser();
         final String dept = loginUser.getDept();
@@ -1825,9 +1869,16 @@ public class UserController {
     @SaCheckLogin
     @PostMapping("/get/user/list")
     public BaseResponse<List<UserNameVO>> getUserList(@RequestBody GetUserListRequest request) throws BlockException {
-        if (request == null) {
-            throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "");
-        }
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        // 参数检查
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
+
         Integer userRole = request.getUserRole();
         User loginUser = userService.userGetCurrentLoginUser();
         Integer adminRole = loginUser.getUserRole();
@@ -1849,6 +1900,12 @@ public class UserController {
     @SaCheckLogin
     @PostMapping("/add/count")
     public BaseResponse<String> addCount(@RequestBody AddCountRequest request) throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
         long id = request.getId();
         int count = request.getCount();
         final Topic topic = topicService.getById(id);
@@ -1990,7 +2047,13 @@ public class UserController {
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @GetMapping("/cross_topic")
-    public BaseResponse<Boolean> getCrossTopicStatus() {
+    public BaseResponse<Boolean> getCrossTopicStatus() throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
         return TheResult.success(CodeBindMessageEnums.SUCCESS, switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH));
     }
 
@@ -2000,9 +2063,15 @@ public class UserController {
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/cross_topic")
-    public BaseResponse<String> setCrossTopicStatus(@RequestParam boolean enabled) {
+    public BaseResponse<String> setCrossTopicStatus(@RequestParam boolean enabled) throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
         switchService.setEnabled(TopicConstant.CROSS_TOPIC_SWITCH, enabled);
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, "跨选题功能已" + (enabled ? "开启" : "关闭"));
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, "跨系选题功能已" + (enabled ? "开启" : "关闭"));
     }
 
     /**
@@ -2011,7 +2080,13 @@ public class UserController {
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @GetMapping("/switch_single_choice")
-    public BaseResponse<Boolean> getSwitchSingleChoiceStatus() {
+    public BaseResponse<Boolean> getSwitchSingleChoiceStatus() throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
         return TheResult.success(CodeBindMessageEnums.SUCCESS, switchService.isEnabled(TopicConstant.SWITCH_SINGLE_CHOICE));
     }
 
@@ -2021,9 +2096,15 @@ public class UserController {
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/switch_single_choice")
-    public BaseResponse<String> setSwitchSingleChoiceStatus(@RequestParam boolean enabled) {
+    public BaseResponse<String> setSwitchSingleChoiceStatus(@RequestParam boolean enabled) throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
         switchService.setEnabled(TopicConstant.SWITCH_SINGLE_CHOICE, enabled);
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, "当前单选切换为" + (enabled ? "学生单选模式" : "教师单选模式"));
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, "当前单选模式切换为" + (enabled ? "学生单选模式" : "教师单选模式"));
     }
 
 }

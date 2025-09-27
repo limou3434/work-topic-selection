@@ -98,11 +98,14 @@ const TopicTable: React.FC<{ teacherName: string }> = ({ teacherName }) => {
     <ProTable<TableListItem>
       actionRef={actionRef}
       columns={columns}
+      // @ts-ignore
       request={async (params = {}) => {
         try {
           const res = await getTopicListUsingPost({
+            // @ts-ignore
             ...params,
-            status: '1',
+            // @ts-ignore
+            status: '0',
             teacherName,
           });
           return {
