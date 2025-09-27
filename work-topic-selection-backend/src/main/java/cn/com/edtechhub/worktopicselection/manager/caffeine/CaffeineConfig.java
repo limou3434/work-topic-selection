@@ -17,6 +17,11 @@ import javax.annotation.PostConstruct;
 public class CaffeineConfig {
 
     /**
+     * 键位前缀
+     */
+    private String keyPrefix = "work-topic-selection:";
+    
+    /**
      * 初始大小
      */
     private Integer initialCapacity = 1024;

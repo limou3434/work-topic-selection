@@ -1906,24 +1906,45 @@ public class UserController {
     }
 
     /**
-     * 查询跨选题功能是否开启
+     * 查询跨系选题是否开启
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @GetMapping("/cross_topic")
     public BaseResponse<Boolean> getCrossTopicStatus() {
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, switchService.isCrossTopicEnabled());
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH));
     }
 
     /**
-     * 设置跨选题功能开关
+     * 设置跨系选题开关
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/cross_topic")
     public BaseResponse<String> setCrossTopicStatus(@RequestParam boolean enabled) {
-        switchService.setCrossTopicEnabled(enabled);
+        switchService.setEnabled(TopicConstant.CROSS_TOPIC_SWITCH, enabled);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, "跨选题功能已" + (enabled ? "开启" : "关闭"));
+    }
+
+    /**
+     * 查询角色模式是否切换
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @GetMapping("/switch_single_choice")
+    public BaseResponse<Boolean> getSwitchSingleChoiceStatus() {
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, switchService.isEnabled(TopicConstant.SWITCH_SINGLE_CHOICE));
+    }
+
+    /**
+     * 设置角色模式开关
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/switch_single_choice")
+    public BaseResponse<String> setSwitchSingleChoiceStatus(@RequestParam boolean enabled) {
+        switchService.setEnabled(TopicConstant.SWITCH_SINGLE_CHOICE, enabled);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, "单前切换为" + (enabled ? "开启" : "关闭"));
     }
 
 }

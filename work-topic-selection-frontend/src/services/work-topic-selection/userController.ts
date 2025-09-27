@@ -577,6 +577,29 @@ export async function setTimeByIdUsingPost(
   });
 }
 
+/** getSwitchSingleChoiceStatus GET /user/switch_single_choice */
+export async function getSwitchSingleChoiceStatusUsingGet(options?: { [key: string]: any }) {
+  return request<API.BaseResponseBoolean_>('/user/switch_single_choice', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+/** setSwitchSingleChoiceStatus POST /user/switch_single_choice */
+export async function setSwitchSingleChoiceStatusUsingPost(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.setSwitchSingleChoiceStatusUsingPOSTParams,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseString_>('/user/switch_single_choice', {
+    method: 'POST',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}
+
 /** unsetTimeById POST /user/unset/time/by/id */
 export async function unsetTimeByIdUsingPost(
   body: API.UnSetTimeRequest,

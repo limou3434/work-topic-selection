@@ -379,6 +379,11 @@ declare namespace API {
     enabled: boolean;
   };
 
+  type setSwitchSingleChoiceStatusUsingPOSTParams = {
+    /** enabled */
+    enabled: boolean;
+  };
+
   type SetTimeRequest = {
     endTime?: string;
     startTime?: string;

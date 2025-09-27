@@ -1,18 +1,18 @@
 package cn.com.edtechhub.worktopicselection.service;
 
 /**
- * 跨选题开关服务接口
+ * 开关服务接口
  */
 public interface SwitchService {
 
     /**
-     * 是否开启跨选题
+     * 是否设置
      */
-    boolean isCrossTopicEnabled();
+    boolean isEnabled(String key);
 
     /**
-     * 设置跨选题功能开关
+     * 设置开关
      */
-    void setCrossTopicEnabled(boolean enabled);
+    void setEnabled(String key, boolean enabled);
 
 }

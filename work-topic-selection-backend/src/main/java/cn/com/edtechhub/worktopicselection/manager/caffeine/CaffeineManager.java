@@ -50,7 +50,7 @@ public class CaffeineManager {
      * @param value 值
      */
     public void put(String key, Object value) {
-        this.cache.put(key, value);
+        this.cache.put(caffeineConfig.getKeyPrefix() + key, value);
     }
 
     /**
@@ -59,7 +59,7 @@ public class CaffeineManager {
      * @param key 键
      */
     public Object get(String key) {
-        return this.cache.getIfPresent(key);
+        return this.cache.getIfPresent(caffeineConfig.getKeyPrefix() + key);
     }
 
     /**
@@ -68,7 +68,7 @@ public class CaffeineManager {
      * @param key 键
      */
     public void remove(String key) {
-        this.cache.invalidate(key);
+        this.cache.invalidate(caffeineConfig.getKeyPrefix() + key);
     }
 
     /**

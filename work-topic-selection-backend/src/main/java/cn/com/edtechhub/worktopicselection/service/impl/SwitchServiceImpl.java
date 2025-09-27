@@ -8,15 +8,10 @@ import javax.annotation.Resource;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * 跨选题开关服务实现
+ * 开关服务实现
  */
 @Service
 public class SwitchServiceImpl implements SwitchService {
-
-    /**
-     * 跨选题开关缓存 Key
-     */
-    private static final String CROSS_TOPIC_SWITCH = "cross-topic-switch";
 
     /**
      * 注入 Caffeine 管理器
@@ -30,21 +25,21 @@ public class SwitchServiceImpl implements SwitchService {
     private final ReentrantLock lock = new ReentrantLock();
 
     @Override
-    public boolean isCrossTopicEnabled() {
+    public boolean isEnabled(String key) {
         lock.lock();
         try {
-            Object val = caffeineManager.get(CROSS_TOPIC_SWITCH);
-            return val instanceof Boolean && (Boolean) val;
+            Object val = caffeineManager.get(key);
+            return val instanceof Boolean && (Boolean) val; // 如果是 Boolean 类型, 则返回其本身真值; 如果不是 Boolean 类型, 则直接返回 false
         } finally {
             lock.unlock();
         }
     }
 
     @Override
-    public void setCrossTopicEnabled(boolean enabled) {
+    public void setEnabled(String key, boolean enabled) {
         lock.lock();
         try {
-            caffeineManager.put(CROSS_TOPIC_SWITCH, enabled);
+            caffeineManager.put(key, enabled);
         } finally {
             lock.unlock();
         }
