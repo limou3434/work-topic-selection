@@ -351,6 +351,21 @@ export async function getTeacherUsingPost1(
   });
 }
 
+/** getTeacherTopicAmount POST /user/get/teacher/topicAmount */
+export async function getTeacherTopicAmountUsingPost(
+  body: API.GetTeacherTopicAmountRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseInt_>('/user/get/teacher/topicAmount', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** getTopicListByAdmin POST /user/get/topic/list/by/admin */
 export async function getTopicListByAdminUsingPost(
   body: API.TopicQueryByAdminRequest,
@@ -553,6 +568,21 @@ export async function sendCodeUsingPost(
   options?: { [key: string]: any },
 ) {
   return request<API.BaseResponseString_>('/user/send/code', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** setTeacherTopicAmount POST /user/set/teacher/topicAmount */
+export async function setTeacherTopicAmountUsingPost(
+  body: API.SetTeacherTopicAmountRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseBoolean_>('/user/set/teacher/topicAmount', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

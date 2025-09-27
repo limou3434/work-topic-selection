@@ -2110,10 +2110,75 @@ public class UserController {
     /**
      * 获取教师题目上限
      */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/get/teacher/topicAmount")
+    public BaseResponse<Integer> getTeacherTopicAmount(@RequestBody GetTeacherTopicAmountRequest request) throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        // 参数检查
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
+
+        Long teacherId = request.getTeacherId();
+        ThrowUtils.throwIf(teacherId == null || teacherId <= 0, CodeBindMessageEnums.PARAMS_ERROR, "教师标识不合法");
+
+        // 获取教师信息
+        User teacher = userService.getById(teacherId);
+        ThrowUtils.throwIf(teacher == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "教师不存在");
+        assert teacher != null;
+        ThrowUtils.throwIf(!teacher.getUserRole().equals(UserRoleEnum.TEACHER.getCode()), CodeBindMessageEnums.PARAMS_ERROR, "该用户不是教师");
+
+        // 返回教师题目上限
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, teacher.getTopicAmount());
+    }
 
 
     /**
      * 修改教师题目上限
      */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/set/teacher/topicAmount")
+    public BaseResponse<Boolean> setTeacherTopicAmount(@RequestBody SetTeacherTopicAmountRequest request) throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        // 参数检查
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
+
+        Long teacherId = request.getTeacherId();
+        ThrowUtils.throwIf(teacherId == null || teacherId <= 0, CodeBindMessageEnums.PARAMS_ERROR, "教师标识不合法");
+
+        Integer topicAmount = request.getTopicAmount();
+        ThrowUtils.throwIf(topicAmount == null || topicAmount < 0 || topicAmount > 20, CodeBindMessageEnums.PARAMS_ERROR, "题目上限数量必须在0-20之间");
+        assert topicAmount != null;
+
+        // 获取教师信息
+        User teacher = userService.getById(teacherId);
+        ThrowUtils.throwIf(teacher == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "教师不存在");
+        assert teacher != null;
+        ThrowUtils.throwIf(!teacher.getUserRole().equals(UserRoleEnum.TEACHER.getCode()), CodeBindMessageEnums.PARAMS_ERROR, "该用户不是教师");
+
+        // 检查教师目前的题目数量，如果目前的题目数量已经到上限，则不允许改小
+        long currentTopicCount = topicService.count(new QueryWrapper<Topic>().eq("teacherName", teacher.getUserName()));
+        ThrowUtils.throwIf(topicAmount < currentTopicCount, CodeBindMessageEnums.PARAMS_ERROR, "不能将题目上限设置为小于当前已出题目数量(" + currentTopicCount + ")");
+
+        // 更新教师题目上限
+        return transactionTemplate.execute(transactionStatus -> {
+            teacher.setTopicAmount(topicAmount);
+            boolean result = userService.updateById(teacher);
+            ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "更新教师题目上限失败");
+            return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
+        });
+    }
 
 }

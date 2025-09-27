@@ -32,6 +32,12 @@ declare namespace API {
     message?: string;
   };
 
+  type BaseResponseInt_ = {
+    code?: number;
+    data?: number;
+    message?: string;
+  };
+
   type BaseResponseListDeptVO_ = {
     code?: number;
     data?: DeptVO[];
@@ -209,6 +215,10 @@ declare namespace API {
     id?: number;
   };
 
+  type GetTeacherTopicAmountRequest = {
+    teacherId?: number;
+  };
+
   type GetTopicReviewLevelRequest = {
     deptName?: string;
     deptTeacher?: string;
@@ -382,6 +392,11 @@ declare namespace API {
   type setSwitchSingleChoiceStatusUsingPOSTParams = {
     /** enabled */
     enabled: boolean;
+  };
+
+  type SetTeacherTopicAmountRequest = {
+    teacherId?: number;
+    topicAmount?: number;
   };
 
   type SetTimeRequest = {
