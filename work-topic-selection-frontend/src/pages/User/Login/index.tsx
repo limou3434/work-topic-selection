@@ -132,6 +132,7 @@ const Login: React.FC = () => {
             <>
               <ProFormText
                 name="userAccount"
+                label={<span>账户</span>}
                 fieldProps={{
                   size: 'large',
                   //@ts-ignore
@@ -147,6 +148,7 @@ const Login: React.FC = () => {
               />
               <ProFormText.Password
                 name="userPassword"
+                label={<span>密码</span>}
                 fieldProps={{
                   size: 'large',
                   //@ts-ignore

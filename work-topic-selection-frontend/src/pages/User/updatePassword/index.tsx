@@ -126,6 +126,11 @@ const Register: React.FC = () => {
             <>
               <ProFormText
                 name="userAccount"
+                label={
+                  <span>
+                    账号
+                  </span>
+                }
                 fieldProps={{size: 'large', prefix: <UserOutlined/>}}
                 placeholder="请输入账户"
                 rules={[{required: true, message: '账号必填！'}]}
@@ -134,29 +139,49 @@ const Register: React.FC = () => {
               {!useTempPassword && (
                 <ProFormText.Password
                   name="userPassword"
+                  label={
+                    <span>
+                      原密码
+                    </span>
+                  }
                   fieldProps={{size: 'large', prefix: <LockOutlined/>}}
                   placeholder="请输入原密码"
                   rules={[{required: true, min: 8, message: '原密码不少于8位'}]}
                 />
               )}
 
-            {useTempPassword && (
-              <ProFormText.Password
-                name="tempPasswordInput"
-                fieldProps={{size: 'large', prefix: <LockOutlined/>}}
-                placeholder="请输入临时密码"
-                rules={[{required: true, message: '临时密码必填'}]}
-              />
-            )}
+              {useTempPassword && (
+                <ProFormText.Password
+                  name="tempPasswordInput"
+                  label={
+                    <span>
+                    临时密码
+                  </span>
+                  }
+                  fieldProps={{size: 'large', prefix: <LockOutlined/>}}
+                  placeholder="请输入临时密码"
+                  rules={[{required: true, message: '临时密码必填'}]}
+                />
+              )}
 
               <ProFormText.Password
                 name="updatePassword"
+                label={
+                  <span>
+                    新密码
+                  </span>
+                }
                 fieldProps={{size: 'large', prefix: <LockOutlined/>}}
                 placeholder="请输入新密码"
                 rules={[{required: true, min: 8, message: '新密码不少于8位'}]}
               />
               <ProFormText.Password
                 name="updatePassword2"
+                label={
+                  <span>
+                    确认新密码
+                  </span>
+                }
                 fieldProps={{size: 'large', prefix: <LockOutlined/>}}
                 placeholder="请再次输入新密码"
                 rules={[{required: true, min: 8, message: '新密码不少于8位'}]}
@@ -164,17 +189,18 @@ const Register: React.FC = () => {
 
               <ProFormText
                 name="email"
+                label={<span>邮箱</span>}
                 fieldProps={{
                   size: 'large', prefix: <UserOutlined/>, suffix: (
                     <Tooltip
-                      title="如果不填写，忘记密码时无法通过邮箱获取临时密码，或者邮箱填写错误无法解绑，需要联系管理员 898738804@qq.com 进行修改。"
+                      title="本系统支持 QQ 邮箱和 Gmail 邮箱，可以用来在忘记密码时获取临时密码，如果没有填写邮箱并且忘记密码时，需要联系管理员进行密码重置。"
                       placement="right"
                     >
                       <InfoCircleOutlined style={{color: 'rgba(0,0,0,.45)'}}/>
                     </Tooltip>
                   ),
                 }}
-                placeholder="请输入 QQ 邮箱（选填）"
+                placeholder="请输入邮箱（选填）"
                 rules={[
                   {required: false, message: '邮箱选填！'},
                   {type: 'email', message: '请输入正确的邮箱格式'}
