@@ -648,7 +648,9 @@ public class UserController {
 
     // TODO: 重点检查, 这里的逻辑有些问题
 
-    // 添加系部
+    /**
+     * 添加系部
+     */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/add/dept")
@@ -661,6 +663,7 @@ public class UserController {
 
         // 参数检查
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
         String deptName = request.getDeptName();
         ThrowUtils.throwIf(deptName == null, CodeBindMessageEnums.PARAMS_ERROR, "系部名称不能为空");
@@ -678,7 +681,9 @@ public class UserController {
         });
     }
 
-    // 添加专业
+    /**
+     * 添加专业
+     */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/add/project")
@@ -691,6 +696,7 @@ public class UserController {
 
         // 参数检查
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
         String projectName = request.getProjectName();
         ThrowUtils.throwIf(projectName == null, CodeBindMessageEnums.PARAMS_ERROR, "专业名称不能为空");
@@ -1944,7 +1950,7 @@ public class UserController {
     @PostMapping("/switch_single_choice")
     public BaseResponse<String> setSwitchSingleChoiceStatus(@RequestParam boolean enabled) {
         switchService.setEnabled(TopicConstant.SWITCH_SINGLE_CHOICE, enabled);
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, "当前单选切换为" + (enabled ? "教师单选模式" : "学生单选模式"));
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, "当前单选切换为" + (enabled ? "学生单选模式" : "教师单选模式"));
     }
 
 }

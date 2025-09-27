@@ -100,9 +100,9 @@ export default () => {
   const handleCrossTopicStatusChange = async (checked: boolean) => {
     try {
       setLoading(true);
-      await setCrossTopicStatusUsingPost({enabled: checked});
+      const res = await setCrossTopicStatusUsingPost({enabled: checked});
       setCrossTopicStatus(checked);
-      message.success(`跨系功能已${checked ? "开启" : "关闭"}`);
+      message.success(res.data);
     } catch (error) {
       console.error("更新跨系开关状态失败:", error);
       message.error("操作失败，请重试");
@@ -117,9 +117,9 @@ export default () => {
   const handleSingleChoiceStatusChange = async (checked: boolean) => {
     try {
       setLoading(true);
-      await setSwitchSingleChoiceStatusUsingPost({enabled: checked});
+      const res = await setSwitchSingleChoiceStatusUsingPost({enabled: checked});
       setSingleChoiceStatus(checked);
-      message.success(`角色模式已切换为${checked ? "单选" : "多选"}`);
+      message.success(res.data);
     } catch (error) {
       console.error("更新角色模式开关状态失败:", error);
       message.error("操作失败，请重试");
