@@ -60,12 +60,9 @@ export default () => {
         columns={columns}
         actionRef={actionRef}
         cardBordered
-        // @ts-ignore
         request={async (params = {}) => {
           const response = await getTeacherUsingPost({
-            ...params,
-            // @ts-ignore
-            pageNumber: params.current,
+            current: params.current,
             pageSize: params.pageSize,
           });
           return {

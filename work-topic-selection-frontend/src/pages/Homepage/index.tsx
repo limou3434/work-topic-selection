@@ -101,8 +101,8 @@ const Welcome: React.FC = () => {
   return (
     <PageContainer>
       <WarningNotification/>
-      <div style={{ 
-        height: 'calc(100vh - 120px)', 
+      <div style={{
+        height: 'calc(100vh - 120px)',
         overflowY: 'auto',
         paddingRight: 12
       }}>
@@ -185,10 +185,10 @@ const Welcome: React.FC = () => {
             </Paragraph>
             <Paragraph>
               学生应当<Text underline>在题目开放前</Text>，预选自己心仪的 <Text code>毕业设计题目（后续简称"题目"）</Text>。而<Text
-              underline>在题目开放后</Text>可以抢夺题目，每一个学生最终只能确认选择一个题目，并且在选择题目瞬间自动清空所有的预选清单，无法再次预选题目（除非取消已经提交的题目）。
+              underline>在题目发布后</Text>可以预选题目。当教师双选环节结束后，个学生才能开始抢夺一个题目，并且成功之后无法再次预选题目（除非取消已经提交的题目）。
             </Paragraph>
             <Paragraph>
-              本系统 <Text mark>虽然提供取消当前已经提交题目的功能，但只根据学校的安排进行开放</Text>。若您发现无法取消当前已提交的题目，则需要联系自己当前已提交题目所对应导师进行处理。
+              本系统 <Text mark>虽然提供取消当前已经提交题目的功能，但只根据学校的安排进行开放（避免误操作）</Text>。若您发现无法取消当前已提交的题目，则需要联系自己当前已提交题目所对应导师进行处理。
             </Paragraph>
             <Paragraph>
               抢题过程中，请不要过分使用某些连点器工具来使用本系统，<Text
