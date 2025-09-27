@@ -1,7 +1,5 @@
 package cn.com.edtechhub.worktopicselection.controller;
 
-// import cn.com.edtechhub.worktopicselection.annotation.CacheSearchOptimization;
-
 import cn.com.edtechhub.worktopicselection.constant.CommonConstant;
 import cn.com.edtechhub.worktopicselection.constant.TopicConstant;
 import cn.com.edtechhub.worktopicselection.constant.UserConstant;
@@ -62,13 +60,20 @@ import java.util.stream.Collectors;
 /**
  * 用户控制层
  * TODO: 添加广告栏, 进行网站引流
- * TODO: 点击修改的时候可以动态查看指定教师的选题上限
  * TODO: 修改后点击确认可以设置指定教师的选题上限, 修改之前需要检查教师目前的题目, 如果目前的题目数量已经到上限, 则不允许改小, 同时不允许教师出题数量超过 20 题目, 即便是管理员也不行
  * TODO: 重点检查选题逻辑, 可能有些问题, 尤其是原子属性
- * TODO: 同时需要在学生查看题目和选择题目之前需要检查是否处于跨系状态, 如果是, 则不允许操作
  * TODO: 用户如果没有填写邮箱, 需要判断用户的状态是否为新用户, 如果是新用户则弹出警告窗户
- * TODO: 需要支持管理员取消开放的能力
  * TODO: 教师端查看选择自己的学生时需要用弹窗表格的形式
+ * TODO: 分页功能出现漏洞
+ * TODO: 无感知切换不同身份的同一个用户
+ * TODO: 批量导入会有乱码问题
+ * TODO: AI 需要导入去年的选题, 也需要考虑检查当前的问题
+ * TODO: 系主任已经审核通过的选题, 需要重新确认是否可以被修改
+ * TODO: 学生端使用预先选题的时候, 无法使用搜索控件
+ * TODO: 重复题目名称需要禁止...我真觉得没必要, 算了
+ * TODO: 教师出完题目后不需要经过审核就可以选学生...
+ * TODO:
+ *
  *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
@@ -1666,9 +1671,10 @@ public class UserController {
 
         String sortOrder = request.getSortOrder();
 
-        // 查询用户列表
+        // 获取当前登陆用
         User loginUser = userService.userGetCurrentLoginUser();
 
+        // 查询教师列表
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper
                 .eq("userRole", UserRoleEnum.TEACHER.getCode()) // 是教师的
@@ -1681,7 +1687,7 @@ public class UserController {
 
         List<User> users = userService.list(userQueryWrapper); // 得到所有的教师
 
-        // 利用教师列表来创建返回的 Page 对象, 填充每位教师的选题情况
+        // 遍历教师列表来创建返回的 Page 对象, 填充每位教师的选题情况
         List<DeptTeacherVO> teacherVOList = new ArrayList<>();
         for (User user : users) {
             // 获得教师的名字
@@ -1691,10 +1697,7 @@ public class UserController {
             QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
             topicQueryWrapper
                     .eq("teacherName", userName)
-                    .or()
-                    .eq("status", TopicStatusEnum.NOT_PUBLISHED.getCode()) // 学生只能查看已经审核通过和已经发布的选题
-                    .or()
-                    .eq("status", TopicStatusEnum.PUBLISHED.getCode()); // 学生只能查看已经审核通过和已经发布的选题
+                    .in("status", TopicStatusEnum.NOT_PUBLISHED.getCode(), TopicStatusEnum.PUBLISHED.getCode()); // 学生只能查看已经审核通过和已经发布的选题
             int count = (int) topicService.count(topicQueryWrapper);
             List<Topic> topicList = topicService.list(topicQueryWrapper);
 
@@ -1717,9 +1720,21 @@ public class UserController {
             }
         }
 
+        // 对教师列表进行分页处理
+        int total = teacherVOList.size();
+        int fromIndex = (int) ((current - 1) * size);
+        int toIndex = (int) Math.min(fromIndex + size, total);
+        
+        // 确保索引不越界
+        List<DeptTeacherVO> pagedTeacherVOList = new ArrayList<>();
+        if (fromIndex < total) {
+            pagedTeacherVOList = teacherVOList.subList(fromIndex, toIndex);
+        }
+
         // 构建分页对象
         Page<DeptTeacherVO> teacherPage = new Page<>(current, size);
-        teacherPage.setRecords(teacherVOList);
+        teacherPage.setRecords(pagedTeacherVOList);
+        teacherPage.setTotal((long) total); // 设置总记录数
         return TheResult.success(CodeBindMessageEnums.SUCCESS, teacherPage);
     }
 
@@ -2011,9 +2026,21 @@ public class UserController {
             // 添加到列表中
         }
 
+        // 对教师列表进行分页处理
+        int total = teacherVOList.size();
+        int fromIndex = (int) ((current - 1) * size);
+        int toIndex = (int) Math.min(fromIndex + size, total);
+        
+        // 确保索引不越界
+        List<DeptTeacherVO> pagedTeacherVOList = new ArrayList<>();
+        if (fromIndex < total) {
+            pagedTeacherVOList = teacherVOList.subList(fromIndex, toIndex);
+        }
+
         // 构建分页对象
         Page<DeptTeacherVO> teacherPage = new Page<>(current, size);
-        teacherPage.setRecords(teacherVOList);
+        teacherPage.setRecords(pagedTeacherVOList);
+        teacherPage.setTotal((long) total); // 设置总记录数
         return TheResult.success(CodeBindMessageEnums.SUCCESS, teacherPage);
     }
 
