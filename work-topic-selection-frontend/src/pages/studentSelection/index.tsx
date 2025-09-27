@@ -5,10 +5,10 @@ import { useRef, useState } from 'react';
 import TopicTable from '@/components/TopicTable'; // ✅ 改成默认导入
 
 type GithubIssueItem = {
-  id: number;
   topicAmount: number;
   teacherName: string;
   selectAmount: number;
+  index: number;
 };
 
 export default () => {
@@ -19,7 +19,7 @@ export default () => {
   const columns: ProColumns<GithubIssueItem>[] = [
     {
       title: '序号',
-      dataIndex: 'id',
+      dataIndex: 'index',
       valueType: 'indexBorder',
       width: 48,
     },
@@ -65,13 +65,18 @@ export default () => {
             current: params.current,
             pageSize: params.pageSize,
           });
+          // 为数据添加索引字段
+          const dataWithIndex = response.data?.records?.map((item, index) => ({
+            ...item,
+            index: (params.current - 1) * params.pageSize + index + 1,
+          })) || [];
           return {
-            data: response.data?.records || [],
+            data: dataWithIndex,
             total: response.data?.total || 0,
             success: true,
           };
         }}
-        rowKey="id"
+        rowKey="teacherName"
         search={{ labelWidth: 'auto' }}
         pagination={{ pageSize: 10, showSizeChanger: true }}
         headerTitle="预先选题（每位学生最多预选 10 条题目）"
