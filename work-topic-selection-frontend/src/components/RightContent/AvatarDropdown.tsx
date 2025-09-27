@@ -1,14 +1,14 @@
-import { LogoutOutlined, SettingOutlined, UserOutlined, TeamOutlined, BankOutlined } from '@ant-design/icons';
-import { history, useModel } from '@umijs/max';
-import {Spin, message, Tooltip, Space, Typography} from 'antd';
-import { createStyles } from 'antd-style';
-import { stringify } from 'querystring';
-import type { MenuInfo } from 'rc-menu/lib/interface';
-import React, { useCallback } from 'react';
-import { flushSync } from 'react-dom';
+import {BankOutlined, LogoutOutlined, SettingOutlined, TeamOutlined, UserOutlined} from '@ant-design/icons';
+import {history, useModel} from '@umijs/max';
+import {message, Space, Spin, Typography} from 'antd';
+import {createStyles} from 'antd-style';
+import {stringify} from 'querystring';
+import type {MenuInfo} from 'rc-menu/lib/interface';
+import React, {useCallback} from 'react';
+import {flushSync} from 'react-dom';
 import HeaderDropdown from '../HeaderDropdown';
-import { USER_ROLE_MAP } from '@/constants/user';
-import { userLogoutUsingPost } from '@/services/work-topic-selection/userController';
+import {USER_ROLE_MAP} from '@/constants/user';
+import {userLogoutUsingPost} from '@/services/work-topic-selection/userController';
 
 export type GlobalHeaderRightProps = {
   menu?: boolean;
@@ -16,56 +16,33 @@ export type GlobalHeaderRightProps = {
 };
 
 
-const { Text } = Typography;
+const {Text} = Typography;
 
 export const AvatarName = () => {
-  const { initialState } = useModel('@@initialState');
-  const { currentUser } = initialState || {};
+  const {initialState} = useModel('@@initialState');
+  const {currentUser} = initialState || {};
   const displayText = currentUser
     ? `${USER_ROLE_MAP[currentUser.userRole as 0 | 1 | 2 | 3]} - ${currentUser.userName}`
     : '';
 
   // 构建详细的tooltip内容
-  const tooltipContent = currentUser ? (
-    <div>
-      <div style={{ marginBottom: 4 }}>
-        <UserOutlined style={{ marginRight: 6 }} />
-        {`${USER_ROLE_MAP[currentUser.userRole as 0 | 1 | 2 | 3]} - ${currentUser.userName}`}
-      </div>
-      {currentUser.dept && (
-        <div style={{ marginBottom: 4 }}>
-          <BankOutlined style={{ marginRight: 6 }} />
-          系部：{currentUser.dept}
-        </div>
-      )}
-      {currentUser.project && (
-        <div>
-          <TeamOutlined style={{ marginRight: 6 }} />
-          专业：{currentUser.project}
-        </div>
-      )}
-    </div>
-  ) : '';
-
   return (
-    <Tooltip title={tooltipContent} placement="right">
-      <span
-        style={{
-          display: 'inline-block',
-          maxWidth: 120, // 可以根据布局调整
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          verticalAlign: 'middle',
-        }}
-      >
+    <span
+      style={{
+        display: 'inline-block',
+        maxWidth: 120, // 可以根据布局调整
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        verticalAlign: 'middle',
+      }}
+    >
         {displayText}
       </span>
-    </Tooltip>
   );
 };
 
-const useStyles = createStyles(({ token }) => {
+const useStyles = createStyles(({token}) => {
   return {
     action: {
       display: 'flex',
@@ -83,12 +60,12 @@ const useStyles = createStyles(({ token }) => {
   };
 });
 
-export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, children }) => {
+export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({menu, children}) => {
   /**
    * 退出登录，并且将当前的 url 保存
    */
   const loginOut = async () => {
-    const { search, pathname } = window.location;
+    const {search, pathname} = window.location;
     const urlParams = new URL(window.location.href).searchParams;
     /** 此方法会跳转到 redirect 参数所在的位置 */
     const redirect = urlParams.get('redirect');
@@ -102,13 +79,13 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
       });
     }
   };
-  const { styles } = useStyles();
+  const {styles} = useStyles();
 
-  const { initialState, setInitialState } = useModel('@@initialState');
+  const {initialState, setInitialState} = useModel('@@initialState');
 
   const onMenuClick = useCallback(
     async (event: MenuInfo) => {
-      const { key } = event;
+      const {key} = event;
       if (key === 'logout') {
         try {
           const res = await userLogoutUsingPost();
@@ -119,7 +96,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
         }
 
         flushSync(() => {
-          setInitialState((s: any) => ({ ...s, currentUser: undefined }));
+          setInitialState((s: any) => ({...s, currentUser: undefined}));
         });
         loginOut();
         return;
@@ -145,7 +122,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
     return loading;
   }
 
-  const { currentUser } = initialState;
+  const {currentUser} = initialState;
 
   if (!currentUser || !currentUser.userName) {
     return loading;
@@ -157,23 +134,23 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
       key: 'user-info',
       type: 'group' as const,
       label: (
-        <Space direction="vertical" size={2} style={{ width: '100%' }}>
-          <Text strong style={{ fontSize: '14px' }}>
-            <UserOutlined style={{ marginRight: 6 }} />
+        <Space direction="vertical" size={2} style={{width: '100%'}}>
+          <Text strong style={{fontSize: '14px'}}>
+            <UserOutlined style={{marginRight: 6}}/>
             {currentUser.userName}
           </Text>
-          <Text type="secondary" style={{ fontSize: '12px' }}>
+          <Text type="secondary" style={{fontSize: '12px'}}>
             {USER_ROLE_MAP[currentUser.userRole as 0 | 1 | 2 | 3]}
           </Text>
           {currentUser.dept && (
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-              <BankOutlined style={{ marginRight: 4 }} />
+            <Text type="secondary" style={{fontSize: '12px'}}>
+              <BankOutlined style={{marginRight: 4}}/>
               {currentUser.dept}
             </Text>
           )}
           {currentUser.project && (
-            <Text type="secondary" style={{ fontSize: '12px' }}>
-              <TeamOutlined style={{ marginRight: 4 }} />
+            <Text type="secondary" style={{fontSize: '12px'}}>
+              <TeamOutlined style={{marginRight: 4}}/>
               {currentUser.project}
             </Text>
           )}
@@ -189,24 +166,24 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
     ...userInfoItems,
     ...(menu
       ? [
-          {
-            key: 'center',
-            icon: <UserOutlined />,
-            label: '个人中心',
-          },
-          {
-            key: 'settings',
-            icon: <SettingOutlined />,
-            label: '个人设置',
-          },
-          {
-            type: 'divider' as const,
-          },
-        ]
+        {
+          key: 'center',
+          icon: <UserOutlined/>,
+          label: '个人中心',
+        },
+        {
+          key: 'settings',
+          icon: <SettingOutlined/>,
+          label: '个人设置',
+        },
+        {
+          type: 'divider' as const,
+        },
+      ]
       : []),
     {
       key: 'logout',
-      icon: <LogoutOutlined />,
+      icon: <LogoutOutlined/>,
       label: '退出登陆',
     },
   ];
@@ -218,8 +195,8 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
         onClick: onMenuClick,
         items: menuItems,
       }}
-      overlayStyle={{ 
-        maxWidth: '280px', 
+      overlayStyle={{
+        maxWidth: '280px',
         minWidth: '220px',
         padding: '8px 0'
       }}

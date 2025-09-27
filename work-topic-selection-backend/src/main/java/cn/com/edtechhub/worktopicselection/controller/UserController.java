@@ -68,7 +68,6 @@ import java.util.stream.Collectors;
  * TODO: 同时需要在学生查看题目和选择题目之前需要检查是否处于跨系状态, 如果是, 则不允许操作
  * TODO: 用户如果没有填写邮箱, 需要判断用户的状态是否为新用户, 如果是新用户则弹出警告窗户
  * TODO: 需要支持管理员取消开放的能力
- * TODO: 需要支持主任无法取消审核通过选题的能力
  * TODO: 教师端查看选择自己的学生时需要用弹窗表格的形式
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
@@ -1046,7 +1045,7 @@ public class UserController {
     }
 
     /**
-     * 根据题目 id 添加开放的开始时间和结束时间来进行发布
+     * 根据题目 id 列表添加开放的开始时间和结束时间来发布选题列表
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
@@ -1089,7 +1088,7 @@ public class UserController {
     }
 
     /**
-     * 根据题目 id 添加开放的开始时间和结束时间来进行发布
+     * 根据题目 id 列表取消以及发布的选题列表
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
