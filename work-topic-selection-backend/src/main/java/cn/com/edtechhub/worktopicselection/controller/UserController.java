@@ -1254,9 +1254,6 @@ public class UserController {
         sentineManager.initFlowRules(entryName);
         SphU.entry(entryName);
 
-        // 检查当前单选模式能否可预选
-        ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.SWITCH_SINGLE_CHOICE), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前模式为教师选择学生模式, 无法选题");
-
         // 参数检查
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
 
@@ -1265,6 +1262,8 @@ public class UserController {
 
         Topic topic = topicService.getById(topicId);
         ThrowUtils.throwIf(topic == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "该题目不存在");
+
+        ThrowUtils.throwIf(!topic.getStatus().equals(TopicStatusEnum.PUBLISHED.getCode()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "该题目未发布, 还不可以选中");
 
         Date startTime = topic.getStartTime();
         ThrowUtils.throwIf(startTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有传递开始时间");
@@ -1297,6 +1296,9 @@ public class UserController {
 
                 // 确认提交选题
                 if (statusEnums == StudentTopicSelectionStatusEnum.EN_SELECT) {
+                    // 检查当前单选模式能否可选题
+                    ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.SWITCH_SINGLE_CHOICE), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前模式为教师选择学生模式, 无法选题");
+
                     // 如果此时不允许跨选则不允许选中和当前登陆用户不同系部的选题
                     ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH) && !loginUser.getDept().equals(topic.getDeptName()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "不允许跨系部选题, 请等待开放");
 
@@ -1581,8 +1583,12 @@ public class UserController {
                 queryWrapper.eq("deptName", loginUser.getDept());
             }
 
-            // 而且只能看到审核通过的题目
-            queryWrapper.eq("status", TopicStatusEnum.NOT_PUBLISHED.getCode());
+            // 而且只能看到审核通过和已经发布的题目
+            queryWrapper
+                    .eq("status", TopicStatusEnum.NOT_PUBLISHED.getCode())
+                    .or()
+                    .eq("status", TopicStatusEnum.PUBLISHED.getCode())
+            ;
         }
 
         // 获取选题数据
@@ -1685,7 +1691,10 @@ public class UserController {
             QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
             topicQueryWrapper
                     .eq("teacherName", userName)
-                    .eq("status", TopicStatusEnum.NOT_PUBLISHED.getCode()); // 学生只能查看已经审核通过的选题
+                    .or()
+                    .eq("status", TopicStatusEnum.NOT_PUBLISHED.getCode()) // 学生只能查看已经审核通过和已经发布的选题
+                    .or()
+                    .eq("status", TopicStatusEnum.PUBLISHED.getCode()); // 学生只能查看已经审核通过和已经发布的选题
             int count = (int) topicService.count(topicQueryWrapper);
             List<Topic> topicList = topicService.list(topicQueryWrapper);
 
@@ -2136,7 +2145,6 @@ public class UserController {
         // 返回教师题目上限
         return TheResult.success(CodeBindMessageEnums.SUCCESS, teacher.getTopicAmount());
     }
-
 
     /**
      * 修改教师题目上限
