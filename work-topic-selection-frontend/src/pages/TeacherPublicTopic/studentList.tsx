@@ -4,6 +4,7 @@ import { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import React, { useRef, useState } from 'react';
 import { message } from 'antd';
+// @ts-ignore
 import { useParams } from "react-router-dom";
 
 type GithubIssueItem = {
@@ -72,6 +73,8 @@ export default () => {
       columns={columns}
       actionRef={actionRef}
       cardBordered
+      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       request={async (params = {}, sort, filter) => {
         try {
           const current = params.current || 1;
@@ -81,6 +84,7 @@ export default () => {
           const response = await listUserByPageUsingPost({
             ...params,
             userRole: 0,
+            // @ts-ignore
             pageNumber: current,
             pageSize: size,
           });
@@ -132,7 +136,7 @@ export default () => {
         },
       }}
       dateFormatter="string"
-      headerTitle="和当前教师同系部的所有学生"
+      headerTitle="学生列表"
       toolBarRender={() => []}
     />
   );

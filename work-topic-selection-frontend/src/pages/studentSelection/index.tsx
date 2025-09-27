@@ -60,9 +60,11 @@ export default () => {
         columns={columns}
         actionRef={actionRef}
         cardBordered
+        // @ts-ignore
         request={async (params = {}) => {
           const response = await getTeacherUsingPost({
             ...params,
+            // @ts-ignore
             pageNumber: params.current,
             pageSize: params.pageSize,
           });
@@ -75,7 +77,7 @@ export default () => {
         rowKey="id"
         search={{ labelWidth: 'auto' }}
         pagination={{ pageSize: 10, showSizeChanger: true }}
-        headerTitle="预先选题"
+        headerTitle="预先选题（每位学生最多预选 10 条题目）"
       />
 
       <Modal
