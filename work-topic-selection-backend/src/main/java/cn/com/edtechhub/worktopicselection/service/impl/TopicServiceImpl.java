@@ -45,23 +45,11 @@ public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic> implements
         ThrowUtils.throwIf(topicQueryRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求参数为空");
         assert topicQueryRequest != null;
 
-        User loginUser = userService.userGetCurrentLoginUser();
-        Integer userRole = loginUser.getUserRole();
         Integer status = topicQueryRequest.getStatus();
         String sortField = topicQueryRequest.getSortField();
         String sortOrder = topicQueryRequest.getSortOrder();
         QueryWrapper<Topic> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(status != null, "status", status);
-        if (userRole == 2) {
-            queryWrapper.eq(StringUtils.isNotBlank(loginUser.getDept()), "deptName", loginUser.getDept());
-        }
-        if (userRole == 1) {
-            queryWrapper.eq("teacherName", loginUser.getUserName());
-        }
-        if (userRole == 0) {
-            // 如果是学生, 只能看到和自己同系部的选题
-            queryWrapper.eq("deptName", loginUser.getDept());
-        }
         queryWrapper.like(StringUtils.isNotBlank(topicQueryRequest.getTopic()), "topic", topicQueryRequest.getTopic());
         queryWrapper.like(StringUtils.isNotBlank(topicQueryRequest.getType()), "type", topicQueryRequest.getType());
         queryWrapper.eq(StringUtils.isNotBlank(topicQueryRequest.getTeacherName()), "teacherName", topicQueryRequest.getTeacherName());

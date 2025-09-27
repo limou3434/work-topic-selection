@@ -69,6 +69,7 @@ import java.util.stream.Collectors;
  * TODO: 用户如果没有填写邮箱, 需要判断用户的状态是否为新用户, 如果是新用户则弹出警告窗户
  * TODO: 需要支持管理员取消开放的能力
  * TODO: 教师端查看选择自己的学生时需要用弹窗表格的形式
+ *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
 @RestController
@@ -327,8 +328,17 @@ public class UserController {
         long size = request.getPageSize();
         ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "页大小必须大于 0");
 
+        // 获取搜索条件
+        QueryWrapper<User> queryWrapper = userService.getQueryWrapper(request);
+
+        // 如果此时不允许跨选则不允许看到和当前登陆用户不同系部的学生
+        if (!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH)) {
+            queryWrapper.eq("dept", userService.userGetCurrentLoginUser().getDept());
+        }
+
         // 获取用户数据
-        Page<User> userPage = userService.page(new Page<>(current, size), userService.getQueryWrapper(request));
+        Page<User> userPage = userService.page(new Page<>(current, size), queryWrapper);
+
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userPage);
     }
 
@@ -746,14 +756,24 @@ public class UserController {
             ThrowUtils.throwIf(true, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "先删除属于该系部的所有专业（" + projectNames + "）后才能删除该系部");
         }
 
-        // 保证先删除主任才能删除系部
+        // 保证先删除相关角色才能删除系部
         List<User> userList = userService.list(new QueryWrapper<User>().eq("dept", deptName));
         if (!userList.isEmpty()) {
             String userNames = userList.stream().limit(5).map(User::getUserName).collect(Collectors.joining(", "));
             if (userList.size() > 5) {
                 userNames += "...";
             }
-            ThrowUtils.throwIf(true, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "先删除属于该系部的所有主任或教师（" + userNames + "）后才能删除该系部");
+            ThrowUtils.throwIf(true, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "先删除属于该系部的所有角色（" + userNames + "）后才能删除该系部");
+        }
+
+        // 保证先删除相关选题才能删除系部
+        List<Topic> topicList = topicService.list(new QueryWrapper<Topic>().eq("deptName", deptName));
+        if (!topicList.isEmpty()) {
+            String topicNames = topicList.stream().limit(5).map(Topic::getTopic).collect(Collectors.joining(", "));
+            if (topicList.size() > 5) {
+                topicNames += "...";
+            }
+            ThrowUtils.throwIf(true, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "先删除属于该系部的所有选题（" + topicNames + "）后才能删除该系部");
         }
 
         // 删除系部
@@ -785,14 +805,14 @@ public class UserController {
         String projectName = request.getProjectName();
         ThrowUtils.throwIf(projectName == null, CodeBindMessageEnums.PARAMS_ERROR, "专业名称不能为空");
 
-        // 保证先删除学生后才能删除专业
+        // 保证先删除相关角色才能删除系部
         List<User> userList = userService.list(new QueryWrapper<User>().eq("project", projectName));
         if (!userList.isEmpty()) {
             String userNames = userList.stream().limit(5).map(User::getUserName).collect(Collectors.joining(", "));
             if (userList.size() > 5) {
                 userNames += "...";
             }
-            ThrowUtils.throwIf(true, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "先删除属于该专业的所有学生（" + userNames + "）后才能删除该专业");
+            ThrowUtils.throwIf(true, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "先删除属于该专业的所有角色（" + userNames + "）后才能删除该专业");
         }
 
         // 删除专业
@@ -803,9 +823,12 @@ public class UserController {
         });
     }
 
-    // 获取系部分页数据
+    /**
+     * 获取系部分页数据
+     */
     @SaCheckLogin
     @PostMapping("/get/dept/page")
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     public BaseResponse<Page<Dept>> getDept(@RequestBody DeptQueryRequest request) throws BlockException {
         // 流量控制
         String entryName = new Object() {
@@ -1126,7 +1149,9 @@ public class UserController {
         });
     }
 
-    // 根据题目 id 进行预先选题的操作 (确认预先选题和取消预先选题)
+    /**
+     * 根据题目 id 进行预先选题的操作 (确认预先选题和取消预先选题)
+     */
     @SuppressWarnings({"UnaryPlus", "DataFlowIssue"})
     @SaCheckLogin
     @PostMapping("/preselect/topic/by/id")
@@ -1152,7 +1177,6 @@ public class UserController {
         StudentTopicSelectionStatusEnum studentTopicSelectionStatusEnum = StudentTopicSelectionStatusEnum.getEnums(status);
         ThrowUtils.throwIf(studentTopicSelectionStatusEnum == null, CodeBindMessageEnums.PARAMS_ERROR, "不存在这种状态");
 
-        // 获取当前登录用户
         User loginUser = userService.userGetCurrentLoginUser();
 
         // 处理预选操作
@@ -1163,6 +1187,9 @@ public class UserController {
 
                 // 确认预选题目
                 if (studentTopicSelectionStatusEnum == StudentTopicSelectionStatusEnum.EN_PRESELECT) {
+                    // 如果此时不允许跨选则不允许预选和当前登陆用户不同系部的选题
+                    ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH) && !loginUser.getDept().equals(topic.getDeptName()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "不允许跨系部选题, 请等待开放");
+
                     // 不允许重复确认预选
                     long count = studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", topicId));
                     ThrowUtils.throwIf(count > 0, CodeBindMessageEnums.OPERATION_ERROR, "不能重复预选该题目");
@@ -1267,6 +1294,9 @@ public class UserController {
 
                 // 确认提交选题
                 if (statusEnums == StudentTopicSelectionStatusEnum.EN_SELECT) {
+                    // 如果此时不允许跨选则不允许选中和当前登陆用户不同系部的选题
+                    ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH) && !loginUser.getDept().equals(topic.getDeptName()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "不允许跨系部选题, 请等待开放");
+
                     ThrowUtils.throwIf(topic.getSurplusQuantity() <= 0, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "余量不足无法选择该题目, 请尝试选择其他题目");
                     ThrowUtils.throwIf(selection == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "您还没有预选无法直接选中");
 
@@ -1375,6 +1405,7 @@ public class UserController {
     public BaseResponse<String> selectStudent(@RequestBody SelectStudentRequest request) throws BlockException {
         // 检查请求参数是否为空
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
         String userAccount = request.getUserAccount();
         ThrowUtils.throwIf(userAccount == null, CodeBindMessageEnums.PARAMS_ERROR, "用户账号不能为空");
@@ -1515,8 +1546,27 @@ public class UserController {
         long size = request.getPageSize();
         ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "页大小必须大于 0");
 
+        // 获取查询条件
+        QueryWrapper<Topic> queryWrapper = topicService.getQueryWrapper(request);
+        User loginUser = userService.userGetCurrentLoginUser();
+        Integer userRole = loginUser.getUserRole();
+        if (userRole == 2) {
+            // 如果是主任只看到本系部的选题
+            queryWrapper.eq(StringUtils.isNotBlank(loginUser.getDept()), "deptName", loginUser.getDept());
+        }
+        if (userRole == 1) {
+            // 如果是老师, 只看到自己负责的选题
+            queryWrapper.eq("teacherName", loginUser.getUserName());
+        }
+        if (userRole == 0) {
+            // 如果是学生, 看是否开启跨选, 如果此时不允许跨选则不允许看到和当前登陆用户不同系部的教师
+            if (!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH)) {
+                queryWrapper.eq("deptName", loginUser.getDept());
+            }
+        }
+
         // 获取选题数据
-        Page<Topic> topicPage = topicService.page(new Page<>(current, size), topicService.getQueryWrapper(request));
+        Page<Topic> topicPage = topicService.page(new Page<>(current, size), queryWrapper);
 
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topicPage);
     }
@@ -1557,7 +1607,9 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, situationVO);
     }
 
-    // 获取系部教师数据
+    /**
+     * 获取系部教师数据
+     */
     @SaCheckLogin
     // @CacheSearchOptimization(ttl = 30, modelClass = DeptTeacherVO.class)
     @PostMapping("/get/dept/teacher")
@@ -1570,6 +1622,7 @@ public class UserController {
 
         // 参数检查
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
         long current = request.getCurrent();
         ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "当前页码必须大于 0");
@@ -1581,13 +1634,19 @@ public class UserController {
 
         String sortOrder = request.getSortOrder();
 
-        // 查询用户列表, 但是只查询自己这个系部的教师
+        // 查询用户列表
         User loginUser = userService.userGetCurrentLoginUser();
-        String dept = loginUser.getDept();
+
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        userQueryWrapper.eq("dept", dept) // 同系的
+        userQueryWrapper
                 .eq("userRole", UserRoleEnum.TEACHER.getCode()) // 是教师的
                 .orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC), sortField);
+
+        // 如果此时不允许跨选则不允许看到和当前登陆用户不同系部的教师
+        if (!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH)) {
+            userQueryWrapper.eq("dept", loginUser.getDept());
+        }
+
         List<User> users = userService.list(userQueryWrapper); // 得到所有的教师
 
         // 利用教师列表来创建返回的 Page 对象, 填充每位教师的选题情况
@@ -1598,8 +1657,9 @@ public class UserController {
 
             // 获得教师的对应选题
             QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
-            topicQueryWrapper.eq("teacherName", userName).eq("deptName", loginUser.getDept()).eq("status", TopicStatusEnum.PUBLISHED.getCode()) // 学生只能查看已经开放的选题
-            ;
+            topicQueryWrapper
+                    .eq("teacherName", userName)
+                    .eq("status", TopicStatusEnum.PUBLISHED.getCode()); // 学生只能查看已经开放的选题
             int count = (int) topicService.count(topicQueryWrapper);
             List<Topic> topicList = topicService.list(topicQueryWrapper);
 
@@ -1628,7 +1688,9 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, teacherPage);
     }
 
-    // 获取当前登陆账号学生的预先选题
+    /**
+     * 获取当前登陆账号学生的预先选题
+     */
     @SaCheckLogin
     @SaCheckRole(value = {"student"}, mode = SaMode.OR)
     @PostMapping("/get/preselect/topic")
@@ -1636,14 +1698,25 @@ public class UserController {
         // 获取当前登陆用户
         User loginUser = userService.userGetCurrentLoginUser();
 
-        // 查询对应的预先选题记录
+        // 获取查询条件
         String userAccount = loginUser.getUserAccount();
+        QueryWrapper<StudentTopicSelection> queryWrapper = new QueryWrapper<StudentTopicSelection>()
+                .eq("userAccount", userAccount)
+                .eq("status", StudentTopicSelectionStatusEnum.EN_PRESELECT.getCode());
+
+        // 查询对应的预先选题记录
         ThrowUtils.throwIf(userAccount == null, CodeBindMessageEnums.OPERATION_ERROR, "参数有问题");
-        List<StudentTopicSelection> studentTopicSelectionList = studentTopicSelectionService.list(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount).eq("status", StudentTopicSelectionStatusEnum.EN_PRESELECT.getCode()));
+        List<StudentTopicSelection> studentTopicSelectionList = studentTopicSelectionService.list(queryWrapper);
+
         ThrowUtils.throwIf(studentTopicSelectionList == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "当前没有预选的题目");
+        assert studentTopicSelectionList != null;
 
         // 填充完整的返回体, 把关联对应的选题都拿到
-        List<Long> topicIds = studentTopicSelectionList.stream().map(StudentTopicSelection::getTopicId).filter(Objects::nonNull).collect(Collectors.toList());
+        List<Long> topicIds = studentTopicSelectionList
+                .stream()
+                .map(StudentTopicSelection::getTopicId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
         List<Topic> topicList = topicService.listByIds(topicIds);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topicList);
     }

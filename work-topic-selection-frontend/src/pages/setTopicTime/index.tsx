@@ -161,11 +161,23 @@ export default () => {
                     marginBottom: '12px'
                   }}>
                     <span style={{fontWeight: 500}}>是否允许跨系：</span>
-                    <Switch
-                      checked={crossTopicStatus}
-                      onChange={handleCrossTopicStatusChange}
-                      loading={loading}
-                    />
+                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                      <Switch
+                        checked={crossTopicStatus}
+                        onChange={handleCrossTopicStatusChange}
+                        loading={loading}
+                      />
+                      <span style={{
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        backgroundColor: crossTopicStatus ? '#e6ffec' : '#fff0f0',
+                        color: crossTopicStatus ? '#3c8618' : '#ff4d4f'
+                      }}>
+                        {crossTopicStatus ? '已开启' : '已关闭'}
+                      </span>
+                    </div>
                   </div>
                   <div style={{
                     display: 'flex',
@@ -173,11 +185,23 @@ export default () => {
                     alignItems: 'center',
                   }}>
                     <span style={{fontWeight: 500}}>单选模式切换：</span>
-                    <Switch
-                      checked={singleChoiceStatus}
-                      onChange={handleSingleChoiceStatusChange}
-                      loading={loading}
-                    />
+                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                      <Switch
+                        checked={singleChoiceStatus}
+                        onChange={handleSingleChoiceStatusChange}
+                        loading={loading}
+                      />
+                      <span style={{
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        backgroundColor: singleChoiceStatus ? '#f8e6ff' : '#f0f4ff',
+                        color: singleChoiceStatus ? '#7d2ec5' : '#2e42c9'
+                      }}>
+                        {singleChoiceStatus ? '学生单选模式' : '教师单选模式'}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <ProTable<TableListItem>

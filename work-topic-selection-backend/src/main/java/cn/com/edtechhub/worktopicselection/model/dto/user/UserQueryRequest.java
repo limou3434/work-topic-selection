@@ -26,10 +26,12 @@ public class UserQueryRequest extends PageRequest implements Serializable {
      * 用户昵称
      */
     private String userName;
+
     /**
      * 系部
      */
     private String dept;
+
     /**
      * 用户角色 0 - 普通用户 1 - 教师 2 - 系部 3 - 管理员
      */
