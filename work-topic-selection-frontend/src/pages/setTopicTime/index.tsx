@@ -3,8 +3,10 @@ import {Button, message, Space, Switch, Table, Tabs} from 'antd';
 import React, {useEffect, useState} from "react";
 import {
   getCrossTopicStatusUsingGet,
+  getSwitchSingleChoiceStatusUsingGet,
   getTopicListUsingPost,
   setCrossTopicStatusUsingPost,
+  setSwitchSingleChoiceStatusUsingPost,
   setTimeByIdUsingPost,
   unsetTimeByIdUsingPost
 } from "@/services/work-topic-selection/userController";
@@ -68,22 +70,29 @@ export default () => {
 
   // 跨系开关状态
   const [crossTopicStatus, setCrossTopicStatus] = useState<boolean>(false);
+  // 角色模式开关状态
+  const [singleChoiceStatus, setSingleChoiceStatus] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // 获取跨系开关状态
+  // 获取开关状态
   useEffect(() => {
-    const fetchCrossTopicStatus = async () => {
+    const fetchStatus = async () => {
       try {
-        const res = await getCrossTopicStatusUsingGet();
-        setCrossTopicStatus(res.data || false);
+        // 获取跨系开关状态
+        const crossRes = await getCrossTopicStatusUsingGet();
+        setCrossTopicStatus(crossRes.data || false);
+
+        // 获取角色模式开关状态
+        const singleRes = await getSwitchSingleChoiceStatusUsingGet();
+        setSingleChoiceStatus(singleRes.data || false);
       } catch (error) {
-        console.error("获取跨系开关状态失败:", error);
+        console.error("获取开关状态失败:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCrossTopicStatus().then(() => {
+    fetchStatus().then(() => {
     });
   }, []);
 
@@ -99,6 +108,23 @@ export default () => {
       message.error("操作失败，请重试");
       // 恢复开关状态
       setCrossTopicStatus(!checked);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 更新角色模式开关状态
+  const handleSingleChoiceStatusChange = async (checked: boolean) => {
+    try {
+      setLoading(true);
+      await setSwitchSingleChoiceStatusUsingPost({enabled: checked});
+      setSingleChoiceStatus(checked);
+      message.success(`角色模式已切换为${checked ? "单选" : "多选"}`);
+    } catch (error) {
+      console.error("更新角色模式开关状态失败:", error);
+      message.error("操作失败，请重试");
+      // 恢复开关状态
+      setSingleChoiceStatus(!checked);
     } finally {
       setLoading(false);
     }
@@ -126,17 +152,33 @@ export default () => {
                   padding: '12px 16px',
                   borderRadius: 6,
                   marginBottom: 16,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
                   boxShadow: 'none',
                 }}>
-                  <span style={{fontWeight: 500}}>是否允许跨系：</span>
-                  <Switch
-                    checked={crossTopicStatus}
-                    onChange={handleCrossTopicStatusChange}
-                    loading={loading}
-                  />
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '12px'
+                  }}>
+                    <span style={{fontWeight: 500}}>是否允许跨系：</span>
+                    <Switch
+                      checked={crossTopicStatus}
+                      onChange={handleCrossTopicStatusChange}
+                      loading={loading}
+                    />
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}>
+                    <span style={{fontWeight: 500}}>单选模式切换：</span>
+                    <Switch
+                      checked={singleChoiceStatus}
+                      onChange={handleSingleChoiceStatusChange}
+                      loading={loading}
+                    />
+                  </div>
                 </div>
                 <ProTable<TableListItem>
                   columns={columns}

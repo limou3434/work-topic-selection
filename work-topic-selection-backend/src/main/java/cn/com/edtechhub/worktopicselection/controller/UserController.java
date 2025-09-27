@@ -1927,7 +1927,7 @@ public class UserController {
     }
 
     /**
-     * 查询角色模式是否切换
+     * 查询单选模式是否切换
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
@@ -1937,14 +1937,14 @@ public class UserController {
     }
 
     /**
-     * 设置角色模式开关
+     * 设置单选模式开关
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/switch_single_choice")
     public BaseResponse<String> setSwitchSingleChoiceStatus(@RequestParam boolean enabled) {
         switchService.setEnabled(TopicConstant.SWITCH_SINGLE_CHOICE, enabled);
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, "单前切换为" + (enabled ? "开启" : "关闭"));
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, "当前单选切换为" + (enabled ? "教师单选模式" : "学生单选模式"));
     }
 
 }
