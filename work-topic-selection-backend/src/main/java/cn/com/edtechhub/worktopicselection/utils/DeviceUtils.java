@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 public class DeviceUtils {
 
     /**
-     * 根据请求获取设备信息
+     * 根据请求获取简单设备类型信息
      */
     public static String getRequestDevice(HttpServletRequest request) {
         String userAgentStr = request.getHeader(Header.USER_AGENT.toString());
@@ -30,13 +30,11 @@ public class DeviceUtils {
             throw new BusinessException(CodeBindMessageEnums.PARAMS_ERROR, "禁止隐藏设备类型");
         }
 
-        log.debug("检测一次原始的 HTTP 设备信息 {}", userAgentStr);
-
         // 判断设备类型
         String device = "pc"; // 是否为 PC
-        if (isMiniProgram(userAgentStr)) {
+        if (DeviceUtils.isMiniProgram(userAgentStr)) {
             device = "miniProgram"; // 是否为小程序
-        } else if (isPad(userAgentStr)) {
+        } else if (DeviceUtils.isPad(userAgentStr)) {
             device = "pad"; // 是否为 Pad
         } else if (userAgent.isMobile()) {
             device = "mobile"; // 是否为手机
@@ -45,6 +43,15 @@ public class DeviceUtils {
         log.debug("检测一次设备类型为 {}", device);
 
         return device;
+    }
+
+    /**
+     * 根据请求获取详细设备类型信息
+     */
+    public static String getRequestDeviceInfo(HttpServletRequest request) {
+        String userAgentStr = request.getHeader(Header.USER_AGENT.toString());
+        log.debug("检测一次设备信息为 {}", userAgentStr);
+        return userAgentStr;
     }
 
     /**

@@ -331,8 +331,8 @@ public class UserController {
         // 获取搜索条件
         QueryWrapper<User> queryWrapper = userService.getQueryWrapper(request);
 
-        // 如果此时不允许跨选则不允许看到和当前登陆用户不同系部的学生
-        if (!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH)) {
+        // 不是管理里情况下, 如果此时不允许跨选则不允许看到和当前登陆用户不同系部的学生
+        if (!userService.userIsAdmin(userService.userGetCurrentLoginUser()) && !switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH)) {
             queryWrapper.eq("dept", userService.userGetCurrentLoginUser().getDept());
         }
 
