@@ -2107,4 +2107,13 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, "当前单选模式切换为" + (enabled ? "学生单选模式" : "教师单选模式"));
     }
 
+    /**
+     * 获取教师题目上限
+     */
+
+
+    /**
+     * 修改教师题目上限
+     */
+
 }

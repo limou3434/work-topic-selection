@@ -174,7 +174,7 @@ public class FileController {
                 ThrowUtils.throwIf(true, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, e.getExceptionMessage());
             } catch (Exception e) {
                 transactionStatus.setRollbackOnly(); // 确保失败回滚
-                ThrowUtils.throwIf(true, CodeBindMessageEnums.OPERATION_ERROR, "批量添加失败");
+                ThrowUtils.throwIf(true, CodeBindMessageEnums.OPERATION_ERROR, "批量添加失败" + e.getMessage());
             }
 
             return TheResult.success(CodeBindMessageEnums.SUCCESS, "批量添加成功");
