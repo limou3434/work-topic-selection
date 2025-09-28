@@ -58,6 +58,31 @@ const columns: ProColumns<TableListItem>[] = [
   }
 ];
 
+// 未发布题目不显示时间的列定义
+const unpublishedColumns: ProColumns<TableListItem>[] = [
+  {
+    dataIndex: 'id',
+    valueType: 'indexBorder',
+    width: 48,
+  },
+  {
+    title: '题目',
+    dataIndex: 'topic',
+  },
+  {
+    title: '题目类型',
+    dataIndex: 'type',
+  },
+  {
+    dataIndex: 'teacherName',
+    title: '指导老师',
+  },
+  {
+    title: '系部',
+    dataIndex: 'deptName',
+  }
+];
+
 export default () => {
   // 分别管理两个分页器
   const [pageNum0, setPageNum0] = useState(1);
@@ -205,7 +230,7 @@ export default () => {
                   </div>
                 </div>
                 <ProTable<TableListItem>
-                  columns={columns}
+                  columns={unpublishedColumns}
                   rowSelection={{
                     selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
                   }}

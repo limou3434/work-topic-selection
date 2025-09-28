@@ -1220,8 +1220,8 @@ public class UserController {
         return transactionTemplate.execute(transactionStatus -> {
             for (Topic topic : request.getTopicList()) {
                 topic.setStatus(TopicStatusEnum.NOT_PUBLISHED.getCode());
-                topic.setStartTime(null);
-                topic.setEndTime(null);
+                topic.setStartTime(new Date()); // 这里是无法把时间置为 null 的
+                topic.setEndTime(new Date()); // 这里是无法把时间置为 null 的
                 boolean result = topicService.updateById(topic);
                 ThrowUtils.throwIf(!result, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "无法开放该选题, 请联系管理员 898738804@qq.com");
             }
