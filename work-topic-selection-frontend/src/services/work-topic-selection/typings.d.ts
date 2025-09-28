@@ -146,6 +146,15 @@ declare namespace API {
     message?: string;
   };
 
+  type CaptchaRequest = {
+    email?: string;
+  };
+
+  type CheckCaptchaRequest = {
+    captcha?: string;
+    email?: string;
+  };
+
   type CheckTopicRequest = {
     id?: number;
     reason?: string;
@@ -193,6 +202,7 @@ declare namespace API {
     pageSize?: number;
     sortField?: string;
     sortOrder?: string;
+    teacherName?: string;
   };
 
   type DeptTeacherVO = {
@@ -461,6 +471,7 @@ declare namespace API {
     sortField?: string;
     sortOrder?: string;
     startTime?: string;
+    status?: number;
     teacherName?: string;
     topic?: string;
     type?: string;

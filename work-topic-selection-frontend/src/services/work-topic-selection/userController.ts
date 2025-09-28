@@ -71,6 +71,21 @@ export async function addTopicUsingPost(
   });
 }
 
+/** checkCaptcha POST /user/check/captcha */
+export async function checkCaptchaUsingPost(
+  body: API.CheckCaptchaRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseBoolean_>('/user/check/captcha', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** checkTopic POST /user/check/topic */
 export async function checkTopicUsingPost(
   body: API.CheckTopicRequest,
@@ -553,6 +568,21 @@ export async function selectTopicByIdUsingPost(
   options?: { [key: string]: any },
 ) {
   return request<API.BaseResponseLong_>('/user/select/topic/by/id', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** sendCaptcha POST /user/send/captcha */
+export async function sendCaptchaUsingPost(
+  body: API.CaptchaRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseString_>('/user/send/captcha', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

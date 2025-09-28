@@ -10,6 +10,7 @@ import cn.com.edtechhub.worktopicselection.manager.ai.AIResult;
 import cn.com.edtechhub.worktopicselection.manager.redis.RedisManager;
 import cn.com.edtechhub.worktopicselection.manager.sentine.SentineManager;
 import cn.com.edtechhub.worktopicselection.model.dto.CaptchaRequest;
+import cn.com.edtechhub.worktopicselection.model.dto.CheckCaptchaRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.SendCodeRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeleteDeptRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeptAddRequest;
@@ -60,24 +61,12 @@ import java.util.stream.Collectors;
 
 /**
  * 用户控制层
- * TODO: 添加广告栏, 进行网站引流
- * TODO: 修改后点击确认可以设置指定教师的选题上限, 修改之前需要检查教师目前的题目, 如果目前的题目数量已经到上限, 则不允许改小, 同时不允许教师出题数量超过 20 题目, 即便是管理员也不行
- * TODO: 重点检查选题逻辑, 还是有些问题, 尤其是原子属性
- * TODO: 用户如果没有填写邮箱, 需要判断用户的状态是否为新用户, 如果是新用户则弹出警告窗户
- * TODO: 教师端查看选择自己的学生时需要用弹窗表格的形式
- * TODO: 批量导入会有乱码问题
- * TODO: AI 需要导入去年的选题, 也需要考虑检查当前的问题
- * TODO: 系主任已经审核通过的选题, 需要重新确认是否可以被修改
- * TODO: 学生端使用预先选题的时候, 无法使用搜索控件
- * TODO: 重复题目名称需要禁止... 我真觉得没必要, 算了
  * TODO: 教师出完题目后不需要经过审核就可以选学生...
- * TODO: 修复学生端口查看教师题目没有事实更新的问题
  * TODO: 验证码需要校验问题
  * TODO: 教师选了学生后退选该学生, 余量没有被释放
- * TODO: 发布时间和结束时间不能小于当前时间
- * TODO: 绑定题目关联有点问题啊...怎么可以用名字呢
  * TODO: 用户初次修改登陆的时候, 如果是主任角色, 并且该角色需要出题, 则可以同步绑定教师帐号
- * TODO: 有一些更新或删除可能需要取消选题关联表
+ * TODO: 批量导入有乱码问题...
+ * TODO: 绑定题目关联有点问题啊...怎么可以用名字呢, 不过短时间内应该无所谓
  *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
@@ -649,6 +638,9 @@ public class UserController {
 
             user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
             ThrowUtils.throwIf(user == null, CodeBindMessageEnums.SYSTEM_ERROR, "用户不存在");
+
+            // 并且立刻失效
+            redisManager.deleteKey("code:" + userAccount);
         } else {
             // 如果使用旧密码重置
             user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount).eq("userPassword", DigestUtils.md5DigestAsHex((UserConstant.SALT + userPassword).getBytes())));
@@ -768,6 +760,41 @@ public class UserController {
             ThrowUtils.throwIf(true, CodeBindMessageEnums.SYSTEM_ERROR, "邮件发送失败, 请联系管理员 898738804@qq.com");
         }
         return TheResult.success(CodeBindMessageEnums.SUCCESS, "发送成功, 请在您的 QQ 邮箱中查收!");
+    }
+
+    /**
+     * 校验验证码
+     */
+    @SaIgnore
+    @PostMapping("/check/captcha")
+    public BaseResponse<Boolean> checkCaptcha(@RequestBody CheckCaptchaRequest request) throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        // 参数检查
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
+
+        String email = request.getEmail();
+        ThrowUtils.throwIf(StringUtils.isBlank(email), CodeBindMessageEnums.PARAMS_ERROR, "需要校验验证码的邮箱不能为空");
+
+        String captcha = request.getCaptcha();
+        ThrowUtils.throwIf(StringUtils.isBlank(captcha), CodeBindMessageEnums.PARAMS_ERROR, "没有填写校验码, 无法确认该邮箱归您本人所属");
+
+        // 如果缓存中有临时立马则直接使用, 如果没有就新缓存一个
+        String captchaInRedis = redisManager.getValue("captcha:" + email);
+        ThrowUtils.throwIf(StringUtils.isBlank(captchaInRedis), CodeBindMessageEnums.NOT_FOUND_ERROR, "请先点击发送验证码");
+
+        // 校验验证码
+        ThrowUtils.throwIf(!captchaInRedis.equals(captcha), CodeBindMessageEnums.PARAMS_ERROR, "验证码错误");
+
+        // 立刻失效
+        redisManager.deleteKey("captcha:" + email);
+
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
     }
 
     /// 系部专业相关接口 ///
@@ -2352,7 +2379,7 @@ public class UserController {
         ThrowUtils.throwIf(teacherId == null || teacherId <= 0, CodeBindMessageEnums.PARAMS_ERROR, "教师标识不合法");
 
         Integer topicAmount = request.getTopicAmount();
-        ThrowUtils.throwIf(topicAmount == null || topicAmount < 0 || topicAmount > 20, CodeBindMessageEnums.PARAMS_ERROR, "题目上限数量必须在0-20之间");
+        ThrowUtils.throwIf(topicAmount == null || topicAmount < 0 || topicAmount > 20, CodeBindMessageEnums.PARAMS_ERROR, "题目上限数量必须在 0-20 之间");
         assert topicAmount != null;
 
         // 获取教师信息
@@ -2361,7 +2388,7 @@ public class UserController {
         assert teacher != null;
         ThrowUtils.throwIf(!teacher.getUserRole().equals(UserRoleEnum.TEACHER.getCode()), CodeBindMessageEnums.PARAMS_ERROR, "该用户不是教师");
 
-        // 检查教师目前的题目数量，如果目前的题目数量已经到上限，则不允许改小
+        // 检查教师目前的题目数量, 如果目前的题目数量已经到上限, 则不允许改小
         long currentTopicCount = topicService.count(new QueryWrapper<Topic>().eq("teacherName", teacher.getUserName()));
         ThrowUtils.throwIf(topicAmount < currentTopicCount, CodeBindMessageEnums.PARAMS_ERROR, "不能将题目上限设置为小于当前已出题目数量(" + currentTopicCount + ")");
 
