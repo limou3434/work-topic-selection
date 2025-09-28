@@ -76,6 +76,7 @@ import java.util.stream.Collectors;
  * TODO: 发布时间和结束时间不能小于当前时间
  * TODO: 绑定题目关联有点问题啊...怎么可以用名字呢
  * TODO: 用户初次修改登陆的时候, 如果是主任角色, 并且该角色需要出题, 则可以同步绑定教师帐号
+ * TODO: 有一些更新或删除可能需要取消选题关联表
  *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
@@ -727,8 +728,6 @@ public class UserController {
 
     /// 系部专业相关接口 ///
 
-    // TODO: 重点检查, 这里的逻辑有些问题
-
     /**
      * 添加系部
      */
@@ -954,7 +953,9 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, deptVOList);
     }
 
-    // 获取专业分页数据
+    /**
+     * 获取专业分页数据
+     */
     @SaCheckLogin
     @PostMapping("/get/project/page")
     public BaseResponse<Page<Project>> getProject(@RequestBody ProjectQueryRequest request) throws BlockException {
@@ -990,6 +991,7 @@ public class UserController {
 
         // 参数检查
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
         long current = request.getCurrent();
         ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "页码号必须大于 0");
@@ -1408,7 +1410,6 @@ public class UserController {
 
     /**
      * 更新选题信息
-     * TODO: 这个接口有嗲奇怪...
      */
     @SaCheckLogin
     @SaCheckRole(value = {"teacher"}, mode = SaMode.OR)
@@ -1452,7 +1453,7 @@ public class UserController {
                 .collect(Collectors.toList());
 
         return transactionTemplate.execute(transactionStatus -> {
-            // 删除 topicsToRemove 中的所有项（TODO: 更新移除也要警告用户关联的学生也会取消关联）
+            // 删除 topicsToRemove 中的所有项
             if (!topicsToRemove.isEmpty()) {
                 List<Long> topicsToRemoveIds = topicsToRemove.stream().map(Topic::getId).collect(Collectors.toList());
                 topicService.removeByIds(topicsToRemoveIds);
@@ -1540,12 +1541,14 @@ public class UserController {
                 ThrowUtils.throwIf(!topicSaveSuccess, CodeBindMessageEnums.OPERATION_ERROR, "更新课题剩余数量失败");
 
                 // 返回成功信息
-                return TheResult.success(CodeBindMessageEnums.SUCCESS, "1"); // TODO: 鬼知道他这个 1 是个什么鬼...
+                return TheResult.success(CodeBindMessageEnums.SUCCESS, "1"); // 鬼知道他这个 1 是个什么鬼...廖吊毛写的我不敢修改, 都 tm 上线了
             });
         }
     }
 
-    // 教师或学生直接生取消提交题目
+    /**
+     * 教师或学生直接生取消提交题目
+     */
     @SaCheckRole(value = {"teacher", "student"}, mode = SaMode.OR)
     @PostMapping("/withdraw")
     public BaseResponse<Boolean> withdraw(@RequestBody DeleteTopicRequest request) throws BlockException {
@@ -1557,8 +1560,10 @@ public class UserController {
 
         // 参数检查
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
         Long topicId = request.getId();
+        assert topicId != null;
         ThrowUtils.throwIf(topicId == null, CodeBindMessageEnums.PARAMS_ERROR, "id 不能为空");
         ThrowUtils.throwIf(topicId <= 0, CodeBindMessageEnums.PARAMS_ERROR, "id 必须是正整数");
 
@@ -1568,6 +1573,7 @@ public class UserController {
                 // 根据 ID 获取课题
                 Topic topic = topicService.getById(topicId);
                 ThrowUtils.throwIf(topic == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "未找到对应的课题, 无需退选");
+                assert topic != null;
 
                 // 更新课题的剩余数量
                 ThrowUtils.throwIf(topic.getSurplusQuantity().equals(1), CodeBindMessageEnums.OPERATION_ERROR, "该课题无人选过无需退选");
@@ -1598,6 +1604,7 @@ public class UserController {
 
         // 参数检查
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
         Long id = request.getId();
         ThrowUtils.throwIf(id == null, CodeBindMessageEnums.PARAMS_ERROR, "id 不能为空");
@@ -1698,7 +1705,7 @@ public class UserController {
             final String userAccount = user.getUserAccount();
             selectedStudents += (int) studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount) // 获取当前用户的记录
                     .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode()) // 查询状态为已选题的
-            ); // TODO: 这个查询过程可以被优化, 但是暂时先这样
+            );
         }
 
         // 获取未选题人数
@@ -1865,6 +1872,7 @@ public class UserController {
         log.info("用户: {} 确认了最终选题", userAccount);
 
         ThrowUtils.throwIf(studentTopicSelection == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "当前用户没有确认最终的选题");
+        assert studentTopicSelection != null;
 
         // 封装最终的返回值
         Long topicId = studentTopicSelection.getTopicId();
@@ -1918,6 +1926,7 @@ public class UserController {
 
         // 参数检查
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
         long current = request.getCurrent();
         ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "页码必须大于等于 1");
@@ -1942,6 +1951,7 @@ public class UserController {
 
         // 参数检查
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
         long size = request.getPageSize();
         ThrowUtils.throwIf(size > 20, CodeBindMessageEnums.PARAMS_ERROR, "不能一次性获取过多的分页数据");
@@ -2019,6 +2029,7 @@ public class UserController {
 
         // 参数检查
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
         List<StudentTopicSelection> studentList = studentTopicSelectionService.list(new QueryWrapper<StudentTopicSelection>().eq("topicId", request.getId()));
         ArrayList<User> userList = new ArrayList<>();
         for (StudentTopicSelection student : studentList) {
@@ -2044,6 +2055,7 @@ public class UserController {
 
         // 参数检查
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
 
         long current = request.getCurrent();
         ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "页码必须大于等于 1");
