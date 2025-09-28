@@ -70,7 +70,7 @@ import java.util.stream.Collectors;
  * TODO: AI 需要导入去年的选题, 也需要考虑检查当前的问题
  * TODO: 系主任已经审核通过的选题, 需要重新确认是否可以被修改
  * TODO: 学生端使用预先选题的时候, 无法使用搜索控件
- * TODO: 重复题目名称需要禁止...我真觉得没必要, 算了
+ * TODO: 重复题目名称需要禁止... 我真觉得没必要, 算了
  * TODO: 教师出完题目后不需要经过审核就可以选学生...
  * TODO: 修复学生端口查看教师题目没有事实更新的问题
  * TODO: 验证码需要校验问题
@@ -501,6 +501,69 @@ public class UserController {
         // 注销用户
         StpUtil.logout(); // 默认所有设备都被登出
         return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
+    }
+
+    /**
+     * 用户切换登陆
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"dept", "teacher"}, mode = SaMode.OR)
+    @PostMapping("/toggle/login")
+    public BaseResponse<LoginUserVO> userToggleLogin(@RequestBody UserToggleRequest request, HttpServletRequest httpServletrequest) throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        // 参数检查
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
+        Integer userRole = request.getUserRole();
+        ThrowUtils.throwIf(userRole == null, CodeBindMessageEnums.PARAMS_ERROR, "缺少切换所需要的角色");
+        assert userRole != null;
+        UserRoleEnum userRoleEnum = UserRoleEnum.getEnums(userRole);
+        ThrowUtils.throwIf(userRoleEnum == null, CodeBindMessageEnums.PARAMS_ERROR, "想要切换帐号的角色不存在");
+        assert userRoleEnum != null;
+
+        // 获取当前登陆用户
+        User loginUser = userService.userGetCurrentLoginUser();
+        ThrowUtils.throwIf(loginUser == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "当前用户没有登陆");
+        assert loginUser != null;
+
+        // 不要切换到当前登陆用户的角色上
+        ThrowUtils.throwIf(loginUser.getUserRole().equals(userRole), CodeBindMessageEnums.PARAMS_ERROR, "当前用户已经是该角色了, 无需切换帐号");
+
+        // 检查满足切换登陆的条件
+        // 先找出所有同名的教师
+        List<User> userList = userService.list(new QueryWrapper<User>().eq("userName", loginUser.getUserName()));
+        // 然后找出当前登陆用户, 可以互相切换的帐号都是登陆过的帐号, 且 密码、系部、email 一样的用户列表, 最后再根据用户需要切换的角色, 找到唯一一个满足条件的用户
+        userList = userList
+                .stream()
+                .filter(user -> {
+                    boolean condition1 = !user.getId().equals(loginUser.getId());
+                    boolean condition2 = user.getStatus().equals("老用户");
+                    boolean condition3 = user.getDept().equals(loginUser.getDept());
+                    boolean condition4 = user.getUserName().equals(loginUser.getUserName());
+                    boolean condition5 = user.getUserPassword().equals(loginUser.getUserPassword());
+                    boolean condition6 = user.getEmail().equals(loginUser.getEmail());
+                    boolean condition7 = user.getUserRole().equals(userRoleEnum.getCode());
+
+                    return condition1 && condition2 && condition3 && condition4 && condition5 && condition6 && condition7;
+                })
+                .collect(Collectors.toList());
+        ThrowUtils.throwIf(userList.isEmpty(), CodeBindMessageEnums.NOT_FOUND_ERROR, "当前用户无法切换角色, 需要满足两个帐号都不是初始化帐号, 且同系、同名、同密码、同邮箱才可以切换");
+
+        // 用户切换登陆
+        User newUser = userList.get(0);
+        String device = DeviceUtils.getRequestDevice(httpServletrequest); // 登陆设备
+        StpUtil.login(newUser.getId(), device); // 开始登录
+        StpUtil.getSession().set(UserConstant.USER_LOGIN_STATE, newUser); // 把用户的信息存储到 Sa-Token 的会话中, 这样后续的用权限判断就不需要一直查询 SQL 才能得到, 缺点是更新权限的时候需要把用户踢下线否则会话无法更新
+
+        // 数据脱敏
+        LoginUserVO loginUserVO = new LoginUserVO();
+        BeanUtils.copyProperties(newUser, loginUserVO);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, loginUserVO);
     }
 
     /**
@@ -1591,11 +1654,7 @@ public class UserController {
             }
 
             // 而且只能看到审核通过和已经发布的题目
-            queryWrapper
-                    .eq("status", TopicStatusEnum.NOT_PUBLISHED.getCode())
-                    .or()
-                    .eq("status", TopicStatusEnum.PUBLISHED.getCode())
-            ;
+            queryWrapper.in("status", TopicStatusEnum.NOT_PUBLISHED.getCode(), TopicStatusEnum.PUBLISHED.getCode()); // 学生只能查看已经审核通过和已经发布的选题
         }
 
         // 获取选题数据
@@ -1726,7 +1785,7 @@ public class UserController {
         int total = teacherVOList.size();
         int fromIndex = (int) ((current - 1) * size);
         int toIndex = (int) Math.min(fromIndex + size, total);
-        
+
         // 确保索引不越界
         List<DeptTeacherVO> pagedTeacherVOList = new ArrayList<>();
         if (fromIndex < total) {
@@ -2032,7 +2091,7 @@ public class UserController {
         int total = teacherVOList.size();
         int fromIndex = (int) ((current - 1) * size);
         int toIndex = (int) Math.min(fromIndex + size, total);
-        
+
         // 确保索引不越界
         List<DeptTeacherVO> pagedTeacherVOList = new ArrayList<>();
         if (fromIndex < total) {

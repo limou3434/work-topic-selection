@@ -630,6 +630,21 @@ export async function setSwitchSingleChoiceStatusUsingPost(
   });
 }
 
+/** userToggleLogin POST /user/toggle/login */
+export async function userToggleLoginUsingPost(
+  body: API.UserToggleRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseLoginUserVO_>('/user/toggle/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** unsetTimeById POST /user/unset/time/by/id */
 export async function unsetTimeByIdUsingPost(
   body: API.UnSetTimeRequest,

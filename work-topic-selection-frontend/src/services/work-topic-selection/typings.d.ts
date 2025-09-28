@@ -538,6 +538,10 @@ declare namespace API {
     userRole?: number;
   };
 
+  type UserToggleRequest = {
+    userRole?: number;
+  };
+
   type UserUpdatePassword = {
     code?: string;
     email?: string;
