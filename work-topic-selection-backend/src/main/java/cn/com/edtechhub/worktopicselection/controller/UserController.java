@@ -631,10 +631,10 @@ public class UserController {
         if (StringUtils.isNotBlank(code)) {
             // 如果使用验证码重置
             String codeInRedis = redisManager.getValue("code:" + userAccount);
-            ThrowUtils.throwIf(codeInRedis == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "验证码已过期, 请重新获取验证码");
+            ThrowUtils.throwIf(codeInRedis == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "临时密码已过期, 请重新获取临时密码");
             assert codeInRedis != null;
 
-            ThrowUtils.throwIf(!codeInRedis.equals(code), CodeBindMessageEnums.PARAMS_ERROR, "您的验证码错误");
+            ThrowUtils.throwIf(!codeInRedis.equals(code), CodeBindMessageEnums.PARAMS_ERROR, "您的临时密码错误");
 
             user = userService.getOne(new QueryWrapper<User>().eq("userAccount", userAccount));
             ThrowUtils.throwIf(user == null, CodeBindMessageEnums.SYSTEM_ERROR, "用户不存在");
@@ -779,7 +779,7 @@ public class UserController {
         assert request != null;
 
         String email = request.getEmail();
-        ThrowUtils.throwIf(StringUtils.isBlank(email), CodeBindMessageEnums.PARAMS_ERROR, "需要校验验证码的邮箱不能为空");
+        ThrowUtils.throwIf(StringUtils.isBlank(email), CodeBindMessageEnums.PARAMS_ERROR, "没有填写校验码, 无法确认该邮箱归您本人所属");
 
         String captcha = request.getCaptcha();
         ThrowUtils.throwIf(StringUtils.isBlank(captcha), CodeBindMessageEnums.PARAMS_ERROR, "没有填写校验码, 无法确认该邮箱归您本人所属");
