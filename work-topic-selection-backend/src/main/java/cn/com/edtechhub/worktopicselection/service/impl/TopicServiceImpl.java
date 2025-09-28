@@ -45,11 +45,9 @@ public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic> implements
         ThrowUtils.throwIf(topicQueryRequest == null, CodeBindMessageEnums.PARAMS_ERROR, "请求参数为空");
         assert topicQueryRequest != null;
 
-        Integer status = topicQueryRequest.getStatus();
         String sortField = topicQueryRequest.getSortField();
         String sortOrder = topicQueryRequest.getSortOrder();
         QueryWrapper<Topic> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(status != null, "status", status);
         queryWrapper.like(StringUtils.isNotBlank(topicQueryRequest.getTopic()), "topic", topicQueryRequest.getTopic());
         queryWrapper.like(StringUtils.isNotBlank(topicQueryRequest.getType()), "type", topicQueryRequest.getType());
         queryWrapper.eq(StringUtils.isNotBlank(topicQueryRequest.getTeacherName()), "teacherName", topicQueryRequest.getTeacherName());
