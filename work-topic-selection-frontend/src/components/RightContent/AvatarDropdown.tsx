@@ -1,14 +1,14 @@
-import {BankOutlined, LogoutOutlined, SettingOutlined, TeamOutlined, UserOutlined} from '@ant-design/icons';
+import {BankOutlined, LogoutOutlined, SettingOutlined, SwapOutlined, TeamOutlined, UserOutlined} from '@ant-design/icons';
 import {history, useModel} from '@umijs/max';
-import {message, Space, Spin, Typography} from 'antd';
+import {message, Modal, Space, Spin, Typography} from 'antd';
 import {createStyles} from 'antd-style';
 import {stringify} from 'querystring';
 import type {MenuInfo} from 'rc-menu/lib/interface';
 import React, {useCallback} from 'react';
 import {flushSync} from 'react-dom';
 import HeaderDropdown from '../HeaderDropdown';
-import {USER_ROLE_MAP} from '@/constants/user';
-import {userLogoutUsingPost} from '@/services/work-topic-selection/userController';
+import {USER_ROLE_ENUM, USER_ROLE_MAP} from '@/constants/user';
+import {userLogoutUsingPost, userToggleLoginUsingPost} from '@/services/work-topic-selection/userController';
 
 export type GlobalHeaderRightProps = {
   menu?: boolean;
@@ -101,9 +101,43 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({menu, children
         loginOut();
         return;
       }
+
+      // 处理身份切换
+      if (key === 'switch-role') {
+        // 显示切换身份的确认对话框
+        Modal.confirm({
+          title: '切换身份',
+          content: '确定要切换身份吗？',
+          okText: '确认',
+          cancelText: '取消',
+          onOk: async () => {
+            try {
+              // 调用切换身份的接口
+              const res = await userToggleLoginUsingPost({
+                // @ts-ignore
+                userRole: currentUser.userRole === USER_ROLE_ENUM.TEACHER ? USER_ROLE_ENUM.DIRECTOR : USER_ROLE_ENUM.TEACHER,
+              });
+
+              // 更新初始状态
+              flushSync(() => {
+                setInitialState((s: any) => ({...s, currentUser: res.data}));
+              });
+
+              message.success('身份切换成功');
+              // 切换身份后刷新页面并访问首页
+              window.location.href = '/home';
+            } catch (error) {
+              message.error('身份切换失败');
+            }
+          },
+        });
+        return;
+      }
+
       history.push(`/account/${key}`);
     },
-    [setInitialState],
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    [setInitialState, currentUser],
   );
 
   const loading = (
@@ -162,6 +196,9 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({menu, children
     },
   ];
 
+  // 只有主任和教师角色才显示切换身份按钮
+  const showSwitchRole = currentUser.userRole === USER_ROLE_ENUM.DIRECTOR || currentUser.userRole === USER_ROLE_ENUM.TEACHER;
+
   const menuItems = [
     ...userInfoItems,
     ...(menu
@@ -181,6 +218,17 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({menu, children
         },
       ]
       : []),
+    // 添加切换身份按钮
+    ...(showSwitchRole ? [
+      {
+        key: 'switch-role',
+        icon: <SwapOutlined />,
+        label: `切换${currentUser.userRole === USER_ROLE_ENUM.DIRECTOR ? '教师' : '主任'}`,
+      },
+      {
+        type: 'divider' as const,
+      },
+    ] : []),
     {
       key: 'logout',
       icon: <LogoutOutlined/>,

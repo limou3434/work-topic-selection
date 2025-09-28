@@ -64,8 +64,6 @@ import java.util.stream.Collectors;
  * TODO: 重点检查选题逻辑, 还是有些问题, 尤其是原子属性
  * TODO: 用户如果没有填写邮箱, 需要判断用户的状态是否为新用户, 如果是新用户则弹出警告窗户
  * TODO: 教师端查看选择自己的学生时需要用弹窗表格的形式
- * TODO: 分页功能出现漏洞
- * TODO: 无感知切换不同身份的同一个用户
  * TODO: 批量导入会有乱码问题
  * TODO: AI 需要导入去年的选题, 也需要考虑检查当前的问题
  * TODO: 系主任已经审核通过的选题, 需要重新确认是否可以被修改
@@ -76,6 +74,7 @@ import java.util.stream.Collectors;
  * TODO: 验证码需要校验问题
  * TODO: 教师选了学生后退选该学生, 余量没有被释放
  * TODO: 发布时间和结束时间不能小于当前时间
+ * TODO: 绑定题目关联有点问题啊...怎么可以用名字呢
  *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
