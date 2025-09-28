@@ -75,6 +75,7 @@ import java.util.stream.Collectors;
  * TODO: 教师选了学生后退选该学生, 余量没有被释放
  * TODO: 发布时间和结束时间不能小于当前时间
  * TODO: 绑定题目关联有点问题啊...怎么可以用名字呢
+ * TODO: 用户初次修改登陆的时候, 如果是主任角色, 并且该角色需要出题, 则可以同步绑定教师帐号
  *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
@@ -1506,6 +1507,12 @@ public class UserController {
         Long topicId = topic.getId();
         ThrowUtils.throwIf(topicId == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "未找到对应的课题");
         assert topicId != null;
+
+        // 如果课题处于正在审核状态, 则无法选择学生
+        ThrowUtils.throwIf(topic.getStatus() == TopicStatusEnum.PENDING_REVIEW.getCode(), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "该课题正在审核中, 暂时无法选择学生");
+
+        // 如果课题处于还没有处于发布状态, 则无法选择学生
+        ThrowUtils.throwIf(topic.getStatus() != TopicStatusEnum.PUBLISHED.getCode(), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "该课题尚未发布, 暂时无法选择学生");
 
         // 教师直接分配题目给学生
         synchronized (topicId) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
