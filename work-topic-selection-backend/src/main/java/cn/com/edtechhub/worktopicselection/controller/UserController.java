@@ -478,6 +478,8 @@ public class UserController {
         StpUtil.login(user.getId(), device); // 开始登录
         StpUtil.getSession().set(UserConstant.USER_LOGIN_STATE, user); // 把用户的信息存储到 Sa-Token 的会话中, 这样后续的用权限判断就不需要一直查询 SQL 才能得到, 缺点是更新权限的时候需要把用户踢下线否则会话无法更新
 
+        // 如果该用户是主任/教师角色, 则允许自动绑定教师/主任角色
+
         // 数据脱敏
         LoginUserVO loginUserVO = new LoginUserVO();
         BeanUtils.copyProperties(user, loginUserVO);
@@ -1168,13 +1170,18 @@ public class UserController {
 
         Date startTime = request.getStartTime();
         ThrowUtils.throwIf(startTime == null, CodeBindMessageEnums.PARAMS_ERROR, "请选择开始时间");
+        assert startTime != null;
 
         Date endTime = request.getEndTime();
         ThrowUtils.throwIf(endTime == null, CodeBindMessageEnums.PARAMS_ERROR, "请选择结束时间");
+        assert endTime != null;
 
         // 时间范围检查
-        assert startTime != null;
         ThrowUtils.throwIf(startTime.after(endTime), CodeBindMessageEnums.PARAMS_ERROR, "开始时间不能晚于结束时间");
+
+        // 并且时间范围均不能早于当前时间
+        ThrowUtils.throwIf(startTime.before(new Date()), CodeBindMessageEnums.PARAMS_ERROR, "开始时间不能早于当前时间");
+        ThrowUtils.throwIf(endTime.before(new Date()), CodeBindMessageEnums.PARAMS_ERROR, "结束时间不能早于当前时间");
 
         // 遍历选题列表开始设置开始时间和结束时间
         return transactionTemplate.execute(transactionStatus -> {
@@ -1190,7 +1197,7 @@ public class UserController {
     }
 
     /**
-     * 根据题目 id 列表取消以及发布的选题列表
+     * 根据题目 id 列表取消以及发布的选题列表, 并且置为空时间
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
@@ -1592,7 +1599,9 @@ public class UserController {
         }
     }
 
-    // 获取选择了自己题目的学生
+    /**
+     * 获取选择了自己题目的学生
+     */
     @SaCheckRole(value = {"teacher"}, mode = SaMode.OR)
     @PostMapping("/get/select/topic/by/id")
     public BaseResponse<List<User>> getSelectTopicById(@RequestBody GetSelectTopicById request) throws BlockException {
@@ -1677,7 +1686,9 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topicPage);
     }
 
-    // 获取当前的选题情况 (只能获取和当前登陆用户系部相同的选题)
+    /**
+     * 获取当前的选题情况 (只能获取和当前登陆用户系部相同的选题)
+     */
     @SaCheckLogin
     @SaCheckRole(value = {"admin", "dept"}, mode = SaMode.OR)
     @PostMapping("/get/select/topic/situation")
@@ -1852,7 +1863,9 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topicList);
     }
 
-    // 获取当前登陆账号学生的最终选题
+    /**
+     * 获取当前登陆账号学生的最终选题
+     */
     @SaCheckLogin
     @SaCheckRole(value = {"student"}, mode = SaMode.OR)
     @PostMapping("get/select/topic")
@@ -1883,7 +1896,9 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, topicList);
     }
 
-    // 获取和当前登陆用户同系的没有选题的学生
+    /**
+     * 获取和当前登陆用户同系的没有选题的学生
+     */
     @SaCheckLogin
     @SaCheckRole(value = {"dept"}, mode = SaMode.OR)
     @PostMapping("/get/unselect/topic/student/list")
@@ -1913,7 +1928,9 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, unselectedUsers);
     }
 
-    // 管理员获取题目
+    /**
+     * 管理员获取题目
+     */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/get/topic/list/by/admin")
@@ -1939,7 +1956,9 @@ public class UserController {
 
     }
 
-    // 分页获取用户封装列表
+    /**
+     * 分页获取用户封装列表
+     */
     @SaCheckLogin
     @PostMapping("/list/page/vo")
     public BaseResponse<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryRequest request) throws BlockException {
@@ -1967,7 +1986,9 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userVOPage);
     }
 
-    // 获取用户列表数据
+    /**
+     * 获取用户列表数据
+     */
     @SaCheckLogin
     @PostMapping("/get/user/list")
     public BaseResponse<List<UserNameVO>> getUserList(@RequestBody GetUserListRequest request) throws BlockException {
@@ -1998,7 +2019,9 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userNameVO);
     }
 
-    // 添加数量
+    /**
+     * 添加数量
+     */
     @SaCheckLogin
     @PostMapping("/add/count")
     public BaseResponse<String> addCount(@RequestBody AddCountRequest request) throws BlockException {
@@ -2017,7 +2040,9 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, "数量添加成功");
     }
 
-    // 根据题目 id 获取学生
+    /**
+     * 根据题目 id 获取学生
+     */
     @SaCheckLogin
     @PostMapping("/get/student/by/topicId")
     public BaseResponse<List<User>> getStudentByTopicId(@RequestBody GetStudentByTopicId request) throws BlockException {
@@ -2043,7 +2068,9 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, userList);
     }
 
-    // 获取系部教师数据 to 审核
+    /**
+     * 获取系部教师数据 to 审核
+     */
     @SaCheckLogin
     @PostMapping("/get/dept/teacher/by/admin")
     public BaseResponse<Page<DeptTeacherVO>> getTeacherByAdmin(@RequestBody DeptTeacherQueryRequest request) throws BlockException {

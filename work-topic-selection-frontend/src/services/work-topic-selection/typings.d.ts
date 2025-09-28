@@ -461,7 +461,6 @@ declare namespace API {
     sortField?: string;
     sortOrder?: string;
     startTime?: string;
-    status?: number;
     teacherName?: string;
     topic?: string;
     type?: string;
