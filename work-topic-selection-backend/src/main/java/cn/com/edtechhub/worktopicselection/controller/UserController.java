@@ -555,9 +555,10 @@ public class UserController {
         ThrowUtils.throwIf(userList.isEmpty(), CodeBindMessageEnums.NOT_FOUND_ERROR, "当前用户无法切换角色, 需要满足两个帐号都不是初始化帐号, 且同系、同名、同密码、同邮箱才可以切换");
 
         // 用户切换登陆
+        StpUtil.logout(loginUser.getId());
         User newUser = userList.get(0);
-        String device = DeviceUtils.getRequestDevice(httpServletrequest); // 登陆设备
-        StpUtil.login(newUser.getId(), device); // 开始登录
+        String device = DeviceUtils.getRequestDevice(httpServletrequest);
+        StpUtil.login(newUser.getId(), device);
         StpUtil.getSession().set(UserConstant.USER_LOGIN_STATE, newUser); // 把用户的信息存储到 Sa-Token 的会话中, 这样后续的用权限判断就不需要一直查询 SQL 才能得到, 缺点是更新权限的时候需要把用户踢下线否则会话无法更新
 
         // 数据脱敏
