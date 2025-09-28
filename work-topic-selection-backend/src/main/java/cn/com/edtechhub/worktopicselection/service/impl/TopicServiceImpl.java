@@ -6,7 +6,6 @@ import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
 import cn.com.edtechhub.worktopicselection.mapper.TopicMapper;
 import cn.com.edtechhub.worktopicselection.model.dto.topic.TopicQueryByAdminRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.topic.TopicQueryRequest;
-import cn.com.edtechhub.worktopicselection.model.entity.StudentTopicSelection;
 import cn.com.edtechhub.worktopicselection.model.entity.Topic;
 import cn.com.edtechhub.worktopicselection.model.entity.User;
 import cn.com.edtechhub.worktopicselection.service.StudentTopicSelectionService;
@@ -21,9 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Administrator
@@ -48,6 +44,7 @@ public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic> implements
         String sortField = topicQueryRequest.getSortField();
         String sortOrder = topicQueryRequest.getSortOrder();
         QueryWrapper<Topic> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(userService.userIsAdmin(userService.userGetCurrentLoginUser()), "status", topicQueryRequest.getStatus());
         queryWrapper.like(StringUtils.isNotBlank(topicQueryRequest.getTopic()), "topic", topicQueryRequest.getTopic());
         queryWrapper.like(StringUtils.isNotBlank(topicQueryRequest.getType()), "type", topicQueryRequest.getType());
         queryWrapper.eq(StringUtils.isNotBlank(topicQueryRequest.getTeacherName()), "teacherName", topicQueryRequest.getTeacherName());

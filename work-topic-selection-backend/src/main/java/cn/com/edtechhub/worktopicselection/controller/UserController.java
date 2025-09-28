@@ -1220,8 +1220,8 @@ public class UserController {
         return transactionTemplate.execute(transactionStatus -> {
             for (Topic topic : request.getTopicList()) {
                 topic.setStatus(TopicStatusEnum.NOT_PUBLISHED.getCode());
-                topic.setStartTime(new Date()); // 这里是无法把时间置为 null 的
-                topic.setEndTime(new Date()); // 这里是无法把时间置为 null 的
+                topic.setStartTime(new Date(0)); // 这里是无法把时间置为 null 的
+                topic.setEndTime(new Date(0)); // 这里是无法把时间置为 null 的
                 boolean result = topicService.updateById(topic);
                 ThrowUtils.throwIf(!result, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "无法开放该选题, 请联系管理员 898738804@qq.com");
             }
@@ -1280,7 +1280,7 @@ public class UserController {
 
                     // 限制预选数量
                     int selectedCount = Math.toIntExact(studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount())));
-                    ThrowUtils.throwIf(selectedCount >= 5, CodeBindMessageEnums.OPERATION_ERROR, "最多只能预选 10 个题目");
+                    ThrowUtils.throwIf(selectedCount >= 10, CodeBindMessageEnums.OPERATION_ERROR, "最多只能预选 10 个题目");
 
                     // 有选题余量才可以预选
                     Integer surplusQuantity = topic.getSurplusQuantity();

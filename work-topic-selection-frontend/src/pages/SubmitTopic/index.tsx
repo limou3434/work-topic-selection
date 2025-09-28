@@ -40,9 +40,9 @@ const getRowClassName = (record: TableListItem) => {
     return 'row-not-started';
   }
 
-  // 如果已经结束，显示灰色背景
+  // 如果已经结束，显示白色背景（默认样式）
   if (now > endDate) {
-    return 'row-ended';
+    return record.surplusQuantity === 0 ? 'row-disabled' : '';
   }
 
   // 计算距离结束日期的天数
@@ -199,8 +199,7 @@ export default () => {
           <span>提交选题</span>
           <div style={{ fontSize: '12px', color: '#666', marginLeft: '20px' }}>
             <span style={{ marginRight: '15px' }}><span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#ffe58f', marginRight: '4px' }}></span>尚未开始</span>
-            <span style={{ marginRight: '15px' }}><span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#d9d9d9', marginRight: '4px' }}></span>已经结束</span>
-            <span><span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#ffccc7', marginRight: '4px', border: '1px solid #ff7875' }}></span>即将结束（3天内）</span>
+            <span><span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#ffccc7', marginRight: '4px', border: '1px solid #ff7875' }}></span>即将结束</span>
           </div>
         </div>
       }
