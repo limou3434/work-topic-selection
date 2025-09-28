@@ -7,7 +7,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 删除请求
+ * 系部教师查询请求
  *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
@@ -17,5 +17,10 @@ public class DeptTeacherQueryRequest extends PageRequest implements Serializable
     /// 序列化字段 ///
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+    
+    /**
+     * 教师姓名
+     */
+    private String teacherName;
 
 }

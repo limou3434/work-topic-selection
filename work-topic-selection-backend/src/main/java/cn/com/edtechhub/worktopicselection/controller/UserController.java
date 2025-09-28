@@ -1754,8 +1754,8 @@ public class UserController {
         ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "每页大小必须大于 0");
 
         String sortField = request.getSortField();
-
         String sortOrder = request.getSortOrder();
+        String teacherName = request.getTeacherName();
 
         // 获取当前登陆用
         User loginUser = userService.userGetCurrentLoginUser();
@@ -1763,12 +1763,21 @@ public class UserController {
         // 查询教师列表
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper
-                .eq("userRole", UserRoleEnum.TEACHER.getCode()) // 是教师的
-                .orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC), sortField);
+                .eq("userRole", UserRoleEnum.TEACHER.getCode()); // 是教师的
+
+        // 如果有教师姓名搜索条件，则添加搜索条件
+        if (StringUtils.isNotBlank(teacherName)) {
+            userQueryWrapper.like("userName", teacherName);
+        }
 
         // 如果此时不允许跨选则不允许看到和当前登陆用户不同系部的教师
         if (!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH)) {
             userQueryWrapper.eq("dept", loginUser.getDept());
+        }
+
+        // 添加排序条件
+        if (SqlUtils.validSortField(sortField)) {
+            userQueryWrapper.orderBy(true, sortOrder.equals(CommonConstant.SORT_ORDER_ASC), sortField);
         }
 
         List<User> users = userService.list(userQueryWrapper); // 得到所有的教师
