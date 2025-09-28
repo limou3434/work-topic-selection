@@ -39,6 +39,7 @@ public class CaffeineManager {
                 .newBuilder()
                 .initialCapacity(caffeineConfig.getInitialCapacity())
                 .maximumSize(caffeineConfig.getMaximumSize())
+                .expireAfterWrite(caffeineConfig.getExpireAfterWrite(), TimeUnit.SECONDS)
                 .build();
     }
 

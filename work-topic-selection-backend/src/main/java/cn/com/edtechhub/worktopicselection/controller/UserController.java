@@ -9,6 +9,7 @@ import cn.com.edtechhub.worktopicselection.manager.ai.AIManager;
 import cn.com.edtechhub.worktopicselection.manager.ai.AIResult;
 import cn.com.edtechhub.worktopicselection.manager.redis.RedisManager;
 import cn.com.edtechhub.worktopicselection.manager.sentine.SentineManager;
+import cn.com.edtechhub.worktopicselection.model.dto.CaptchaRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.SendCodeRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeleteDeptRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeptAddRequest;
@@ -478,8 +479,6 @@ public class UserController {
         StpUtil.login(user.getId(), device); // 开始登录
         StpUtil.getSession().set(UserConstant.USER_LOGIN_STATE, user); // 把用户的信息存储到 Sa-Token 的会话中, 这样后续的用权限判断就不需要一直查询 SQL 才能得到, 缺点是更新权限的时候需要把用户踢下线否则会话无法更新
 
-        // 如果该用户是主任/教师角色, 则允许自动绑定教师/主任角色
-
         // 数据脱敏
         LoginUserVO loginUserVO = new LoginUserVO();
         BeanUtils.copyProperties(user, loginUserVO);
@@ -722,6 +721,49 @@ public class UserController {
 
         try {
             mailService.sendCodeMail(email, "广州南方学院毕业设计选题系统", code);
+        } catch (Exception e) {
+            ThrowUtils.throwIf(true, CodeBindMessageEnums.SYSTEM_ERROR, "邮件发送失败, 请联系管理员 898738804@qq.com");
+        }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, "发送成功, 请在您的 QQ 邮箱中查收!");
+    }
+
+    /**
+     * 发送验证码
+     */
+    @SaIgnore
+    @PostMapping("/send/captcha")
+    public BaseResponse<String> sendCaptcha(@RequestBody CaptchaRequest request) throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        // 参数检查
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
+
+        String email = request.getEmail();
+        ThrowUtils.throwIf(StringUtils.isBlank(email), CodeBindMessageEnums.PARAMS_ERROR, "需要发送验证码的邮箱不能为空");
+
+        // 如果缓存中有临时立马则直接使用, 如果没有就新缓存一个
+        String code = redisManager.getValue("captcha:" + email);
+        if (StringUtils.isBlank(code)) {
+            // 获取 10 位临时密码
+            Random random = new Random();
+            String chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*";
+            StringBuilder sb = new StringBuilder(6);
+            for (int i = 0; i < 5; i++) {
+                sb.append(chars.charAt(random.nextInt(chars.length())));
+            }
+            code = sb.toString();
+
+            // 缓存验证码
+            redisManager.setValue("captcha:" + email, code, 2 * 60);
+        }
+
+        try {
+            mailService.sendCaptchaMail(email, "广州南方学院毕业设计选题系统", code);
         } catch (Exception e) {
             ThrowUtils.throwIf(true, CodeBindMessageEnums.SYSTEM_ERROR, "邮件发送失败, 请联系管理员 898738804@qq.com");
         }

@@ -3,14 +3,14 @@ package cn.com.edtechhub.worktopicselection.model.dto;
 import lombok.Data;
 
 /**
- * 发送临时请求
+ * 发送验证码请求
  */
 @Data
-public class SendCodeRequest {
+public class CaptchaRequest {
 
     /**
-     * 用户帐号
+     * 请求邮箱
      */
-    private String userAccount;
+    private String email;
 
 }

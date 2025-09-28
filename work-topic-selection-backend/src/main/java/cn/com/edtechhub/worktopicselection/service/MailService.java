@@ -16,6 +16,14 @@ public interface MailService {
      */
     void sendSystemMail(String to, String subject, String text);
 
+    /**
+     * 发送临时密码邮箱
+     *
+     * @param to      收件人邮箱
+     * @param subject 邮件主题
+     * @param content 邮件内容
+     */
+    void sendCodeMail(String to, String subject, String content);
 
     /**
      * 发送验证码邮箱
@@ -24,6 +32,6 @@ public interface MailService {
      * @param subject 邮件主题
      * @param content 邮件内容
      */
-    void sendCodeMail(String to, String subject, String content);
+    void sendCaptchaMail(String to, String subject, String content);
 
 }
