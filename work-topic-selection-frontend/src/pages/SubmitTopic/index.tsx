@@ -6,6 +6,7 @@ import {
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { message } from 'antd';
 import React, { useState } from 'react';
+import './index.css';
 
 export type TableListItem = {
   id: number;
@@ -16,6 +17,45 @@ export type TableListItem = {
   surplusQuantity: number;
   startTime: string;
   endTime: string;
+};
+
+/**
+ * 根据题目时间状态确定行的CSS类名
+ * @param record 题目记录
+ * @returns CSS类名
+ */
+const getRowClassName = (record: TableListItem) => {
+  // 如果题目没有开始时间或结束时间，返回默认样式
+  if (!record.startTime || !record.endTime) {
+    return record.surplusQuantity === 0 ? 'row-disabled' : '';
+  }
+
+  // 解析日期
+  const startDate = new Date(record.startTime);
+  const endDate = new Date(record.endTime);
+  const now = new Date();
+
+  // 如果还没到开始时间，显示黄色背景
+  if (now < startDate) {
+    return 'row-not-started';
+  }
+
+  // 如果已经结束，显示灰色背景
+  if (now > endDate) {
+    return 'row-ended';
+  }
+
+  // 计算距离结束日期的天数
+  const timeDiff = endDate.getTime() - now.getTime();
+  const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+  // 如果距离结束日期还有3天或更少，显示红色背景
+  if (daysDiff <= 3) {
+    return 'row-ending-soon';
+  }
+
+  // 其他情况显示白色背景（默认样式）
+  return record.surplusQuantity === 0 ? 'row-disabled' : '';
 };
 
 const columns: ProColumns<TableListItem>[] = [
@@ -153,7 +193,17 @@ export default () => {
         },
       }}
       rowKey="key"
-      headerTitle="提交选题"
+      rowClassName={getRowClassName}
+      headerTitle={
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>提交选题</span>
+          <div style={{ fontSize: '12px', color: '#666', marginLeft: '20px' }}>
+            <span style={{ marginRight: '15px' }}><span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#ffe58f', marginRight: '4px' }}></span>尚未开始</span>
+            <span style={{ marginRight: '15px' }}><span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#d9d9d9', marginRight: '4px' }}></span>已经结束</span>
+            <span><span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#ffccc7', marginRight: '4px', border: '1px solid #ff7875' }}></span>即将结束（3天内）</span>
+          </div>
+        </div>
+      }
     />
   );
 };
