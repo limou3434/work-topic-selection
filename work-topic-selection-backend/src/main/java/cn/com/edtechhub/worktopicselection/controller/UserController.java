@@ -532,7 +532,7 @@ public class UserController {
                         .eq("dept", loginUser.getDept())
                         .eq("email", loginUser.getEmail())
         );
-        ThrowUtils.throwIf(userList.isEmpty(), CodeBindMessageEnums.NOT_FOUND_ERROR, "当前用户无法切换角色, 需要满足两个帐号都不是初始化帐号, 且同系、同名、同密码、同邮箱才可以切换");
+        ThrowUtils.throwIf(userList.isEmpty(), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前用户无法切换角色, 需要满足两个帐号都不是初始化帐号, 且同系、同名、同密码、同邮箱才可以切换");
 
         // 用户切换登陆
         StpUtil.logout(loginUser.getId());
