@@ -1591,7 +1591,7 @@ public class UserController {
             return transactionTemplate.execute(transactionStatus -> {
                 // 检查学生是否已经选择过课题
                 StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount).eq("topicId", topicId));
-                ThrowUtils.throwIf(selection != null, CodeBindMessageEnums.NOT_FOUND_ERROR, "该学生已经选择过改课题, 请通知该同学退选已经确认的题目");
+                ThrowUtils.throwIf(selection != null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "该学生已经确定最终的题目, 请通知该学生提前退选");
 
                 // 判断是否有余量
                 Integer surplusQuantity = topic.getSurplusQuantity();
