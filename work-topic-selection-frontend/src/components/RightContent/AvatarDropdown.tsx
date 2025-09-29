@@ -90,15 +90,13 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({menu, children
         try {
           const res = await userLogoutUsingPost();
           if (res.code === 0) {
-            message.success(res.message || '退出登录成功');
+            message.success(res.message);
           } else {
-            // 直接使用后端返回的错误信息
             message.error(res.message);
             return;
           }
         } catch (error: any) {
-          // 使用后端返回的错误信息
-          message.error(error.message || '退出请求失败');
+          message.error(error.message);
           return;
         }
 
@@ -128,8 +126,6 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({menu, children
               } else if (currentUser.userRole === USER_ROLE_ENUM.DIRECTOR) {
                 targetRole = USER_ROLE_ENUM.TEACHER;   // 主任切换到教师
               } else {
-                // 其他角色不支持切换
-                message.error('当前角色不支持身份切换');
                 return;
               }
 
@@ -145,16 +141,14 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({menu, children
                   setInitialState((s: any) => ({...s, currentUser: res.data}));
                 });
 
-                message.success('身份切换成功');
+                message.success(res.message);
                 // 切换身份后刷新页面并访问首页
                 window.location.href = '/home';
               } else {
-                // 直接使用后端返回的错误信息
                 message.error(res.message);
               }
             } catch (error: any) {
-              // 使用后端返回的错误信息
-              message.error(error.message || '身份切换失败');
+              message.error(error.message);
             }
           },
         });
