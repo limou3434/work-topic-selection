@@ -44,7 +44,8 @@ public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic> implements
         String sortField = topicQueryRequest.getSortField();
         String sortOrder = topicQueryRequest.getSortOrder();
         QueryWrapper<Topic> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(userService.userIsAdmin(userService.userGetCurrentLoginUser()), "status", topicQueryRequest.getStatus());
+        User currentLoginUser = userService.userGetCurrentLoginUser();
+        queryWrapper.eq(userService.userIsAdmin(currentLoginUser) || userService.userIsDept(currentLoginUser), "status", topicQueryRequest.getStatus());
         queryWrapper.like(StringUtils.isNotBlank(topicQueryRequest.getTopic()), "topic", topicQueryRequest.getTopic());
         queryWrapper.like(StringUtils.isNotBlank(topicQueryRequest.getType()), "type", topicQueryRequest.getType());
         queryWrapper.eq(StringUtils.isNotBlank(topicQueryRequest.getTeacherName()), "teacherName", topicQueryRequest.getTeacherName());
