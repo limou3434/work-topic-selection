@@ -520,7 +520,7 @@ public class UserController {
         ThrowUtils.throwIf(loginUser.getUserRole().equals(userRole), CodeBindMessageEnums.PARAMS_ERROR, "当前用户已经是该角色了, 无需切换帐号");
 
         // 当前用户必须绑定邮箱
-        ThrowUtils.throwIf(StringUtils.isBlank(loginUser.getEmail()), CodeBindMessageEnums.USER_INIT_PASSWD, "必须具备邮箱、且本帐号存在主任身份才能切换帐号");
+        ThrowUtils.throwIf(StringUtils.isBlank(loginUser.getEmail()), CodeBindMessageEnums.USER_INIT_PASSWD, "本帐号必须先绑定邮箱");
 
         // 然后找出可以互相切换的帐号, 这些帐号都是 不是自己、登陆过的、名字相同、密码相同、系部相同、邮箱相同(且不能为空) 一样的用户列表, 最后再根据用户需要切换的角色, 找到唯一一个满足条件的用户
         List<User> userList = userService.list(
