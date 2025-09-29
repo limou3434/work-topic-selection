@@ -2,4 +2,4 @@
 FROM openjdk:8-jdk-slim
 COPY ./target/*.jar ./app.jar
 EXPOSE 8000 5000
-CMD ["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5000", "-Duser.timezone=Asia/Shanghai", "-jar", "app.jar"]
+CMD ["java", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5000", "-Duser.timezone=Asia/Shanghai", "-jar", "app.jar"]
