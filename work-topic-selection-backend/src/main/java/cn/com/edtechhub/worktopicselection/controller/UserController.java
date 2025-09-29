@@ -1102,6 +1102,12 @@ public class UserController {
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
         assert request != null;
 
+        String topicTitle = request.getTopic();
+        ThrowUtils.throwIf(topicTitle == null, CodeBindMessageEnums.PARAMS_ERROR, "题目标题不能为空");
+
+        String topicContent = request.getDescription();
+        ThrowUtils.throwIf(topicContent == null || topicContent.length() < 5, CodeBindMessageEnums.PARAMS_ERROR, "题目描述不能为空, 并且不能少于 4 个字符");
+
         Topic oldTopic = topicService.getOne(new QueryWrapper<Topic>().eq("topic", request.getTopic()));
         ThrowUtils.throwIf(oldTopic != null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "该选题已存在, 请不要重复添加");
 
