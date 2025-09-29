@@ -519,25 +519,19 @@ public class UserController {
         User loginUser = userService.userGetCurrentLoginUser();
         ThrowUtils.throwIf(loginUser.getUserRole().equals(userRole), CodeBindMessageEnums.PARAMS_ERROR, "当前用户已经是该角色了, 无需切换帐号");
 
-        // 先找出所有同名的教师
-        List<User> userList = userService.list(new QueryWrapper<User>().eq("userName", loginUser.getUserName()));
+        // 当前用户必须绑定邮箱
+        ThrowUtils.throwIf(StringUtils.isBlank(loginUser.getEmail()), CodeBindMessageEnums.USER_INIT_PASSWD, "必须具备邮箱、且本帐号存在主任身份才能切换帐号");
 
-        // 然后找出当前登陆用户, 可以互相切换的帐号都是 登陆过的、密码一样、系部一样、email 一样的用户列表, 最后再根据用户需要切换的角色, 找到唯一一个满足条件的用户
-        userList = userList
-                .stream()
-                .filter(user -> {
-                    // 首先不能是自己
-                    boolean condition1 = !user.getId().equals(loginUser.getId());
-                    boolean condition2 = user.getStatus().equals("老用户");
-                    boolean condition3 = user.getDept().equals(loginUser.getDept());
-                    boolean condition4 = user.getUserName().equals(loginUser.getUserName());
-                    boolean condition5 = user.getUserPassword().equals(loginUser.getUserPassword());
-                    boolean condition6 = user.getEmail().equals(loginUser.getEmail());
-                    boolean condition7 = user.getUserRole().equals(userRoleEnum.getCode());
-
-                    return condition1 && condition2 && condition3 && condition4 && condition5 && condition6 && condition7;
-                })
-                .collect(Collectors.toList());
+        // 然后找出可以互相切换的帐号, 这些帐号都是 不是自己、登陆过的、名字相同、密码相同、系部相同、邮箱相同(且不能为空) 一样的用户列表, 最后再根据用户需要切换的角色, 找到唯一一个满足条件的用户
+        List<User> userList = userService.list(
+                new QueryWrapper<User>()
+                        .ne("id", loginUser.getId())
+                        .eq("status", "老用户")
+                        .eq("userName", loginUser.getUserName())
+                        .eq("userPassword", loginUser.getUserPassword())
+                        .eq("dept", loginUser.getDept())
+                        .eq("email", loginUser.getEmail())
+        );
         ThrowUtils.throwIf(userList.isEmpty(), CodeBindMessageEnums.NOT_FOUND_ERROR, "当前用户无法切换角色, 需要满足两个帐号都不是初始化帐号, 且同系、同名、同密码、同邮箱才可以切换");
 
         // 用户切换登陆
