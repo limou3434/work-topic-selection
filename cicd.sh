@@ -29,8 +29,8 @@ echo "网关部署..." && sudo docker compose down work-caddy && sudo docker com
 # logfile /var/log/msmtp.log
 # EOF
 # 检查访问
-echo "准备邮件(等待 10 s...)"
-sleep 10
+echo "准备邮件(等待 10 s...)" && sleep 10
+
 frontend_status=$(curl -s http://127.0.0.1:3001)
 if [[ "$frontend_status" == *"<html>"* ]]; then
     frontend_message="✅ 前端存活"

@@ -36,7 +36,7 @@ public class GetTopicReviewLevelRequest {
     private String topic;
 
     /**
-     * 题目内容
+     * 题目描述
      */
     private String description;
 

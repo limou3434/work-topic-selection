@@ -2250,7 +2250,7 @@ public class UserController {
         ThrowUtils.throwIf(topicTitle == null, CodeBindMessageEnums.PARAMS_ERROR, "题目标题不能为空");
 
         String topicContent = request.getDescription();
-        ThrowUtils.throwIf(topicContent == null || topicContent.length() < 5, CodeBindMessageEnums.PARAMS_ERROR, "题目内容不能为空, 并且不能少于 4 个字符");
+        ThrowUtils.throwIf(topicContent == null || topicContent.length() < 5, CodeBindMessageEnums.PARAMS_ERROR, "题目描述不能为空, 并且不能少于 4 个字符");
 
         // 获取当前登陆用户的 id 并且转化为 UUID
         Long id = userService.userGetCurrentLoginUser().getId();
