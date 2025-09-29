@@ -517,21 +517,18 @@ public class UserController {
         ThrowUtils.throwIf(userRoleEnum == null, CodeBindMessageEnums.PARAMS_ERROR, "想要切换帐号的角色不存在");
         assert userRoleEnum != null;
 
-        // 获取当前登陆用户
+        // 先找出所有同名的教师
         User loginUser = userService.userGetCurrentLoginUser();
-        ThrowUtils.throwIf(loginUser == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "当前用户没有登陆");
-        assert loginUser != null;
+        List<User> userList = userService.list(new QueryWrapper<User>().eq("userName", loginUser.getUserName()));
 
         // 不要切换到当前登陆用户的角色上
         ThrowUtils.throwIf(loginUser.getUserRole().equals(userRole), CodeBindMessageEnums.PARAMS_ERROR, "当前用户已经是该角色了, 无需切换帐号");
 
-        // 检查满足切换登陆的条件
-        // 先找出所有同名的教师
-        List<User> userList = userService.list(new QueryWrapper<User>().eq("userName", loginUser.getUserName()));
         // 然后找出当前登陆用户, 可以互相切换的帐号都是登陆过的帐号, 且 密码、系部、email 一样的用户列表, 最后再根据用户需要切换的角色, 找到唯一一个满足条件的用户
         userList = userList
                 .stream()
                 .filter(user -> {
+                    // 首先不能是自己
                     boolean condition1 = !user.getId().equals(loginUser.getId());
                     boolean condition2 = user.getStatus().equals("老用户");
                     boolean condition3 = user.getDept().equals(loginUser.getDept());
