@@ -1,14 +1,4 @@
 #!/bin/bash
-# 前置条件
-# sudo docker pull caddy:2.10.0
-# sudo docker pull mysql:8.0.41
-# sudo docker pull redis:7.4.2
-# sudo docker pull curlimages/curl
-# sudo docker pull openjdk:8-jdk-slim
-# sudo apt update && sudo apt install -y openjdk-17-jdk
-# curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-# \. "$HOME/.nvm/nvm.sh"
-# nvm install 22
 set -e
 
 # 拉取项目
@@ -24,3 +14,34 @@ echo "前端部署..." && sudo docker compose down work-topic-selection-frontend
 
 # 重载网管
 echo "网关部署..." && sudo docker compose down work-caddy && sudo docker compose up -d work-caddy
+
+# 发送邮箱
+# sudo tee /etc/msmtprc > /dev/null <<'EOF'
+# account default
+# host smtp.qq.com
+# port 587
+# auth on
+# user 898738804@qq.com
+# password <你的授权码>
+# from 898738804@qq.com
+# tls on
+# tls_starttls on
+# logfile /var/log/msmtp.log
+# EOF
+# 检查访问
+frontend_status=$(curl -s http://127.0.0.1:3001)
+if [[ "$frontend_status" == *"<html>"* ]]; then
+    frontend_message="✅ 前端存活"
+else
+    frontend_message="❌ 前端失效"
+fi
+
+backend_status=$(curl -s http://127.0.0.1:8001)
+if [[ "$backend_status" == *"code"* ]]; then
+    backend_message="✅ 后端存活"
+else
+    backend_message="❌ 后端失效"
+fi
+
+message="${backend_message}<br>${frontend_message}"
+echo -e "From: 898738804@qq.com\nTo: 898738804@qq.com\nSubject: 系统消息\nContent-Type: text/html; charset=UTF-8\n\n<html><body style='font-family: Arial, sans-serif; background-color:#f5f5f5; padding:20px;'><div style='max-width:600px; margin:0 auto; background:white; border-radius:8px; padding:30px; box-shadow:0 4px 10px rgba(0,0,0,0.1);'><h2 style='color:#00785a; text-align:center;'>部署情况</h2><p style='font-size:16px; color:#333;'>您好，感谢您使用 <b>广州南方学院毕业设计选题系统</b> 。</p><p style='font-size:16px; color:#333;'>以下是您的部署情况: </p><div style='text-align:center; margin:20px 0;'><span style='display:inline-block; font-size:28px; font-weight:bold; color:#fff; background:#00785a; padding:10px 20px; border-radius:6px;'>${message}</span></div><p style='font-size:14px; color:#666;'>部署情况非常重要，因为本项目使用单体架构，如果失效需要立刻检查。</p><hr style='margin:30px 0; border:none; border-top:1px solid #ddd;'/><p style='font-size:12px; color:#999; text-align:center;'>此邮件由系统自动发送，请不要直接回复。</p></div></body></html>" | msmtp -t
