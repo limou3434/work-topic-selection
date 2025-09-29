@@ -153,7 +153,9 @@ export default () => {
           });
 
           // 如果接口没有 total，请确认接口或前端处理
+          // @ts-ignore
           const data = response.data?.records || response.data || [];
+          // @ts-ignore
           const totalCount = response.data?.total || data.length;
 
           setTotal(totalCount);
