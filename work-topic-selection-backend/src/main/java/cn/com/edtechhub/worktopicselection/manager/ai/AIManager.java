@@ -34,7 +34,6 @@ public class AIManager {
      *
      * @param userId      用户标识
      * @param userContent 提问内容
-     * @return AiResult
      */
     public AIResult sendAi(
             String userId,

@@ -2264,7 +2264,7 @@ public class UserController {
         String raw = id + "-" + factor;
         String userId = UUID.nameUUIDFromBytes(raw.getBytes(StandardCharsets.UTF_8)).toString();
 
-        AIResult aiResult = aiManager.sendAi(userId, topicTitle + topicContent);
+        AIResult aiResult = aiManager.sendAi(userId, topicTitle + "在题库中有相似的题目存在么？给出判断相似程度的 JSON 响应");
         return TheResult.success(CodeBindMessageEnums.SUCCESS, aiResult);
     }
 
