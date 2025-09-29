@@ -133,7 +133,7 @@ const getRowClassName = (record: TableListItem) => {
   const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
   // 如果距离结束日期还有3天或更少，显示红色背景
-  if (daysDiff <= 3) {
+  if (daysDiff <= 1) {
     return 'row-ending-soon';
   }
 
@@ -185,7 +185,7 @@ const TopicTable: React.FC<{ teacherName: string }> = ({ teacherName }) => {
           <span>题目列表</span>
           <div style={{ fontSize: '12px', color: '#666', marginLeft: '20px' }}>
             <span style={{ marginRight: '15px' }}><span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#ffe58f', marginRight: '4px' }}></span>尚未开始</span>
-            <span><span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#ffccc7', marginRight: '4px', border: '1px solid #ff7875' }}></span>即将结束</span>
+            <span><span style={{ display: 'inline-block', width: '12px', height: '12px', backgroundColor: '#ffccc7', marginRight: '4px', border: '1px solid #ff7875' }}></span>即将结束（1 天内）</span>
           </div>
         </div>
       }
