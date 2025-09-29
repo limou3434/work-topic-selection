@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Descriptions, message, Spin, Empty, Flex } from 'antd';
+import { Card, Button, Descriptions, message, Spin, Empty, Flex, Modal } from 'antd';
 import {
   getSelectTopicUsingPost,
   withdrawUsingPost,
@@ -27,13 +27,22 @@ export default () => {
 
   const handleWithdraw = async () => {
     if (!topic?.id) return;
-    const res = await withdrawUsingPost({ id: topic.id });
-    if (res.code === 0) {
-      message.success(res.message);
-      fetchTopic(); // 刷新数据
-    } else {
-      message.error(res.message);
-    }
+
+    Modal.confirm({
+      title: '谨慎操作',
+      content: '您确定要退选当前题目吗？',
+      okText: '确认',
+      cancelText: '取消',
+      onOk: async () => {
+        const res = await withdrawUsingPost({ id: topic.id });
+        if (res.code === 0) {
+          message.success('退选成功');
+          fetchTopic(); // 刷新数据
+        } else {
+          message.error(res.message || '退选失败');
+        }
+      },
+    });
   };
 
   useEffect(() => {

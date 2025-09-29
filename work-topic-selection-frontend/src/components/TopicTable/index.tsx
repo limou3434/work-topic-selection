@@ -108,9 +108,12 @@ const columns: ProColumns<TableListItem>[] = [
  * @returns CSS类名
  */
 const getRowClassName = (record: TableListItem) => {
+  // 检查是否剩余数量为0
+  const isDisabled = record.surplusQuantity === 0;
+  
   // 如果题目没有开始时间或结束时间，返回默认样式
   if (!record.startTime || !record.endTime) {
-    return record.surplusQuantity === 0 ? 'row-disabled' : '';
+    return isDisabled ? 'row-disabled' : '';
   }
 
   // 解析日期
@@ -120,12 +123,12 @@ const getRowClassName = (record: TableListItem) => {
 
   // 如果还没到开始时间，显示黄色背景
   if (now < startDate) {
-    return 'row-not-started';
+    return isDisabled ? 'row-not-started row-disabled' : 'row-not-started';
   }
 
   // 如果已经结束，显示白色背景（默认样式）
   if (now > endDate) {
-    return record.surplusQuantity === 0 ? 'row-disabled' : '';
+    return isDisabled ? 'row-disabled' : '';
   }
 
   // 计算距离结束日期的天数
@@ -134,11 +137,11 @@ const getRowClassName = (record: TableListItem) => {
 
   // 如果距离结束日期还有3天或更少，显示红色背景
   if (daysDiff <= 1) {
-    return 'row-ending-soon';
+    return isDisabled ? 'row-ending-soon row-disabled' : 'row-ending-soon';
   }
 
   // 其他情况显示白色背景（默认样式）
-  return record.surplusQuantity === 0 ? 'row-disabled' : '';
+  return isDisabled ? 'row-disabled' : '';
 };
 
 const TopicTable: React.FC<{ teacherName: string }> = ({ teacherName }) => {

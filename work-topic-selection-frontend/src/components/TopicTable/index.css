@@ -13,3 +13,10 @@
   border-color: #ff7875;
   color: #000;
 }
+
+.row-ending-soon.row-disabled td {
+  background-color: #ffccc7;
+  border-color: #ff7875;
+  color: #000;
+  text-decoration: line-through;
+}
