@@ -12,7 +12,7 @@ import {
 } from "@/services/work-topic-selection/userController";
 import {ClockCircleOutlined, EyeOutlined, MinusOutlined, PlusOutlined} from "@ant-design/icons";
 import {ModalForm} from "@ant-design/pro-form/lib";
-import {ProFormDateRangePicker} from '@ant-design/pro-form';
+import {ProFormDateTimeRangePicker} from '@ant-design/pro-form';
 
 export type TableListItem = {
   id: number;
@@ -308,7 +308,7 @@ export default () => {
                         }
                       }}
                     >
-                      <ProFormDateRangePicker
+                      <ProFormDateTimeRangePicker
                         name="timeRange"
                         label="时间范围"
                         style={{width: '100%'}}
