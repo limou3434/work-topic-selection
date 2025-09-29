@@ -176,7 +176,7 @@ const Welcome: React.FC = () => {
                   <Text strong>
                     <ul>
                       <li>
-                        <Text code>关注教师所出毕设题目</Text>
+                        <Text code>持续关注并且大致浏览教师所出的毕设题目</Text>
                       </li>
                       <li>
                         <Text code>确认预选毕业设计题目</Text> 或 <Text code>取消预选毕业设计题目</Text>
@@ -188,15 +188,15 @@ const Welcome: React.FC = () => {
                   </Text>
                 </Paragraph>
                 <Paragraph>
-                  学生应当<Text underline>在题目开放前</Text>，预选自己心仪的 <Text code>毕业设计题目（后续简称"题目"）</Text>。而<Text
-                  underline>在题目开放后</Text>可以预选题目。当教师双选环节结束后，学生才能开始抢夺题目，每个学生只能选择一个题目，并且成功之后无法再次预选题目（除非取消已经提交的题目）。
+                  学生应当 <Text underline>在学生单选模式时</Text>，预选自己心仪的 <Text code>毕业设计题目（后续简称"题目"）</Text>。而 <Text
+                  underline>在题目开放后</Text> 可以预选题目（最多预选 10 条）。当教师单选环节结束后，学生才能开始抢夺题目，每个学生只能选择一个题目，并且成功之后无法再次预选题目（除非取消已经提交的题目）。
                 </Paragraph>
                 <Paragraph>
-                  本系统 <Text mark>提供取消当前已经提交题目的功能，但请慎重选择</Text>。若您发现无法取消当前已提交的题目，则需要联系自己当前已提交题目所对应导师进行处理。
+                  本系统 <Text mark>提供退选题目的功能，但请慎重使用</Text>。若您发现无法取消当前已提交的题目，则需要联系题目所对应导师进行退选处理。
                 </Paragraph>
                 <Paragraph>
                   抢题过程中，请不要过分使用某些连点器工具来使用本系统，<Text
-                  style={{color: 'red'}}>一旦被系统检测到账号异常行为将会进行临时封号</Text>，严重将导致您的选题安排。
+                  style={{color: 'red'}}>一旦被系统检测到账号异常行为将会进行临时封号</Text>，严重将导致影响您的选题安排。
                 </Paragraph>
                 <Paragraph>
                   <Collapse
@@ -222,7 +222,7 @@ const Welcome: React.FC = () => {
                                 color: '#555',
                                 fontSize: 14,
                               }}>
-                                （1）学生在题目开放前，点击菜单栏"学生选题 → 预选选题"，可以查看不同教师所发布的题目
+                                1. 学生在题目开放前，点击菜单栏"学生选题 → 预选选题"，可以查看不同教师所发布的题目
                               </div>
                             </div>
                             <div>
@@ -236,7 +236,7 @@ const Welcome: React.FC = () => {
                                 color: '#555',
                                 fontSize: 14,
                               }}>
-                                （2）虽然题目暂时还没有开放，但是可以点击"预选题目"进行预选
+                                2. 虽然题目暂时还没有开放，但是可以点击"预选题目"进行预选
                               </div>
                             </div>
                             <div>
@@ -250,7 +250,7 @@ const Welcome: React.FC = () => {
                                 color: '#555',
                                 fontSize: 14,
                               }}>
-                                （3）开放后，点击菜单栏"提交选题"，确认后只能选择一个题目
+                                3. 开放后，点击菜单栏"提交选题"，确认后只能选择一个题目
                               </div>
                             </div>
                             <div>
@@ -264,7 +264,7 @@ const Welcome: React.FC = () => {
                                 color: '#555',
                                 fontSize: 14,
                               }}>
-                                （4）点击菜单栏"查看选题"后可以查看最终选得题目的详细信息
+                                4. 点击菜单栏"查看选题"后可以查看最终选得题目的详细信息
                               </div>
                             </div>
                           </Carousel>
@@ -274,12 +274,12 @@ const Welcome: React.FC = () => {
                 </Paragraph>
               </Tabs.TabPane>
               <Tabs.TabPane tab="教师使用手册" key="2">
-                <Paragraph>如果您是教师，您的主要操作就是</Paragraph>
+                <Paragraph>教师的操作流程：</Paragraph>
                 <Paragraph>
                   <Text strong>
                     <ul>
                       <li>
-                        <Text code>发布题目 或 修改题目</Text>
+                        <Text code>发布题目</Text> 或 <Text code>修改题目</Text>
                       </li>
                       <li>
                         <Text code>查看题目状态</Text>
@@ -289,6 +289,17 @@ const Welcome: React.FC = () => {
                       </li>
                     </ul>
                   </Text>
+                </Paragraph>
+                <Paragraph>
+                  教师应当 <Text underline>在教师单选模式时</Text>，预先提交所出的 <Text code>毕业设计题目（后续简称"题目"）</Text>。不同教师的出题上限不同，而且 <Text
+                  underline>在题目开放后</Text> 可以提起选择题目所对应的学生。当教师单选模式环节结束后，学生才能开始抢夺题目。
+                </Paragraph>
+                <Paragraph>
+                  本系统 <Text mark>提供退选题目的功能，但请慎重使用</Text>。若您发现无法对某个学生进行退选，则需要联系管理员进行处理。
+                </Paragraph>
+                <Paragraph>
+                  出题过程中，可以考虑使用 <Text code>AI</Text> 检测工具来查验本题目是否和近三年的题目相同，<Text
+                  style={{color: 'red'}}>请谨慎使用，每位教师一天最多使用 30 次 AI 校验工具</Text>，请珍惜使用。
                 </Paragraph>
                 <Paragraph>
                   <Collapse
@@ -315,7 +326,7 @@ const Welcome: React.FC = () => {
                               color: '#555',
                               fontSize: 14,
                             }}>
-                              （1）点击菜单栏"教师发布 → 发布题目和修改题目"，这里可以看到自己发布的所有题目
+                              1. 点击菜单栏"教师发布 → 发布题目和修改题目"，这里可以看到自己发布的所有题目
                             </div>
                           </div>
                           <div>
@@ -329,7 +340,7 @@ const Welcome: React.FC = () => {
                               color: '#555',
                               fontSize: 14,
                             }}>
-                              （2）点击表格上方的"添加题目"，填写关于题目的信息表单
+                              2. 点击表格上方的"添加题目"，填写关于题目的信息表单，并且可以比较题目在 3 年内的相似程度（仅供参考）
                             </div>
                           </div>
                           <div>
@@ -343,7 +354,7 @@ const Welcome: React.FC = () => {
                               color: '#555',
                               fontSize: 14,
                             }}>
-                              （3）点击"提交"按钮后即可发布题目，等待主任审核题目通过
+                              3. 点击"提交"按钮后即可发布题目，等待主任审核题目通过
                             </div>
                           </div>
                           <div>
@@ -357,7 +368,7 @@ const Welcome: React.FC = () => {
                               color: '#555',
                               fontSize: 14,
                             }}>
-                              （4）点击表格列"操作"区域的"编辑"，修改后点击"保存"，即可更新选题（也可"删除"后重新添加）
+                              4. 点击表格列"操作"区域的"编辑"，修改后点击"保存"，即可更新选题（也可"删除"后重新添加）
                             </div>
                           </div>
                           <div>
@@ -371,7 +382,7 @@ const Welcome: React.FC = () => {
                               color: '#555',
                               fontSize: 14,
                             }}>
-                              （5）若题目状态为"打回"，需根据打回理由修改后，点击"重新提交审核"，进入"待审核"状态
+                              5. 若题目状态为"打回"，需根据打回理由修改后，点击"重新提交审核"，进入"待审核"状态
                             </div>
                           </div>
                           <div>
@@ -385,7 +396,7 @@ const Welcome: React.FC = () => {
                               color: '#555',
                               fontSize: 14,
                             }}>
-                              （6）题目处于"已发布"状态后，教师可点击"操作"区域的"选择学生"，进行双选
+                              6. 题目处于"已发布"状态后，教师可点击"操作"区域的"选择学生"，进行双选
                             </div>
                           </div>
                           <div>
@@ -399,7 +410,7 @@ const Welcome: React.FC = () => {
                               color: '#555',
                               fontSize: 14,
                             }}>
-                              （7）点击"教师发布 → 查看选择自己的学生"查看情况，可视情况点击"退选"帮助学生取消选题
+                              7. 点击"教师发布 → 查看选择自己的学生"查看情况，可视情况点击"退选"帮助学生取消选题
                             </div>
                           </div>
                         </Carousel>
@@ -409,12 +420,12 @@ const Welcome: React.FC = () => {
                 </Paragraph>
               </Tabs.TabPane>
               <Tabs.TabPane tab="主任使用手册" key="3">
-                <Paragraph>如果您是主任，您的主要操作就是</Paragraph>
+                <Paragraph>主任的操作流程：</Paragraph>
                 <Paragraph>
                   <Text strong>
                     <ul>
                       <li>
-                        <Text code>审核题目（通过题目 或 打回题目）</Text>
+                        <Text code>审核题目（通过题目、打回题目）</Text>
                       </li>
                       <li>
                         <Text code>查看本系部学生的选题情况</Text>
@@ -424,6 +435,25 @@ const Welcome: React.FC = () => {
                       </li>
                     </ul>
                   </Text>
+                </Paragraph>
+                <Paragraph>
+                  主任应当 <Text underline>在开启双选之前</Text>，审核本系所提交的所有 <Text code>毕业设计题目（后续简称"题目"）</Text>。教师所出的题目如果被打回，后续再次修改后可以重新提交审核。
+                </Paragraph>
+                <Paragraph>
+                  本系统 <Text mark>提供主任切换角色的特殊功能（满足主任也可以出题的条件），但使用有一些条件</Text>。若您发现无法快速切换身份，则需要联系管理员进行处理。
+                </Paragraph>
+                <Paragraph>
+                  <ol>
+                    <li>
+                        使用主任帐号登录系统，在初始化帐号的时候，修改密码、绑定邮箱
+                    </li>
+                    <li>
+                      使用另外一个管理员提供的教师帐号登录系统，<Text style={{color: 'red'}}>修改密码（需要保证和主任帐号相同）、绑定邮箱（需要保证和主任帐号相同）</Text>，否则将无法切换角色
+                    </li>
+                    <li>
+                        然后就可以在对应的主任帐号或教师帐号中来回切换登陆（偶尔因为浏览器缓存的缘故需要刷新浏览器才生效，实在无法解决找管理员）
+                    </li>
+                  </ol>
                 </Paragraph>
                 <Paragraph>
                   <Collapse
@@ -450,7 +480,7 @@ const Welcome: React.FC = () => {
                               color: '#555',
                               fontSize: 14,
                             }}>
-                              （1）点击菜单栏的"审核"，即可查看本系教师提交的所有题目
+                              1. 点击菜单栏的"审核"，即可查看本系教师提交的所有题目
                             </div>
                           </div>
                           <div>
@@ -464,7 +494,7 @@ const Welcome: React.FC = () => {
                               color: '#555',
                               fontSize: 14,
                             }}>
-                              （2）审核题目时，如需打回，需填写"打回理由"
+                              2. 审核题目时，如需打回，需填写"打回理由"
                             </div>
                           </div>
                           <div>
@@ -478,7 +508,21 @@ const Welcome: React.FC = () => {
                               color: '#555',
                               fontSize: 14,
                             }}>
-                              （3）点击菜单栏"选题 → 选题情况"，可查看本系学生的选题情况，并支持导出详细的表格
+                              3. 点击菜单栏"选题 → 选题情况"，可查看本系学生的选题情况，并支持导出详细的表格
+                            </div>
+                          </div>
+                          <div>
+                            <Image src="./steps/dept/4.jpg" style={{width: '100%', borderRadius: 8}}/>
+                            <div style={{
+                              textAlign: 'center',
+                              marginTop: 12,
+                              padding: '8px 12px',
+                              background: '#f9f9f9',
+                              borderRadius: 6,
+                              color: '#555',
+                              fontSize: 14,
+                            }}>
+                              4. 左下角（或右上角）可以选择退出登陆，也可以选择切换角色，方便主任可以作为教师出题
                             </div>
                           </div>
                         </Carousel>
