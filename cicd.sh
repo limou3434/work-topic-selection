@@ -31,14 +31,14 @@ echo "网关部署..." && sudo docker compose down work-caddy && sudo docker com
 # 检查访问
 echo "准备邮件(等待 10 s...)" && sleep 10
 
-frontend_status=$(curl -s http://127.0.0.1:3001)
+frontend_status=$(curl -s https://wts.edtechhub.com.cn)
 if [[ "$frontend_status" == *"<html>"* ]]; then
     frontend_message="✅ 前端存活"
 else
     frontend_message="❌ 前端失效"
 fi
 
-backend_status=$(curl -s http://127.0.0.1:8001)
+backend_status=$(curl -s https://wts.edtechhub.com.cn/work_topic_selection_api/test)
 if [[ "$backend_status" == *"code"* ]]; then
     backend_message="✅ 后端存活"
 else
