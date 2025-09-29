@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Descriptions, message, Spin, Empty, Flex, Modal } from 'antd';
+import { Card, Button, Descriptions, message, Spin, Empty, Flex, Modal, Typography } from 'antd';
 import {
   getSelectTopicUsingPost,
   withdrawUsingPost,
 } from '@/services/work-topic-selection/userController';
+
+const { Title } = Typography;
 
 export default () => {
   const [loading, setLoading] = useState(true);
@@ -51,6 +53,7 @@ export default () => {
 
   return (
     <Spin spinning={loading}>
+      <Title level={2} style={{ textAlign: 'center', margin: '16px 0' }}>我的选题</Title>
       <Flex justify="center" align="center" style={{ minHeight: 300 }}>
         {topic ? (
           <Card
