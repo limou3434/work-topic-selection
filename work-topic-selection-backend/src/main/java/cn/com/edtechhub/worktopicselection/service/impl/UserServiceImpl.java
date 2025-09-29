@@ -90,6 +90,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return Objects.equals(user.getUserRole(), UserRoleEnum.ADMIN.getCode());
     }
 
+    @Override
+    public Boolean userIsDept(User user) {
+        return Objects.equals(user.getUserRole(), UserRoleEnum.DEPT.getCode());
+    }
+
     // TODO: 下面代码可以迁移到 UserVO 中
 
     @Override
