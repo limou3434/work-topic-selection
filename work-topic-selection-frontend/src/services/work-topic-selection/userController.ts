@@ -735,6 +735,29 @@ export async function updateTopicUsingPost(
   });
 }
 
+/** getViewTopicStatus GET /user/view_topic */
+export async function getViewTopicStatusUsingGet(options?: { [key: string]: any }) {
+  return request<API.BaseResponseBoolean_>('/user/view_topic', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+/** setViewTopicStatus POST /user/view_topic */
+export async function setViewTopicStatusUsingPost(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.setViewTopicStatusUsingPOSTParams,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseString_>('/user/view_topic', {
+    method: 'POST',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}
+
 /** withdraw POST /user/withdraw */
 export async function withdrawUsingPost(
   body: API.DeleteTopicRequest,

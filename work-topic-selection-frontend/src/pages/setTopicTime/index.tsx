@@ -5,8 +5,10 @@ import {
   getCrossTopicStatusUsingGet,
   getSwitchSingleChoiceStatusUsingGet,
   getTopicListUsingPost,
+  getViewTopicStatusUsingGet,
   setCrossTopicStatusUsingPost,
   setSwitchSingleChoiceStatusUsingPost,
+  setViewTopicStatusUsingPost,
   setTimeByIdUsingPost,
   unsetTimeByIdUsingPost
 } from "@/services/work-topic-selection/userController";
@@ -97,6 +99,8 @@ export default () => {
   const [crossTopicStatus, setCrossTopicStatus] = useState<boolean>(false);
   // 角色模式开关状态
   const [singleChoiceStatus, setSingleChoiceStatus] = useState<boolean>(false);
+  // 查看查看选题开关状态
+  const [viewTopicStatus, setViewTopicStatus] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
   // 获取开关状态
@@ -110,6 +114,10 @@ export default () => {
         // 获取角色模式开关状态
         const singleRes = await getSwitchSingleChoiceStatusUsingGet();
         setSingleChoiceStatus(singleRes.data || false);
+
+        // 获取查看选题开关状态
+        const viewRes = await getViewTopicStatusUsingGet();
+        setViewTopicStatus(viewRes.data || false);
       } catch (error) {
         console.error("获取开关状态失败:", error);
       } finally {
@@ -150,6 +158,23 @@ export default () => {
       message.error("操作失败，请重试");
       // 恢复开关状态
       setSingleChoiceStatus(!checked);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 更新查看选题开关状态
+  const handleViewTopicStatusChange = async (checked: boolean) => {
+    try {
+      setLoading(true);
+      const res = await setViewTopicStatusUsingPost({enabled: checked});
+      setViewTopicStatus(checked);
+      message.success(res.data);
+    } catch (error) {
+      console.error("更新查看选题开关状态失败:", error);
+      message.error("操作失败，请重试");
+      // 恢复开关状态
+      setViewTopicStatus(!checked);
     } finally {
       setLoading(false);
     }
@@ -201,6 +226,31 @@ export default () => {
                         color: crossTopicStatus ? '#3c8618' : '#ff4d4f'
                       }}>
                         {crossTopicStatus ? '已开启' : '已关闭'}
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '12px'
+                  }}>
+                    <span style={{fontWeight: 500}}>学生查看选题：</span>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                      <Switch
+                        checked={viewTopicStatus}
+                        onChange={handleViewTopicStatusChange}
+                        loading={loading}
+                      />
+                      <span style={{
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        backgroundColor: viewTopicStatus ? '#e6ffec' : '#fff0f0',
+                        color: viewTopicStatus ? '#3c8618' : '#ff4d4f'
+                      }}>
+                        {viewTopicStatus ? '已开启' : '已关闭'}
                       </span>
                     </div>
                   </div>
