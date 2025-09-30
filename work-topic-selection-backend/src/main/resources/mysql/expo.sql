@@ -10,5 +10,6 @@ SELECT
         WHEN 0 THEN '学生'
         END AS 角色,
     `dept` AS 系部,
-    `project` AS 专业
+    `project` AS 专业,
+    `topicAmount` AS 出题数量或预选数量
 FROM `user`;
