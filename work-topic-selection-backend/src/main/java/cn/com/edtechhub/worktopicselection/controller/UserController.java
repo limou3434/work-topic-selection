@@ -1722,9 +1722,14 @@ public class UserController {
         long size = request.getPageSize();
         ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "页大小必须大于 0");
 
+        // 如果是学生, 则必须检查此时是否允许允许学生查看题目
+        User loginUser = userService.userGetCurrentLoginUser();
+        if (userService.userIsStudent(loginUser)) {
+            ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.VIEW_TOPIC_SWITCH), CodeBindMessageEnums.NOT_FOUND_ERROR, "当前时间学生无法查看选题, 请等待系统开放");
+        }
+
         // 获取查询条件
         QueryWrapper<Topic> queryWrapper = topicService.getQueryWrapper(request);
-        User loginUser = userService.userGetCurrentLoginUser();
         Integer userRole = loginUser.getUserRole();
         if (userRole == 2) {
             // 如果是主任只看到本系部的选题
