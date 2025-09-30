@@ -574,6 +574,9 @@ public class UserController {
         ThrowUtils.throwIf(user == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "该用户不存在, 无需重置密码");
         assert user != null;
 
+        // 禁止对超级管理员进行操作
+        ThrowUtils.throwIf(user.getUserRole().equals(UserRoleEnum.ADMIN.getCode()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "禁止对超级管理员进行该操作");
+
         // 获取新的初始化密码
         return transactionTemplate.execute(transactionStatus -> {
             String newEncryptPassword = DigestUtils.md5DigestAsHex((UserConstant.SALT + UserConstant.DEFAULT_PASSWD).getBytes());
