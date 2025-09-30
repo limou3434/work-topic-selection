@@ -74,6 +74,7 @@ export default () => {
     {
       title: '题目标题',
       dataIndex: 'topic',
+      editable: false,
     },
     {
       title: '题目类型',
@@ -99,6 +100,7 @@ export default () => {
       title: '所属系部',
       dataIndex: 'deptName',
       valueType: 'select',
+      editable: false,
       request: async () => {
         const response = await getDeptListUsingPost({});
         return (
@@ -113,6 +115,7 @@ export default () => {
       title: '系部主任',
       dataIndex: 'deptTeacher',
       valueType: 'select',
+      editable: false,
       request: async () => {
         const response = await getTeacherUsingPost1({userRole: 2});
         return (
@@ -305,7 +308,14 @@ export default () => {
             message.warning('已发布的题目不允许编辑');
             return false;
           }
-          const res = await updateTopicUsingPost({updateTopicListRequests: [record]});
+          // 使用新的更新接口，只需要传入题目名称和其他可修改字段
+          const res = await updateTopicUsingPost({
+            topicName: record.topic, // 题目名称作为唯一标识
+            type: record.type,
+            description: record.description,
+            requirement: record.requirement,
+            deptTeacher: record.deptTeacher,
+          });
           if (res.code === 0) {
             message.success(res.message);
             return true;

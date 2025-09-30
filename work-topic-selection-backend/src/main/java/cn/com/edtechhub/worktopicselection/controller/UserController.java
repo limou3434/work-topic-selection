@@ -1511,9 +1511,6 @@ public class UserController {
         String requirement = request.getRequirement();
         ThrowUtils.throwIf(StringUtils.isBlank(requirement), CodeBindMessageEnums.PARAMS_ERROR, "题目要求不能为空");
 
-        String deptTeacher = request.getDeptTeacher();
-        ThrowUtils.throwIf(StringUtils.isBlank(deptTeacher), CodeBindMessageEnums.PARAMS_ERROR, "系部老师不能为空");
-
         // 获取当前登陆的教师
         User loginUser = userService.userGetCurrentLoginUser();
 
@@ -1522,13 +1519,12 @@ public class UserController {
                 new QueryWrapper<Topic>()
                         .eq("topic", topicName)
                         .eq("teacherName", loginUser.getUserName())
-                        .eq("dept", loginUser.getDept())
+                        .eq("deptName", loginUser.getDept())
         ); // TODO: 这里有极端情况, 如果恰巧有相同名字的教师, 处于相同系部, 在同一时间点修改了恰好导入相同名字的题目, 就会出现问题(但是我感觉不太可能因为题目首先就不可能导入一样的)
 
         topic.setType(type);
         topic.setDescription(description);
         topic.setRequirement(requirement);
-        topic.setDeptTeacher(deptTeacher);
 
         // 更新题目
         return transactionTemplate.execute(transactionStatus -> {

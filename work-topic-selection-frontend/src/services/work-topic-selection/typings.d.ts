@@ -415,6 +415,11 @@ declare namespace API {
     topicList?: Topic[];
   };
 
+  type setViewTopicStatusUsingPOSTParams = {
+    /** enabled */
+    enabled: boolean;
+  };
+
   type SituationVO = {
     amount?: number;
     selectAmount?: number;
@@ -481,23 +486,12 @@ declare namespace API {
     topicList?: Topic[];
   };
 
-  type UpdateTopicListRequest = {
-    deptName?: string;
+  type UpdateTopicRequest = {
     deptTeacher?: string;
     description?: string;
-    id?: number;
     requirement?: string;
-    teacherName?: string;
-    topic?: string;
+    topicName?: string;
     type?: string;
-  };
-
-  type UpdateTopicRequest = {
-    current?: number;
-    pageSize?: number;
-    sortField?: string;
-    sortOrder?: string;
-    updateTopicListRequests?: UpdateTopicListRequest[];
   };
 
   type uploadFileUsingPOSTParams = {

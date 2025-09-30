@@ -37,11 +37,6 @@ public class UpdateTopicRequest implements Serializable {
      */
     private String requirement;
 
-    /**
-     * 系部主任
-     */
-    private String deptTeacher;
-
     /// 序列化字段 ///
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
