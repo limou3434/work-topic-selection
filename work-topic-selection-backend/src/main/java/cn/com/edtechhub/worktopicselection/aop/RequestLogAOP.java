@@ -59,7 +59,7 @@ public class RequestLogAOP implements HandlerInterceptor {
     @Override
     public boolean preHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) {
         // 打印来源日志信息
-        String device = DeviceUtils.getRequestDevice( request);
+        String device = DeviceUtils.getRequestDevice(request);
         String ip = IpUtils.getIpAddress(request);
         String method = request.getMethod();
         String uri = request.getRequestURI();
