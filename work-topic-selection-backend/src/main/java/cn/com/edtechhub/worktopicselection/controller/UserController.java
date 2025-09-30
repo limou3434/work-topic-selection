@@ -2258,7 +2258,7 @@ public class UserController {
     }
 
     /**
-     * 查询跨系选题是否开启
+     * 查询是否允许跨系状态
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
@@ -2274,7 +2274,7 @@ public class UserController {
     }
 
     /**
-     * 设置跨系选题开关
+     * 设置是否允许跨系开关
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
@@ -2291,7 +2291,7 @@ public class UserController {
     }
 
     /**
-     * 查询允许学生查看选题是否开启
+     * 查询学生查看选题状态
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
@@ -2307,7 +2307,7 @@ public class UserController {
     }
 
     /**
-     * 设置允许学生查看选题开关
+     * 查询学生查看选题开关
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
@@ -2324,7 +2324,7 @@ public class UserController {
     }
 
     /**
-     * 查询单选模式是否切换
+     * 查询单选模式切换状态
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
@@ -2340,7 +2340,7 @@ public class UserController {
     }
 
     /**
-     * 设置单选模式开关
+     * 查询单选模式切换开关
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
