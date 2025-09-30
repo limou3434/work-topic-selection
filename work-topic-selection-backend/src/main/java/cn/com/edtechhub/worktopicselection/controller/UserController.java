@@ -1499,53 +1499,41 @@ public class UserController {
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
         assert request != null;
 
-        long current = request.getCurrent();
-        ThrowUtils.throwIf(current < 1, CodeBindMessageEnums.PARAMS_ERROR, "当前页码必须大于 0");
+        String topicName = request.getTopicName();
+        ThrowUtils.throwIf(StringUtils.isBlank(topicName), CodeBindMessageEnums.PARAMS_ERROR, "需要修改题目时必须传该题目的标题");
 
-        long size = request.getPageSize();
-        ThrowUtils.throwIf(size < 1, CodeBindMessageEnums.PARAMS_ERROR, "每页大小必须大于 0");
+        String type = request.getType();
+        ThrowUtils.throwIf(StringUtils.isBlank(type), CodeBindMessageEnums.PARAMS_ERROR, "题目类型不能为空");
+
+        String description = request.getDescription();
+        ThrowUtils.throwIf(StringUtils.isBlank(description), CodeBindMessageEnums.PARAMS_ERROR, "题目描述不能为空");
+
+        String requirement = request.getRequirement();
+        ThrowUtils.throwIf(StringUtils.isBlank(requirement), CodeBindMessageEnums.PARAMS_ERROR, "题目要求不能为空");
+
+        String deptTeacher = request.getDeptTeacher();
+        ThrowUtils.throwIf(StringUtils.isBlank(deptTeacher), CodeBindMessageEnums.PARAMS_ERROR, "系部老师不能为空");
 
         // 获取当前登陆的教师
         User loginUser = userService.userGetCurrentLoginUser();
-        final String teacherName = loginUser.getUserName();
 
-        // 获取当前登陆教师所提交的所有选题分页数据
-        Page<Topic> page = new Page<>(current, size);
-        QueryWrapper<Topic> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("teacherName", teacherName);
-        IPage<Topic> teacherTopicsPage = topicService.page(page, queryWrapper);
-        List<Topic> teacherTopics = teacherTopicsPage.getRecords();
+        // 找到符合条件的题目
+        Topic topic = topicService.getOne(
+                new QueryWrapper<Topic>()
+                        .eq("topic", topicName)
+                        .eq("teacherName", loginUser.getUserName())
+                        .eq("dept", loginUser.getDept())
+        ); // TODO: 这里有极端情况, 如果恰巧有相同名字的教师, 处于相同系部, 在同一时间点修改了恰好导入相同名字的题目, 就会出现问题(但是我感觉不太可能因为题目首先就不可能导入一样的)
 
-        // 处理请求列表中的所有 id (也就是前端表格中的所有列的数据)
-        List<UpdateTopicListRequest> updateTopicListRequests = request.getUpdateTopicListRequests();
-        Set<Long> updateTopicIds = updateTopicListRequests.stream().map(UpdateTopicListRequest::getId).collect(Collectors.toSet());
+        topic.setType(type);
+        topic.setDescription(description);
+        topic.setRequirement(requirement);
+        topic.setDeptTeacher(deptTeacher);
 
-        // 过滤 teacherTopics 中不在 updateTopicIds 中的项
-        List<Topic> topicsToRemove = teacherTopics
-                .stream()
-                .filter(topic -> !updateTopicIds.contains(topic.getId()))
-                .collect(Collectors.toList());
-
+        // 更新题目
         return transactionTemplate.execute(transactionStatus -> {
-            // 删除 topicsToRemove 中的所有项
-            if (!topicsToRemove.isEmpty()) {
-                List<Long> topicsToRemoveIds = topicsToRemove.stream().map(Topic::getId).collect(Collectors.toList());
-                topicService.removeByIds(topicsToRemoveIds);
-                // 删除与这些主题相关的学生选择记录
-                for (Long topicId : topicsToRemoveIds) {
-                    studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("topicId", topicId));
-                }
-            }
-
-            // 更新 updateTopicListRequests 中的项
-            for (UpdateTopicListRequest updateRequest : updateTopicListRequests) {
-                Topic topic = new Topic();
-                BeanUtils.copyProperties(updateRequest, topic);
-                topic.setStatus(TopicStatusEnum.PENDING_REVIEW.getCode());
-                boolean result = topicService.updateById(topic);
-                ThrowUtils.throwIf(!result, CodeBindMessageEnums.SYSTEM_ERROR, "更新失败");
-            }
-
+            boolean result = topicService.updateById(topic);
+            ThrowUtils.throwIf(!result, CodeBindMessageEnums.SYSTEM_ERROR, "更新失败");
             return TheResult.success(CodeBindMessageEnums.SUCCESS, "更新成功");
         });
     }
