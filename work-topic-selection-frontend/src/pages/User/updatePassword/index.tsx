@@ -81,10 +81,10 @@ const Register: React.FC = () => {
     }
 
     // 检查是否是支持的邮箱类型
-    const supportedEmails = ['qq.com', 'gmail.com'];
+    const supportedEmails = ['qq.com', 'gmail.com', 'nfu.edu.cn'];
     const emailDomain = email.split('@')[1];
     if (!supportedEmails.includes(emailDomain)) {
-      message.error('本系统仅支持 QQ 邮箱和 Gmail 邮箱');
+      message.error('本系统仅支持 QQ 邮箱、Gmail 邮箱、校内邮箱');
       return;
     }
 
@@ -160,10 +160,10 @@ const Register: React.FC = () => {
       }
 
       // 检查是否是支持的邮箱类型
-      const supportedEmails = ['qq.com', 'gmail.com'];
+      const supportedEmails = ['qq.com', 'gmail.com', 'nfu.edu.cn'];
       const emailDomain = email.split('@')[1];
       if (!supportedEmails.includes(emailDomain)) {
-        message.error('本系统仅支持 QQ 邮箱和 Gmail 邮箱');
+        message.error('本系统仅支持 QQ 邮箱、Gmail 邮箱、校内邮箱');
         return;
       }
 
@@ -300,8 +300,8 @@ const Register: React.FC = () => {
                 name="email"
                 label={<span>邮箱</span>}
                 fieldProps={{
-                  size: 'large', 
-                  prefix: <UserOutlined/>, 
+                  size: 'large',
+                  prefix: <UserOutlined/>,
                   suffix: (
                     <Tooltip
                       title="本系统支持 QQ 邮箱和 Gmail 邮箱，可以用来在忘记密码时获取临时密码，如果没有填写邮箱并且忘记密码时，需要联系管理员进行密码重置。"
@@ -327,9 +327,9 @@ const Register: React.FC = () => {
 
               {/* 邮箱验证码区域 */}
               {(formRef.current?.getFieldValue('email') || emailForCaptcha || showCaptchaInput) && (
-                <div style={{ 
-                  backgroundColor: '#f0f8ff', 
-                  padding: '16px', 
+                <div style={{
+                  backgroundColor: '#f0f8ff',
+                  padding: '16px',
                   borderRadius: '4px',
                   marginBottom: '16px',
                   border: '1px solid #d9d9d9'
@@ -340,7 +340,7 @@ const Register: React.FC = () => {
                       <InfoCircleOutlined style={{ color: 'rgba(0,0,0,.45)' }} />
                     </Tooltip>
                   </div>
-                  
+
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                     <ProFormText
                       name="emailCaptcha"
@@ -365,10 +365,10 @@ const Register: React.FC = () => {
                       {emailCountdown > 0 ? `重新获取(${emailCountdown}s)` : '获取验证码'}
                     </a>
                   </div>
-                  <div style={{ 
-                    fontSize: '12px', 
-                    color: '#666', 
-                    marginTop: '4px' 
+                  <div style={{
+                    fontSize: '12px',
+                    color: '#666',
+                    marginTop: '4px'
                   }}>
                     验证码将发送到 {formRef.current?.getFieldValue('email') || emailForCaptcha || '您输入的邮箱'}
                   </div>
