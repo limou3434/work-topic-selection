@@ -13,6 +13,11 @@ public interface TopicConstant {
     Integer MAX_REASON_SIZE = 1024;
 
     /**
+     * 查看选题开关缓存 Key
+     */
+    String VIEW_TOPIC_SWITCH = "view-topic-switch";
+
+    /**
      * 跨系选题开关缓存 Key
      */
     String CROSS_TOPIC_SWITCH = "cross-topic-switch";

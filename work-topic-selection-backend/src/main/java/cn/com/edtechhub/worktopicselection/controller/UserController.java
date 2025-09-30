@@ -2291,6 +2291,39 @@ public class UserController {
     }
 
     /**
+     * 查询允许学生查看选题是否开启
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @GetMapping("/view_topic")
+    public BaseResponse<Boolean> getViewTopicStatus() throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, switchService.isEnabled(TopicConstant.VIEW_TOPIC_SWITCH));
+    }
+
+    /**
+     * 设置允许学生查看选题开关
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/view_topic")
+    public BaseResponse<String> setViewTopicStatus(@RequestParam boolean enabled) throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        switchService.setEnabled(TopicConstant.VIEW_TOPIC_SWITCH, enabled);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, (enabled ? "允许" : "禁止") + "学生查看选题");
+    }
+
+    /**
      * 查询单选模式是否切换
      */
     @SaCheckLogin
