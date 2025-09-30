@@ -1824,10 +1824,14 @@ public class UserController {
         // 获取当前登陆用
         User loginUser = userService.userGetCurrentLoginUser();
 
+        // 如果是学生, 则必须检查此时是否允许允许学生查看题目
+        if (userService.userIsStudent(loginUser)) {
+            ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.VIEW_TOPIC_SWITCH), CodeBindMessageEnums.NOT_FOUND_ERROR, "当前时间学生无法查看选题, 请等待系统开放");
+        }
+
         // 查询教师列表
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        userQueryWrapper
-                .eq("userRole", UserRoleEnum.TEACHER.getCode()); // 是教师的
+        userQueryWrapper.eq("userRole", UserRoleEnum.TEACHER.getCode()); // 是教师的
 
         // 如果有教师姓名搜索条件，则添加搜索条件
         if (StringUtils.isNotBlank(teacherName)) {

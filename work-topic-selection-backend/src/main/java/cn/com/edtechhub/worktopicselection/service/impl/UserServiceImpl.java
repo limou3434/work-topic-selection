@@ -95,6 +95,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return Objects.equals(user.getUserRole(), UserRoleEnum.DEPT.getCode());
     }
 
+    @Override
+    public Boolean userIsTeacher(User user) {
+        return Objects.equals(user.getUserRole(), UserRoleEnum.TEACHER.getCode());
+    }
+
+    @Override
+    public Boolean userIsStudent(User user) {
+        return Objects.equals(user.getUserRole(), UserRoleEnum.STUDENT.getCode());
+    }
+
     // TODO: 下面代码可以迁移到 UserVO 中
 
     @Override

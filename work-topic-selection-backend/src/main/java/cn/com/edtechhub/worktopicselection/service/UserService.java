@@ -37,6 +37,12 @@ public interface UserService extends IService<User> {
     // 检查用户是否是主任
     Boolean userIsDept(User user);
 
+    // 检查用户是否是教师
+    Boolean userIsTeacher(User user);
+
+    // 检查用户是否是学生
+    Boolean userIsStudent(User user);
+
     // 获取查询条件
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
