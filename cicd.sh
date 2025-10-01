@@ -66,7 +66,7 @@ Content-Type: text/html; charset=UTF-8
     <div style="text-align:right; margin:0 0 15px 0;">
       <span style="
         display:inline-block;
-        max-width:350px;        /* 最大宽度 */
+        max-width:150px;        /* 最大宽度 */
         box-sizing:border-box;   /* padding 包含在宽度内 */
         font-size:14px;
         font-weight:normal;
