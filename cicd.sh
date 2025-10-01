@@ -64,7 +64,19 @@ Content-Type: text/html; charset=UTF-8
       </div>
     </div>
     <div style="text-align:right; margin:0 0 15px 0;">
-      <span style="font-size:14px; font-weight:normal; color:#fff; background:#00785a; padding:10px 20px; border-radius:6px; display:inline-block; max-width:400px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
+      <span style="
+        display:inline-block;
+        max-width:400px;       /* 最大宽度限制 */
+        font-size:14px;
+        font-weight:normal;
+        color:#fff;
+        background:#00785a;
+        padding:10px 20px;
+        border-radius:6px;
+        overflow:hidden;        /* 超出部分隐藏 */
+        white-space:nowrap;     /* 不换行 */
+        text-overflow:ellipsis; /* 超出显示省略号 */
+      ">
         ${log}
       </span>
     </div>
