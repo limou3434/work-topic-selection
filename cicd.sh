@@ -67,8 +67,8 @@ Content-Type: text/html; charset=UTF-8
         ${message}
       </div>
     </div>
-    <div style="text-align:left; margin:0 0 20px 0;">
-      <div style="font-size:14px; font-weight:normal; color:#fff; background:#00785a; padding:10px 20px; border-radius:6px; white-space:pre-wrap;">
+    <div style="text-align:center; margin:0 0 20px 0;">
+      <div style="font-size:12px; font-weight:normal; color:#fff; background:#00785a; padding:10px 20px; border-radius:6px; white-space:pre-wrap;">
         ${log}
       </div>
     </div>
