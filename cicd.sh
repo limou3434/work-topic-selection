@@ -2,7 +2,7 @@
 set -e
 
 # 拉取项目
-git pull
+git pull && git log -5 --oneline
 
 # 编译项目
 echo "后端编译..." && cd ./work-topic-selection-backend/ && ./mvnw clean package && echo "后端编译完成 ✅"
