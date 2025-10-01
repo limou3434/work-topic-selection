@@ -104,7 +104,7 @@ export const errorConfig: RequestConfig = {
       console.log(data);
 
       if (data?.code === 40103) {
-        message.error('您有恶意访问本站的倾向, 处于保护需求, 本站将您临时封禁, 已经向管理员报备您的动向').then(() =>  {});
+        message.error('您有恶意访问本站的倾向, 出于保护需求, 本站将您临时封禁, 已经向管理员报备您的动向').then(() =>  {});
       }
 
       if (data?.success === false) {
