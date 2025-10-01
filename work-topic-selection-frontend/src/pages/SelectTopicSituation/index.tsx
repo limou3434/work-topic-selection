@@ -6,6 +6,7 @@ import { FloatButton, message } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import RcResizeObserver from 'rc-resize-observer';
 import { useEffect, useState } from 'react';
+import SystemInfoVisualization from '@/components/SystemInfoVisualization';
 
 const { Statistic } = StatisticCard;
 
@@ -190,6 +191,7 @@ const YourComponent = () => {
           ))}
         </div>
       </RcResizeObserver>
+      <SystemInfoVisualization />
     </div>
   );
 };
