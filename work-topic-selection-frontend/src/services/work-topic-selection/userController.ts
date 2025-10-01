@@ -351,6 +351,14 @@ export async function getStudentByTopicIdUsingPost(
   });
 }
 
+/** getSystemInfo GET /user/get/system/info */
+export async function getSystemInfoUsingGet(options?: { [key: string]: any }) {
+  return request<API.BaseResponseTheSystemInfoVO_>('/user/get/system/info', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
 /** getTeacher POST /user/get/teacher */
 export async function getTeacherUsingPost1(
   body: API.TeacherQueryRequest,

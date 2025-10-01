@@ -134,6 +134,12 @@ declare namespace API {
     message?: string;
   };
 
+  type BaseResponseTheSystemInfoVO_ = {
+    code?: number;
+    data?: TheSystemInfoVO;
+    message?: string;
+  };
+
   type BaseResponseUser_ = {
     code?: number;
     data?: User;
@@ -435,6 +441,13 @@ declare namespace API {
     value?: string;
   };
 
+  type TheSystemInfoVO = {
+    cpuUsage?: string;
+    diskUsage?: string;
+    jvmMemoryUsage?: string;
+    memoryUsage?: string;
+  };
+
   type Topic = {
     createTime?: string;
     deptName?: string;
@@ -487,7 +500,6 @@ declare namespace API {
   };
 
   type UpdateTopicRequest = {
-    deptTeacher?: string;
     description?: string;
     requirement?: string;
     topicName?: string;
