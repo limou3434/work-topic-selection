@@ -2,7 +2,7 @@
 set -e
 
 # 拉取项目
-git pull && latest_logs=$(git log -5 --oneline) && echo "更新日志: ${latest_logs}"
+git pull && latest_logs=$(git log -1 --oneline) && echo "更新日志: ${latest_logs}"
 
 # 编译项目
 echo "后端编译..." && cd ./work-topic-selection-backend/ && ./mvnw clean package && echo "后端编译完成 ✅"
@@ -62,15 +62,15 @@ Content-Type: text/html; charset=UTF-8
       您好，感谢您使用 <b>广州南方学院毕业设计选题系统</b> 。
     </p>
     <p style="font-size:16px; color:#333;">以下是您的部署情况: </p>
-    <div style="text-align:center; margin:20px 0;">
+    <div style="text-align:center; margin:15px 0;">
       <div style="display:inline-block; font-size:16px; font-weight:bold; color:#fff; background:#00785a; padding:10px 20px; border-radius:6px; margin-bottom:10px;">
         ${message}
       </div>
     </div>
-    <div style="text-align:center; margin:0 0 20px 0;">
-      <div style="width:fit-content; margin:0 auto; font-size:14px; font-weight:normal; color:#fff; background:#00785a; padding:10px 20px; border-radius:6px; white-space:pre-wrap;">
+    <div style="text-align:right; margin:0 0 15px 0;">
+      <span style="font-size:14px; font-weight:normal; color:#fff; background:#00785a; padding:10px 20px; border-radius:6px; white-space:pre-wrap; display:inline-block;">
         ${log}
-      </div>
+      </span>
     </div>
     <p style="font-size:14px; color:#666;">
       部署情况非常重要，因为本项目使用单体架构，如果失效需要立刻检查。
