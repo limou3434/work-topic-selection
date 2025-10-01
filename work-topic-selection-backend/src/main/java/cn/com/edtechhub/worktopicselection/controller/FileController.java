@@ -194,50 +194,52 @@ public class FileController {
         sentineManager.initFlowRules(entryName);
         SphU.entry(entryName);
 
-        // 检查参数
-        ThrowUtils.throwIf(multipartFile == null || multipartFile.isEmpty(), CodeBindMessageEnums.PARAMS_ERROR, "不能上传空的文件");
-        assert multipartFile != null;
+        return TheResult.notyet("该功能有缺陷暂时不开放使用！");
 
-        String filename = multipartFile.getOriginalFilename();
-        ThrowUtils.throwIf(filename == null || !filename.toLowerCase().endsWith(".csv"), CodeBindMessageEnums.PARAMS_ERROR, "只允许上传 CSV 文件");
-
-        // 批量添加教师题目
-        return transactionTemplate.execute(transactionStatus -> {
-            try (
-                    Reader reader = new InputStreamReader(multipartFile.getInputStream(), StandardCharsets.UTF_8);
-                    CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader)
-            ) {
-                for (CSVRecord record : csvParser) {
-                    String topicName = record.get(0).trim();
-                    String topicType = record.get(1).trim();
-                    String topicDescription = record.get(2).trim();
-                    String topicRequirement = record.get(3).trim();
-                    String topicDeptName = record.get(4).trim();
-                    String topicDeptTeacher = record.get(5).trim();
-
-                    // 创建题目
-                    Topic topic = new Topic();
-
-                    topic.setTopic(topicName);
-                    topic.setType(topicType);
-                    topic.setDescription(topicDescription);
-                    topic.setRequirement(topicRequirement);
-                    topic.setDeptName(topicDeptName);
-                    topic.setDeptTeacher(topicDeptTeacher);
-                    topic.setTeacherName(userService.userGetCurrentLoginUser().getUserName());
-                    topic.setSurplusQuantity(1);
-                    topic.setSelectAmount(0);
-                    topic.setStatus(TopicStatusEnum.PENDING_REVIEW.getCode());
-
-                    topicService.save(topic);
-                }
-            } catch (IOException e) {
-                transactionStatus.setRollbackOnly(); // 确保失败回滚
-                ThrowUtils.throwIf(true, CodeBindMessageEnums.OPERATION_ERROR, "批量添加失败");
-            }
-
-            return new BaseResponse<>(0, "成功", "批量添加成功");
-        });
+//        // 检查参数
+//        ThrowUtils.throwIf(multipartFile == null || multipartFile.isEmpty(), CodeBindMessageEnums.PARAMS_ERROR, "不能上传空的文件");
+//        assert multipartFile != null;
+//
+//        String filename = multipartFile.getOriginalFilename();
+//        ThrowUtils.throwIf(filename == null || !filename.toLowerCase().endsWith(".csv"), CodeBindMessageEnums.PARAMS_ERROR, "只允许上传 CSV 文件");
+//
+//        // 批量添加教师题目
+//        return transactionTemplate.execute(transactionStatus -> {
+//            try (
+//                    Reader reader = new InputStreamReader(multipartFile.getInputStream(), StandardCharsets.UTF_8);
+//                    CSVParser csvParser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader)
+//            ) {
+//                for (CSVRecord record : csvParser) {
+//                    String topicName = record.get(0).trim();
+//                    String topicType = record.get(1).trim();
+//                    String topicDescription = record.get(2).trim();
+//                    String topicRequirement = record.get(3).trim();
+//                    String topicDeptName = record.get(4).trim();
+//                    String topicDeptTeacher = record.get(5).trim();
+//
+//                    // 创建题目
+//                    Topic topic = new Topic();
+//
+//                    topic.setTopic(topicName);
+//                    topic.setType(topicType);
+//                    topic.setDescription(topicDescription);
+//                    topic.setRequirement(topicRequirement);
+//                    topic.setDeptName(topicDeptName);
+//                    topic.setDeptTeacher(topicDeptTeacher);
+//                    topic.setTeacherName(userService.userGetCurrentLoginUser().getUserName());
+//                    topic.setSurplusQuantity(1);
+//                    topic.setSelectAmount(0);
+//                    topic.setStatus(TopicStatusEnum.PENDING_REVIEW.getCode());
+//
+//                    topicService.save(topic);
+//                }
+//            } catch (IOException e) {
+//                transactionStatus.setRollbackOnly(); // 确保失败回滚
+//                ThrowUtils.throwIf(true, CodeBindMessageEnums.OPERATION_ERROR, "批量添加失败");
+//            }
+//
+//            return new BaseResponse<>(0, "成功", "批量添加成功");
+//        });
     }
 
     /**
