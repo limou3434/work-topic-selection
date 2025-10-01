@@ -318,6 +318,7 @@ export default () => {
           });
           if (res.code === 0) {
             message.success(res.message);
+            actionRef.current?.reload(); // 编辑后刷新题目列表
             return true;
           } else {
             message.error(res.message);
@@ -328,6 +329,7 @@ export default () => {
           const res = await deleteTopicUsingPost({id: record?.id});
           if (res.code === 0) {
             message.success(res.message);
+            actionRef.current?.reload(); // 删除后刷新题目列表
             return true;
           } else {
             message.error(res.message);
