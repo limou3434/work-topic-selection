@@ -67,11 +67,11 @@ Content-Type: text/html; charset=UTF-8
         ${message}
       </div>
     </div>
-  <div style="text-align:center; margin:0 0 20px 0;">
-    <span style="font-size:14px; font-weight:normal; color:#fff; background:#00785a; padding:10px 20px; border-radius:6px; white-space:pre-wrap; display:inline-block;">
-      ${log}
-    </span>
-  </div>
+    <div style="text-align:center; margin:0 0 20px 0;">
+      <div style="width:fit-content; margin:0 auto; font-size:14px; font-weight:normal; color:#fff; background:#00785a; padding:10px 20px; border-radius:6px; white-space:pre-wrap;">
+        ${log}
+      </div>
+    </div>
     <p style="font-size:14px; color:#666;">
       部署情况非常重要，因为本项目使用单体架构，如果失效需要立刻检查。
     </p>
