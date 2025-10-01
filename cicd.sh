@@ -1,18 +1,14 @@
 #!/bin/bash
 set -e
 
-# 拉取项目
-git pull && latest_logs=$(git log -5 --oneline) && echo "更新日志: ${latest_logs}"
-
 # 编译项目
-echo "后端编译..." && cd ./work-topic-selection-backend/ && ./mvnw clean package && echo "后端编译完成 ✅"
-echo "前端编译..." && cd ../work-topic-selection-frontend/ && npm i && npm run build && echo "前端编译完成 ✅"
+git pull && latest_logs=$(git log -5 --oneline) && echo "更新日志: ${latest_logs}" &&
+echo "后端编译..." && cd ./work-topic-selection-backend/ && ./mvnw clean package && echo "后端编译完成 ✅" &&
+echo "前端编译..." && cd ../work-topic-selection-frontend/ && npm i && npm run build && echo "前端编译完成 ✅" &&
 
 # 部署项目
-echo "后端部署..." && sudo docker compose down work-topic-selection-backend && sudo docker compose up -d --build work-topic-selection-backend >/dev/null && echo "前端部署完成 ✅"
-echo "前端部署..." && sudo docker compose down work-topic-selection-frontend && sudo docker compose up -d --build work-topic-selection-frontend >/dev/null && echo "后端部署完成 ✅"
-
-# 重载网管
+echo "后端部署..." && sudo docker compose down work-topic-selection-backend && sudo docker compose up -d --build work-topic-selection-backend >/dev/null && echo "前端部署完成 ✅" &&
+echo "前端部署..." && sudo docker compose down work-topic-selection-frontend && sudo docker compose up -d --build work-topic-selection-frontend >/dev/null && echo "后端部署完成 ✅" &&
 echo "网关部署..." && sudo docker compose down work-caddy && sudo docker compose up -d work-caddy
 
 # 发送邮箱
