@@ -2,7 +2,7 @@
 set -e
 
 # 拉取项目
-git pull && git log -5 --oneline
+git pull && latest_logs=$(git log -5 --oneline) && echo "更新日志: ${latest_logs}"
 
 # 编译项目
 echo "后端编译..." && cd ./work-topic-selection-backend/ && ./mvnw clean package && echo "后端编译完成 ✅"
@@ -45,7 +45,7 @@ else
     backend_message="❌ 后端失效"
 fi
 
-message="${backend_message}<br>${frontend_message}"
+message="${backend_message}<br>${frontend_message}<br>${latest_logs}"
 
 cat <<EOF | msmtp -t
 From: 898738804@qq.com
