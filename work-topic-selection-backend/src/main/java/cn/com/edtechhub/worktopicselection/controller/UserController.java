@@ -1112,7 +1112,7 @@ public class UserController {
                 // 如果教师的选题数量为 0 则不允许继续出题
                 User loginUser = userService.userGetCurrentLoginUser();
                 int topicAmount = loginUser.getTopicAmount();
-                ThrowUtils.throwIf(topicAmount <= 0, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "超出最大选题数量" + topicAmount + ", 请不要继续添加题目");
+                ThrowUtils.throwIf(topicAmount <= 0, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "剩余出题数量为 " + topicAmount + ", 请不要继续添加题目");
 
                 // 添加新的题目
                 Topic topic = new Topic();
