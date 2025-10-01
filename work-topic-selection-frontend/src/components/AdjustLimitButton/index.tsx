@@ -25,11 +25,11 @@ const AdjustLimitButton = ({ record, action }) => {
         }
 
         // 调用接口设置教师题目上限
-        const res = await setTeacherTopicAmountUsingPost({ 
-          teacherId: record.id, 
-          topicAmount: numValue 
+        const res = await setTeacherTopicAmountUsingPost({
+          teacherId: record.id,
+          topicAmount: numValue
         });
-        
+
         if (res.code === 0) {
           message.success(`已提交新值: ${value}`);
           action?.reload?.();
@@ -85,7 +85,7 @@ const AdjustLimitButton = ({ record, action }) => {
   return (
     <Space>
       <a style={{ color: '#454be3' }} onClick={handleModifyClick}>
-        调整选题数量上限
+        调整剩余出题数量
       </a>
       <Popconfirm
         title="确定要删除该用户吗？"
