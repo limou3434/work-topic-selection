@@ -2,7 +2,7 @@
 set -e
 
 # 拉取项目
-git pull && latest_logs=$(git log -1 --oneline) && echo "更新日志: ${latest_logs}"
+git pull && latest_logs=$(git log -5 --oneline) && echo "更新日志: ${latest_logs}"
 
 # 编译项目
 echo "后端编译..." && cd ./work-topic-selection-backend/ && ./mvnw clean package && echo "后端编译完成 ✅"
@@ -68,7 +68,7 @@ Content-Type: text/html; charset=UTF-8
       </div>
     </div>
     <div style="text-align:right; margin:0 0 15px 0;">
-      <span style="font-size:14px; font-weight:normal; color:#fff; background:#00785a; padding:10px 20px; border-radius:6px; white-space:pre-wrap; display:inline-block;">
+      <span style="font-size:14px; font-weight:normal; color:#fff; background:#00785a; padding:10px 20px; border-radius:6px; display:inline-block; max-width:400px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
         ${log}
       </span>
     </div>
