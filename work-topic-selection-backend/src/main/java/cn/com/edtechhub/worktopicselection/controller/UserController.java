@@ -1535,6 +1535,7 @@ public class UserController {
         topic.setType(type);
         topic.setDescription(description);
         topic.setRequirement(requirement);
+        topic.setStatus(TopicStatusEnum.PENDING_REVIEW.getCode());
 
         // 更新题目
         return transactionTemplate.execute(transactionStatus -> {
