@@ -15,7 +15,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 请求日志拦截切面, 允许在客户端请求后不断快速获取日志, 同时动态检测访问 IP, 对恶意流量进行封号
@@ -80,8 +82,14 @@ public class RequestLogAOP implements HandlerInterceptor {
             String countStr = redisManager.getValue(redisKey);
             count = countStr == null ? 0 : Integer.parseInt(countStr);
 
-            // 超过限制就封禁
-            if (count >= MAX_REQUESTS) {
+            // 设置白名单
+            List<Long> ids = new ArrayList<>(); // 把 9 - 16 的用户加入白名单
+            for (long i = 9; i <= 16; i++) {
+                ids.add(i);
+            }
+
+            // 不在白名单中, 并且超过限制就封禁
+            if (count >= MAX_REQUESTS && !ids.contains(Long.parseLong(loginId))) {
                 // 获取解禁日期
                 long remainingSeconds = StpUtil.getDisableTime(loginId); // 剩余封禁秒数
                 long unbanTimestamp = System.currentTimeMillis() + remainingSeconds * 1000; // 毫秒时间戳
