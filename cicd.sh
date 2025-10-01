@@ -63,20 +63,18 @@ Content-Type: text/html; charset=UTF-8
         ${message}
       </div>
     </div>
-    <div style="text-align:right; margin:0 0 15px 0;">
+    <div style="text-align:center; margin:15px 0;">
       <span style="
         display:inline-block;
-        max-width:150px;        /* 最大宽度 */
-        box-sizing:border-box;   /* padding 包含在宽度内 */
         font-size:14px;
         font-weight:normal;
         color:#fff;
         background:#00785a;
         padding:10px 20px;
         border-radius:6px;
-        overflow:hidden;
-        white-space:nowrap;
-        text-overflow:ellipsis;
+        white-space:pre-wrap; /* 支持换行 */
+        word-break:break-word; /* 避免长单词撑破容器 */
+        max-width:100%;
       ">
         ${log}
       </span>
