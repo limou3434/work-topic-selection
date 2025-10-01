@@ -1,4 +1,4 @@
-package cn.com.edtechhub.worktopicselection.model.dto;
+package cn.com.edtechhub.worktopicselection.model.dto.user;
 
 import lombok.Data;
 

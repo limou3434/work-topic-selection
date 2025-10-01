@@ -9,9 +9,9 @@ import cn.com.edtechhub.worktopicselection.manager.ai.AIManager;
 import cn.com.edtechhub.worktopicselection.manager.ai.AIResult;
 import cn.com.edtechhub.worktopicselection.manager.redis.RedisManager;
 import cn.com.edtechhub.worktopicselection.manager.sentine.SentineManager;
-import cn.com.edtechhub.worktopicselection.model.dto.CaptchaRequest;
-import cn.com.edtechhub.worktopicselection.model.dto.CheckCaptchaRequest;
-import cn.com.edtechhub.worktopicselection.model.dto.SendCodeRequest;
+import cn.com.edtechhub.worktopicselection.model.dto.user.CaptchaRequest;
+import cn.com.edtechhub.worktopicselection.model.dto.user.CheckCaptchaRequest;
+import cn.com.edtechhub.worktopicselection.model.dto.user.SendCodeRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeleteDeptRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeptAddRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeptQueryRequest;
@@ -44,7 +44,6 @@ import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -55,7 +54,13 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
+import java.lang.management.OperatingSystemMXBean;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -2412,6 +2417,7 @@ public class UserController {
 
         Long teacherId = request.getTeacherId();
         ThrowUtils.throwIf(teacherId == null || teacherId <= 0, CodeBindMessageEnums.PARAMS_ERROR, "教师标识不合法");
+        assert teacherId != null;
 
         Integer topicAmount = request.getTopicAmount();
         ThrowUtils.throwIf(topicAmount == null || topicAmount < 0 || topicAmount > 20, CodeBindMessageEnums.PARAMS_ERROR, "题目上限数量必须在 0-20 之间");
@@ -2436,6 +2442,56 @@ public class UserController {
                 return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
             });
         }
+    }
+
+    /**
+     * 查看系统的相关信息面板信息
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @GetMapping("/get/system/info")
+    public BaseResponse<TheSystemInfoVO> getSystemInfo() throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        // 创建存储系统信息的 VO 对象
+        TheSystemInfoVO theSystemInfoVo = new TheSystemInfoVO();
+
+        // 系统信息
+        OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+        com.sun.management.OperatingSystemMXBean sunOsBean = (com.sun.management.OperatingSystemMXBean) osBean;
+
+        double cpuLoad = sunOsBean.getSystemCpuLoad() * 100;
+        theSystemInfoVo.setCpuUsage(new DecimalFormat("0.00").format(cpuLoad) + "%");
+
+        long totalPhysical = sunOsBean.getTotalPhysicalMemorySize();
+        long freePhysical = sunOsBean.getFreePhysicalMemorySize();
+        long usedPhysical = totalPhysical - freePhysical;
+        theSystemInfoVo.setMemoryUsage(formatSize(usedPhysical) + "/" + formatSize(totalPhysical));
+
+        File root = new File("/");
+        long totalDisk = root.getTotalSpace();
+        long freeDisk = root.getFreeSpace();
+        long usedDisk = totalDisk - freeDisk;
+        theSystemInfoVo.setDiskUsage(formatSize(usedDisk) + "/" + formatSize(totalDisk));
+
+        MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+        MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();
+        long usedHeap = heapUsage.getUsed();
+        long maxHeap = heapUsage.getMax();
+        theSystemInfoVo.setJvmMemoryUsage(formatSize(usedHeap) + "/" + formatSize(maxHeap));
+
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, theSystemInfoVo);
+    }
+
+    private String formatSize(long size) {
+        if (size < 1024) return size + " B";
+        int exp = (int) (Math.log(size) / Math.log(1024));
+        char unit = "KMGTPE".charAt(exp - 1);
+        return String.format("%.1f %sB", size / Math.pow(1024, exp), unit);
     }
 
 }
