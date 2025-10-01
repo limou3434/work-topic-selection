@@ -166,7 +166,7 @@ public class UserController {
         String userName = request.getUserName();
         ThrowUtils.throwIf(StringUtils.isBlank(userName), CodeBindMessageEnums.PARAMS_ERROR, "缺少用户名字");
 
-        User oldUser = userService.userIsExist(userAccount);
+        User oldUser = userService.userIsExist(userAccount, userName);
         ThrowUtils.throwIf(oldUser != null, CodeBindMessageEnums.PARAMS_ERROR, "该学号/工号对应的用户已经存在, 请不要重复添加, 如果需要更改用户信息可以先删除用户再重新添加");
 
         Integer userRole = request.getUserRole();
@@ -1103,25 +1103,30 @@ public class UserController {
         Topic oldTopic = topicService.getOne(new QueryWrapper<Topic>().eq("topic", request.getTopic()));
         ThrowUtils.throwIf(oldTopic != null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "该选题已存在, 请不要重复添加");
 
+        // 获取当前用户
+        User user = userService.userGetCurrentLoginUser();
+
         // 添加新的选题
-        return transactionTemplate.execute(transactionStatus -> {
-            // 如果教师的选题数量为 0 则不允许继续出题
-            User loginUser = userService.userGetCurrentLoginUser();
-            int topicAmount = loginUser.getTopicAmount();
-            ThrowUtils.throwIf(topicAmount <= 0, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "超出最大选题数量" + topicAmount + ", 请不要继续添加题目");
+        synchronized (user.getId()) { // 用教师 id 来加锁, 这样对同一个教师只能一个线程进行操作
+            return transactionTemplate.execute(transactionStatus -> {
+                // 如果教师的选题数量为 0 则不允许继续出题
+                User loginUser = userService.userGetCurrentLoginUser();
+                int topicAmount = loginUser.getTopicAmount();
+                ThrowUtils.throwIf(topicAmount <= 0, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "超出最大选题数量" + topicAmount + ", 请不要继续添加题目");
 
-            // 添加新的题目
-            Topic topic = new Topic();
-            BeanUtils.copyProperties(request, topic);
-            topic.setTeacherName(loginUser.getUserName());
-            topic.setSurplusQuantity(request.getAmount());
-            boolean result = topicService.save(topic);
-            ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "无法添加新的选题");
+                // 添加新的题目
+                Topic topic = new Topic();
+                BeanUtils.copyProperties(request, topic);
+                topic.setTeacherName(loginUser.getUserName());
+                topic.setSurplusQuantity(request.getAmount());
+                boolean result = topicService.save(topic);
+                ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "无法添加新的选题");
 
-            // 更新教师的选题数量
-            userService.update(new UpdateWrapper<User>().eq("id", loginUser.getId()).set("topicAmount", topicAmount - 1));
-            return TheResult.success(CodeBindMessageEnums.SUCCESS, topic.getId());
-        });
+                // 更新教师的选题数量
+                userService.update(new UpdateWrapper<User>().eq("id", loginUser.getId()).set("topicAmount", topicAmount - 1));
+                return TheResult.success(CodeBindMessageEnums.SUCCESS, topic.getId());
+            });
+        }
     }
 
     /**
@@ -1145,18 +1150,23 @@ public class UserController {
         assert id != null;
         ThrowUtils.throwIf(id <= 0, CodeBindMessageEnums.PARAMS_ERROR, "id 必须是正整数");
 
-        // 删除选题的同时删除该选题对应的某位学生的最终选题关联记录
-        return transactionTemplate.execute(transactionStatus -> {
-            boolean topicRemoveResalt = topicService.removeById(id);
-            studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("topicId", id)); // 直接把对应题目删除即可, 不用管是那一个学生选择了这个题目
-            ThrowUtils.throwIf(!topicRemoveResalt, CodeBindMessageEnums.OPERATION_ERROR, "无法删除, 出现未知的错误");
+        // 获取当前用户
+        User user = userService.userGetCurrentLoginUser();
 
-            // 同时把教师的题目上限数量加回来
-            User loginUser = userService.userGetCurrentLoginUser();
-            int topicAmount = loginUser.getTopicAmount();
-            userService.update(new UpdateWrapper<User>().eq("id", loginUser.getId()).set("topicAmount", topicAmount + 1));
-            return TheResult.success(CodeBindMessageEnums.SUCCESS, topicRemoveResalt);
-        });
+        // 删除选题的同时删除该选题对应的某位学生的最终选题关联记录
+        synchronized (user.getId()) { // 用教师 id 来加锁, 这样对同一个教师只能一个线程进行操作
+            return transactionTemplate.execute(transactionStatus -> {
+                boolean topicRemoveResalt = topicService.removeById(id);
+                studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("topicId", id)); // 直接把对应题目删除即可, 不用管是那一个学生选择了这个题目
+                ThrowUtils.throwIf(!topicRemoveResalt, CodeBindMessageEnums.OPERATION_ERROR, "无法删除, 出现未知的错误");
+
+                // 同时把教师的题目上限数量加回来
+                User loginUser = userService.userGetCurrentLoginUser();
+                int topicAmount = loginUser.getTopicAmount();
+                userService.update(new UpdateWrapper<User>().eq("id", loginUser.getId()).set("topicAmount", topicAmount + 1));
+                return TheResult.success(CodeBindMessageEnums.SUCCESS, topicRemoveResalt);
+            });
+        }
     }
 
     /**
@@ -2417,12 +2427,14 @@ public class UserController {
         ThrowUtils.throwIf(topicAmount < currentTopicCount, CodeBindMessageEnums.PARAMS_ERROR, "不能将题目上限设置为小于当前已出题目数量(" + currentTopicCount + ")");
 
         // 更新教师题目上限
-        return transactionTemplate.execute(transactionStatus -> {
-            teacher.setTopicAmount(topicAmount);
-            boolean result = userService.updateById(teacher);
-            ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "更新教师题目上限失败");
-            return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
-        });
+        synchronized (teacherId) { // 用教师 id 来加锁, 这样对同一个选题只能一个线程进行操作
+            return transactionTemplate.execute(transactionStatus -> {
+                teacher.setTopicAmount(topicAmount);
+                boolean result = userService.updateById(teacher);
+                ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "更新教师题目上限失败");
+                return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
+            });
+        }
     }
 
 }

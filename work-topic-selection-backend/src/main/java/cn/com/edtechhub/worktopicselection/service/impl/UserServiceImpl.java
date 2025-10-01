@@ -86,6 +86,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    public User userIsExist(String userAccount, String userName) {
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper
+                .eq(User::getUserAccount, userAccount)
+                .eq(User::getUserName, userName)
+        ;
+        return this.getOne(lambdaQueryWrapper);
+    }
+
+    @Override
     public Boolean userIsAdmin(User user) {
         return Objects.equals(user.getUserRole(), UserRoleEnum.ADMIN.getCode());
     }
