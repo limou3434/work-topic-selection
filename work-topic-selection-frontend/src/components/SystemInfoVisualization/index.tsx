@@ -59,18 +59,24 @@ const SystemInfoVisualization = () => {
     // 单位转换，将所有值转换为MB进行计算（除了CPU使用率）
     // 根据后端formatSize方法的逻辑，单位可能是B, KB, MB, GB, TB, PB, EB
     const convertToMB = (value: number, unit: string) => {
-      switch (unit) {
+      switch (unit.toUpperCase()) { // 转换为大写以处理可能的大小写不一致
         case 'EB':
+        case 'E':
           return value * 1024 * 1024 * 1024 * 1024 * 1024;
         case 'PB':
+        case 'P':
           return value * 1024 * 1024 * 1024 * 1024;
         case 'TB':
+        case 'T':
           return value * 1024 * 1024 * 1024;
         case 'GB':
+        case 'G':
           return value * 1024;
         case 'MB':
+        case 'M':
           return value;
         case 'KB':
+        case 'K':
           return value / 1024;
         case 'B':
           return value / (1024 * 1024);
@@ -83,10 +89,12 @@ const SystemInfoVisualization = () => {
     const totalInMB = convertToMB(totalValue, totalUnit);
     
     return { 
-      used: usedInMB, 
-      total: totalInMB, 
+      used: usedValue, // 保持原始值用于显示
+      total: totalValue, // 保持原始值用于显示
       usedUnit: usedUnit,
-      totalUnit: totalUnit 
+      totalUnit: totalUnit,
+      usedInMB: usedInMB, // 转换后的值用于计算
+      totalInMB: totalInMB  // 转换后的值用于计算
     };
   };
 
@@ -114,18 +122,24 @@ const SystemInfoVisualization = () => {
     // 单位转换，将所有值转换为MB进行计算
     // 根据后端formatSize方法的逻辑，单位可能是B, KB, MB, GB, TB, PB, EB
     const convertToMB = (value: number, unit: string) => {
-      switch (unit) {
+      switch (unit.toUpperCase()) { // 转换为大写以处理可能的大小写不一致
         case 'EB':
+        case 'E':
           return value * 1024 * 1024 * 1024 * 1024 * 1024;
         case 'PB':
+        case 'P':
           return value * 1024 * 1024 * 1024 * 1024;
         case 'TB':
+        case 'T':
           return value * 1024 * 1024 * 1024;
         case 'GB':
+        case 'G':
           return value * 1024;
         case 'MB':
+        case 'M':
           return value;
         case 'KB':
+        case 'K':
           return value / 1024;
         case 'B':
           return value / (1024 * 1024);
@@ -138,10 +152,12 @@ const SystemInfoVisualization = () => {
     const totalInMB = convertToMB(totalValue, totalUnit);
     
     return { 
-      used: usedInMB, 
-      total: totalInMB, 
+      used: usedValue, // 保持原始值用于显示
+      total: totalValue, // 保持原始值用于显示
       usedUnit: usedUnit,
-      totalUnit: totalUnit 
+      totalUnit: totalUnit,
+      usedInMB: usedInMB, // 转换后的值用于计算
+      totalInMB: totalInMB  // 转换后的值用于计算
     };
   };
 
@@ -155,10 +171,10 @@ const SystemInfoVisualization = () => {
   const diskData = parseUsage(systemInfo.diskUsage);
   const jvmData = parseJvmUsage(systemInfo.jvmMemoryUsage);
 
-  const memoryPercentage = calculatePercentage(memoryData.used, memoryData.total);
+  const memoryPercentage = calculatePercentage(memoryData.usedInMB, memoryData.totalInMB);
   const cpuPercentage = calculatePercentage(cpuData.used, cpuData.total);
-  const diskPercentage = calculatePercentage(diskData.used, diskData.total);
-  const jvmPercentage = calculatePercentage(jvmData.used, jvmData.total);
+  const diskPercentage = calculatePercentage(diskData.usedInMB, diskData.totalInMB);
+  const jvmPercentage = calculatePercentage(jvmData.usedInMB, jvmData.totalInMB);
 
   // 环形图配置
   const createGaugeOption = (percentage: number, title: string, color: string) => ({
@@ -265,7 +281,7 @@ const SystemInfoVisualization = () => {
       {[
         {
           title: '内存使用率',
-          value: `${(memoryData.used / 1024).toFixed(1)}${memoryData.usedUnit}/${(memoryData.total / 1024).toFixed(1)}${memoryData.totalUnit}`,
+          value: `${memoryData.used.toFixed(1)}${memoryData.usedUnit}/${memoryData.total.toFixed(1)}${memoryData.totalUnit}`,
           percentage: memoryPercentage,
           color: '#5ee7e7',
         },
@@ -331,7 +347,7 @@ const SystemInfoVisualization = () => {
       {[
         {
           title: '磁盘使用率',
-          value: `${(diskData.used / 1024).toFixed(1)}${diskData.usedUnit}/${(diskData.total / 1024).toFixed(1)}${diskData.totalUnit}`,
+          value: `${diskData.used.toFixed(1)}${diskData.usedUnit}/${diskData.total.toFixed(1)}${diskData.totalUnit}`,
           percentage: diskPercentage,
           color: '#d18aec',
         },
