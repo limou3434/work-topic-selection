@@ -286,7 +286,7 @@ export default () => {
                     preserveSelectedRowKeys: true,
                     onChange: (selectedRowKeys) => {
                       if (selectedRowKeys.length >= 500) {
-                        message.loading(`正在处理${selectedRowKeys.length}条数据的选中状态，请稍候...`, 0);
+                        message.loading(`正在处理${selectedRowKeys.length}条数据的选中状态，请稍候...`, 0).then(() => {});
                         // 使用setTimeout确保提示显示后立即清除
                         setTimeout(() => {
                           message.destroy();
@@ -329,6 +329,7 @@ export default () => {
                       };
                     } catch (err) {
                       // 隐藏加载提示
+                      // @ts-ignore
                       if (params.pageSize >= 500) {
                         message.destroy();
                       }
@@ -429,7 +430,7 @@ export default () => {
                   preserveSelectedRowKeys: true,
                   onChange: (selectedRowKeys) => {
                     if (selectedRowKeys.length >= 500) {
-                      message.loading(`正在处理${selectedRowKeys.length}条数据的选中状态，请稍候...`, 0);
+                      message.loading(`正在处理${selectedRowKeys.length}条数据的选中状态，请稍候...`, 0).then(() => {});
                       // 使用setTimeout确保提示显示后立即清除
                       setTimeout(() => {
                         message.destroy();
@@ -472,6 +473,7 @@ export default () => {
                     };
                   } catch (err) {
                     // 隐藏加载提示
+                    // @ts-ignore
                     if (params.pageSize >= 500) {
                       message.destroy();
                     }
