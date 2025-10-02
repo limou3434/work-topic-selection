@@ -1,5 +1,5 @@
-import { ProColumns } from '@ant-design/pro-components';
-import { ProTable, ModalForm, ProFormText } from '@ant-design/pro-components';
+import { ProColumns, ProFormTextArea } from '@ant-design/pro-components';
+import { ProTable, ModalForm } from '@ant-design/pro-components';
 import { message } from 'antd';
 import React, { useState, useRef } from "react";
 import {
@@ -169,11 +169,15 @@ const TopicReviewTable: React.FC = () => {
           }
         }}
       >
-        <ProFormText
+        <ProFormTextArea
           width="md"
           name="reason"
           label="请尽可能详细写明原因"
           placeholder="请输入打回原因"
+          fieldProps={{
+            rows: 3,
+            style: { resize: 'both', minHeight: '80px' },
+          }}
         />
       </ModalForm>
     </>
