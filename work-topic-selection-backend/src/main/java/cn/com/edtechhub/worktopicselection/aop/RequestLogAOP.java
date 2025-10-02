@@ -84,7 +84,7 @@ public class RequestLogAOP implements HandlerInterceptor {
 
             // 设置白名单
             List<Long> ids = new ArrayList<>(); // 把 9 - 16 的用户加入白名单
-            for (long i = 9; i <= 16; i++) {
+            for (long i = 1; i <= 16; i++) {
                 ids.add(i);
             }
 
