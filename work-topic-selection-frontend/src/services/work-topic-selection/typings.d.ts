@@ -442,10 +442,18 @@ declare namespace API {
   };
 
   type TheSystemInfoVO = {
+    auditBackTopicCount?: number;
+    auditPassTopicCount?: number;
+    auditTopicCount?: number;
     cpuUsage?: string;
     diskUsage?: string;
     jvmMemoryUsage?: string;
+    loginUserCount?: number;
     memoryUsage?: string;
+    releaseTopicCount?: number;
+    totalDeptCount?: number;
+    totalStudentCount?: number;
+    totalTeacherCount?: number;
   };
 
   type Topic = {
