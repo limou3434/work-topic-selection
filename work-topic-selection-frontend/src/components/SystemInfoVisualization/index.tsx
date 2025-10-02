@@ -296,9 +296,9 @@ const SystemInfoVisualization = () => {
     {/* 第一行：其他系统信息 */}
     <div
       style={{
-        flex: '0 0 calc(100% - 24px)',
-        minWidth: 700,
-        maxWidth: 1200,
+        flex: 1,
+        minWidth: 280,
+        maxWidth: 1024,
         background: '#fff',
         borderRadius: 12,
         overflow: 'hidden',
