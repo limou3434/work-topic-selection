@@ -17,6 +17,20 @@ FROM `user`;
 USE `work_topic_selection`;
 
 SELECT
+    `teacherName` AS 教师名称,
+    `topic` AS 题目,
+    `type` AS 题目类型,
+    `description` AS 描述,
+    `requirement` AS 要求,
+    `reason` AS 打回理由,
+    `deptName` AS 系部,
+    `deptTeacher` AS 系部主任,
+    `status` AS 状态
+FROM work_topic_selection.`topic` WHERE `status` = -2 AND `isDelete` = 0;
+
+USE `work_topic_selection`;
+
+SELECT
     `userAccount` AS 帐号,
     `userName` AS 姓名,
     CASE `userRole`
@@ -44,3 +58,5 @@ WHERE
   AND u.isDelete = 0
 GROUP BY
     u.userName, u.topicAmount;
+
+

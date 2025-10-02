@@ -283,6 +283,16 @@ export default () => {
                   columns={unpublishedColumns}
                   rowSelection={{
                     selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
+                    preserveSelectedRowKeys: true,
+                    onChange: (selectedRowKeys) => {
+                      if (selectedRowKeys.length >= 500) {
+                        message.loading(`正在处理${selectedRowKeys.length}条数据的选中状态，请稍候...`, 0);
+                        // 使用setTimeout确保提示显示后立即清除
+                        setTimeout(() => {
+                          message.destroy();
+                        }, 500);
+                      }
+                    },
                   }}
                   // @ts-ignore
                   request={async (params = {}) => {
@@ -291,6 +301,11 @@ export default () => {
                     setPageNum0(current);
                     setPageSize0(size);
                     try {
+                      // 当请求大量数据时显示加载提示
+                      if (size >= 500) {
+                        message.loading(`正在加载 ${size} 条数据中，请稍候...`, 0);
+                      }
+
                       const res = await getTopicListUsingPost({
                         ...params,
                         // @ts-ignore
@@ -298,6 +313,12 @@ export default () => {
                         pageSize: size,
                         status: 0,
                       });
+
+                      // 隐藏加载提示
+                      if (size >= 500) {
+                        message.destroy();
+                      }
+
                       const data = res.data?.records || [];
                       const total = res.data?.total || 0;
                       setTotal0(total);
@@ -307,7 +328,12 @@ export default () => {
                         success: true,
                       };
                     } catch (err) {
+                      // 隐藏加载提示
+                      if (params.pageSize >= 500) {
+                        message.destroy();
+                      }
                       console.error(err);
+                      message.error('数据加载失败');
                       return {data: [], total: 0, success: false};
                     }
                   }}
@@ -376,7 +402,7 @@ export default () => {
                     current: pageNum0,
                     total: total0,
                     showSizeChanger: true,
-                    pageSizeOptions: ['10', '20', '50', '100'],
+                    pageSizeOptions: ['10', '20', '50', '100', '500', '1000', '10000'],
                     onChange: (page, size) => {
                       setPageNum0(page);
                       setPageSize0(size);
@@ -400,6 +426,16 @@ export default () => {
                 columns={columns}
                 rowSelection={{
                   selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
+                  preserveSelectedRowKeys: true,
+                  onChange: (selectedRowKeys) => {
+                    if (selectedRowKeys.length >= 500) {
+                      message.loading(`正在处理${selectedRowKeys.length}条数据的选中状态，请稍候...`, 0);
+                      // 使用setTimeout确保提示显示后立即清除
+                      setTimeout(() => {
+                        message.destroy();
+                      }, 500);
+                    }
+                  },
                 }}
                 // @ts-ignore
                 request={async (params = {}) => {
@@ -408,6 +444,11 @@ export default () => {
                   setPageNum1(current);
                   setPageSize1(size);
                   try {
+                    // 当请求大量数据时显示加载提示
+                    if (size >= 500) {
+                      message.loading(`正在加载 ${size} 条数据中，请稍候...`, 0);
+                    }
+
                     const res = await getTopicListUsingPost({
                       ...params,
                       // @ts-ignore
@@ -415,6 +456,12 @@ export default () => {
                       pageSize: size,
                       status: 1,
                     });
+
+                    // 隐藏加载提示
+                    if (size >= 500) {
+                      message.destroy();
+                    }
+
                     const data = res.data?.records || [];
                     const total = res.data?.total || 0;
                     setTotal1(total);
@@ -424,7 +471,12 @@ export default () => {
                       success: true,
                     };
                   } catch (err) {
+                    // 隐藏加载提示
+                    if (params.pageSize >= 500) {
+                      message.destroy();
+                    }
                     console.error(err);
+                    message.error('数据加载失败');
                     return {data: [], total: 0, success: false};
                   }
                 }}
@@ -466,7 +518,7 @@ export default () => {
                   current: pageNum1,
                   total: total1,
                   showSizeChanger: true,
-                  pageSizeOptions: ['10', '20', '50', '100'],
+                  pageSizeOptions: ['10', '20', '50', '100', '500', '1000', '10000'],
                   onChange: (page, size) => {
                     setPageNum1(page);
                     setPageSize1(size);
