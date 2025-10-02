@@ -6,7 +6,6 @@ import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
 import cn.com.edtechhub.worktopicselection.manager.sentine.SentineManager;
 import cn.com.edtechhub.worktopicselection.model.dto.file.UploadFileRequest;
 import cn.com.edtechhub.worktopicselection.model.entity.*;
-import cn.com.edtechhub.worktopicselection.model.enums.TopicStatusEnum;
 import cn.com.edtechhub.worktopicselection.response.BaseResponse;
 import cn.com.edtechhub.worktopicselection.response.TheResult;
 import cn.com.edtechhub.worktopicselection.service.*;
@@ -37,6 +36,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -55,6 +55,12 @@ public class FileController {
      */
     @Resource
     SentineManager sentineManager;
+
+    /**
+     * 注入 SQL 导出服务依赖
+     */
+    @Resource
+    private SqlExportService sqlExportService;
 
     /**
      * 注入事务管理依赖
@@ -93,7 +99,7 @@ public class FileController {
     private StudentTopicSelectionService studentTopicSelectionService;
 
     /**
-     * 上传批量添加账号模板文件 (可选择是学生账号或教师账号)
+     * 根据模板文件批量添加角色账号
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
@@ -182,7 +188,7 @@ public class FileController {
     }
 
     /**
-     * 上传批量添加毕设选题的模板文件
+     * 根据模板文件批量添加毕设选题
      */
     @SaCheckLogin
     @SaCheckRole(value = {"teacher"}, mode = SaMode.OR)
@@ -248,7 +254,7 @@ public class FileController {
     @SaCheckLogin
     @SaCheckRole(value = {"admin", "dept"}, mode = SaMode.OR)
     @PostMapping("/get/select/topic/student/list")
-    public void getSelectTopicStudentListCsv(HttpServletResponse response) throws BlockException {
+    public void getSelectTopicStudentListCsv(HttpServletResponse httpServletResponse) throws BlockException {
         // 流量控制
         String entryName = new Object() {
         }.getClass().getEnclosingMethod().getName();
@@ -276,10 +282,10 @@ public class FileController {
         }
 
         // 设置 HTTP 响应的内容类型和文件名
-        response.setContentType("text/csv");
-        response.setHeader("Content-Disposition", "attachment; filename=已选题学生列表.csv");
+        httpServletResponse.setContentType("text/csv");
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=已选题学生列表.csv");
 
-        try (ServletOutputStream outputStream = response.getOutputStream();
+        try (ServletOutputStream outputStream = httpServletResponse.getOutputStream();
              OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
              CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("学号", "姓名", "专业", "系部", "题目", "指导老师"))) {
 
@@ -301,7 +307,7 @@ public class FileController {
     @SaCheckLogin
     @SaCheckRole(value = {"admin", "dept"}, mode = SaMode.OR)
     @PostMapping("/get/unselect/topic/student/list")
-    public void getUnSelectTopicStudentListCsv(HttpServletResponse response) throws BlockException {
+    public void getUnSelectTopicStudentListCsv(HttpServletResponse httpServletResponse) throws BlockException {
         // 流量控制
         String entryName = new Object() {
         }.getClass().getEnclosingMethod().getName();
@@ -320,15 +326,128 @@ public class FileController {
                 .filter(user -> !selectedUserAccounts.contains(user.getUserAccount()))
                 .collect(Collectors.toList());
 
-        response.setContentType("text/csv");
-        response.setHeader("Content-Disposition", "attachment; filename=没有选题学生列表.csv");
+        httpServletResponse.setContentType("text/csv");
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=没有选题学生列表.csv");
 
-        try (ServletOutputStream outputStream = response.getOutputStream();
+        try (ServletOutputStream outputStream = httpServletResponse.getOutputStream();
              Writer writer = new OutputStreamWriter(outputStream);
              CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("用户账号", "用户名", "专业", "系部"))) {
 
             for (User user : unselectedUsers) {
                 csvPrinter.printRecord(user.getUserAccount(), user.getUserName(), user.getProject(), user.getDept());
+            }
+
+            csvPrinter.flush();
+        } catch (IOException e) {
+            ThrowUtils.throwIf(true, CodeBindMessageEnums.OPERATION_ERROR, "导出 CSV 失败");
+        }
+    }
+
+    /**
+     * 导出系统内所有帐号
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/export/user_list")
+    public void exportUserList(HttpServletResponse httpServletResponse) {
+        String fileName = "系统内所有帐号.csv";
+        String sql = "SELECT\n" +
+                "    `userAccount` AS 帐号,\n" +
+                "    `userName` AS 姓名,\n" +
+                "    CASE `userRole`\n" +
+                "        WHEN 3 THEN '管理员'\n" +
+                "        WHEN 2 THEN '主任'\n" +
+                "        WHEN 1 THEN '教师'\n" +
+                "        WHEN 0 THEN '学生'\n" +
+                "        END AS 角色,\n" +
+                "    `dept` AS 系部,\n" +
+                "    `project` AS 专业,\n" +
+                "    `email` AS 邮箱,\n" +
+                "    `topicAmount` AS 出题数量或预选数量,\n" +
+                "    `status` AS 状态\n" +
+                "    FROM `user` WHERE `isDelete` = 0;";
+
+        // 调用 SQL 服务获取结果
+        List<Map<String, Object>> rows = sqlExportService.executeQuery(sql);
+
+        httpServletResponse.setContentType("text/csv");
+        String encodedFileName = null;
+        try {
+            encodedFileName = java.net.URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"" + encodedFileName);
+
+        try (ServletOutputStream outputStream = httpServletResponse.getOutputStream();
+             OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+             CSVPrinter csvPrinter = new CSVPrinter(writer,
+                     CSVFormat.DEFAULT.withHeader(rows.isEmpty() ? new String[]{"无数据"} : rows.get(0).keySet().toArray(new String[0])))) {
+
+            // 遍历行写入 CSV
+            for (Map<String, Object> row : rows) {
+                List<Object> values = new ArrayList<>();
+                for (String key : row.keySet()) {
+                    values.add(row.get(key));
+                }
+                csvPrinter.printRecord(values);
+            }
+
+            csvPrinter.flush();
+        } catch (IOException e) {
+            ThrowUtils.throwIf(true, CodeBindMessageEnums.OPERATION_ERROR, "导出 CSV 失败");
+        }
+    }
+
+    /**
+     * 导出系统内所有题目
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/export/topic_list")
+    public void exportTopicList(HttpServletResponse httpServletResponse) {
+        String fileName = "所有未出题教师.csv";
+        String sql = "SELECT\n" +
+                "    `teacherName` AS 教师名称,\n" +
+                "    `topic` AS 题目,\n" +
+                "    `type` AS 题目类型,\n" +
+                "    `description` AS 描述,\n" +
+                "    `requirement` AS 要求,\n" +
+                "    `deptName` AS 系部,\n" +
+                "    `deptTeacher` AS 系部主任,\n" +
+                "    CASE `status`\n" +
+                "        WHEN -2 THEN '被打回'\n" +
+                "        WHEN -1 THEN '待审核'\n" +
+                "        WHEN 0 THEN '已发布'\n" +
+                "        WHEN 1 THEN '没发布'\n" +
+                "        END AS 状态,\n" +
+                "    `reason` AS 打回理由\n" +
+                "    FROM `topic` WHERE `isDelete` = 0;";
+
+        // 调用 SQL 服务获取结果
+        List<Map<String, Object>> rows = sqlExportService.executeQuery(sql);
+
+        httpServletResponse.setContentType("text/csv");
+        String encodedFileName = null;
+        try {
+            encodedFileName = java.net.URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"" + encodedFileName);
+
+        try (ServletOutputStream outputStream = httpServletResponse.getOutputStream();
+             OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+             CSVPrinter csvPrinter = new CSVPrinter(writer,
+                     CSVFormat.DEFAULT.withHeader(rows.isEmpty() ? new String[]{"无数据"} : rows.get(0).keySet().toArray(new String[0])))) {
+
+            // 遍历行写入 CSV
+            for (Map<String, Object> row : rows) {
+                List<Object> values = new ArrayList<>();
+                for (String key : row.keySet()) {
+                    values.add(row.get(key));
+                }
+                csvPrinter.printRecord(values);
             }
 
             csvPrinter.flush();

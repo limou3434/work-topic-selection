@@ -1,35 +1,24 @@
 USE `work_topic_selection`;
-
-SELECT
-    `userAccount` AS 帐号,
-    `userName` AS 姓名,
-    CASE `userRole`
-        WHEN 3 THEN '管理员'
-        WHEN 2 THEN '主任'
-        WHEN 1 THEN '教师'
-        WHEN 0 THEN '学生'
-        END AS 角色,
-    `dept` AS 系部,
-    `project` AS 专业,
-    `topicAmount` AS 出题数量或预选数量
-FROM `user`;
-
-USE `work_topic_selection`;
-
 SELECT
     `teacherName` AS 教师名称,
     `topic` AS 题目,
     `type` AS 题目类型,
     `description` AS 描述,
     `requirement` AS 要求,
-    `reason` AS 打回理由,
     `deptName` AS 系部,
     `deptTeacher` AS 系部主任,
-    `status` AS 状态
-FROM work_topic_selection.`topic` WHERE `status` = -2 AND `isDelete` = 0;
+    CASE `status`
+        WHEN -2 THEN '被打回'
+        WHEN -1 THEN '待审核'
+        WHEN 0 THEN '已发布'
+        WHEN 1 THEN '没发布'
+        END AS 状态,
+    `reason` AS 打回理由
+    FROM `topic` WHERE `isDelete` = 0;
+
+
 
 USE `work_topic_selection`;
-
 SELECT
     `userAccount` AS 帐号,
     `userName` AS 姓名,
