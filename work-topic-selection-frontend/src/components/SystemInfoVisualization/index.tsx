@@ -9,14 +9,34 @@ const SystemInfoVisualization = () => {
     cpuUsage: '0%',
     diskUsage: '0 GB/0 GB',
     jvmMemoryUsage: '0 MB/0 GB',
+    totalStudentCount: 0,
+    totalTeacherCount: 0,
+    totalDeptCount: 0,
+    releaseTopicCount: 0,
+    auditPassTopicCount: 0,
+    auditBackTopicCount: 0,
+    auditTopicCount: 0,
+    loginUserCount: 0,
   });
 
   const fetchSystemInfo = async () => {
     try {
       const response = await getSystemInfoUsingGet();
-      if (response.code === 0) {
-        // @ts-ignore
-        setSystemInfo(response.data);
+      if (response.code === 0 && response.data) {
+        setSystemInfo({
+          memoryUsage: response.data.memoryUsage || '0 GB/0 GB',
+          cpuUsage: response.data.cpuUsage || '0%',
+          diskUsage: response.data.diskUsage || '0 GB/0 GB',
+          jvmMemoryUsage: response.data.jvmMemoryUsage || '0 MB/0 GB',
+          totalStudentCount: response.data.totalStudentCount || 0,
+          totalTeacherCount: response.data.totalTeacherCount || 0,
+          totalDeptCount: response.data.totalDeptCount || 0,
+          releaseTopicCount: response.data.releaseTopicCount || 0,
+          auditPassTopicCount: response.data.auditPassTopicCount || 0,
+          auditBackTopicCount: response.data.auditBackTopicCount || 0,
+          auditTopicCount: response.data.auditTopicCount || 0,
+          loginUserCount: response.data.loginUserCount || 0,
+        });
       } else {
         console.error('系统信息获取失败:', response.message);
       }
@@ -28,10 +48,10 @@ const SystemInfoVisualization = () => {
   useEffect(() => {
     // 立即获取一次数据
     fetchSystemInfo();
-    
+
     // 每5秒刷新一次数据
     const interval = setInterval(fetchSystemInfo, 5000);
-    
+
     // 清理定时器
     return () => clearInterval(interval);
   }, []);
@@ -42,20 +62,20 @@ const SystemInfoVisualization = () => {
     if (!usage) {
       return { used: 0, total: 0, unit: '' };
     }
-    
+
     const [used, total] = usage.split('/');
     const usedValue = parseFloat(used) || 0;
-    
+
     // 处理total为undefined的情况
     if (!total) {
       return { used: usedValue, total: 0, unit: '' };
     }
-    
+
     const totalValue = parseFloat(total) || 0;
     // 提取单位
     const totalUnit = total.replace(/[\d.]/g, '').trim() || '';
     const usedUnit = used.replace(/[\d.]/g, '').trim() || '';
-    
+
     // 单位转换，将所有值转换为MB进行计算（除了CPU使用率）
     // 根据后端formatSize方法的逻辑，单位可能是B, KB, MB, GB, TB, PB, EB
     const convertToMB = (value: number, unit: string) => {
@@ -84,11 +104,11 @@ const SystemInfoVisualization = () => {
           return value;
       }
     };
-    
+
     const usedInMB = convertToMB(usedValue, usedUnit);
     const totalInMB = convertToMB(totalValue, totalUnit);
-    
-    return { 
+
+    return {
       used: usedValue, // 保持原始值用于显示
       total: totalValue, // 保持原始值用于显示
       usedUnit: usedUnit,
@@ -104,21 +124,21 @@ const SystemInfoVisualization = () => {
     if (!usage) {
       return { used: 0, total: 0, unit: '' };
     }
-    
+
     const [used, total] = usage.split('/');
     const usedValue = parseFloat(used) || 0;
-    
+
     // 处理total为undefined的情况
     if (!total) {
       return { used: usedValue, total: 0, unit: '' };
     }
-    
+
     const totalValue = parseFloat(total) || 0;
     // 提取总内存的单位
     const totalUnit = total.replace(/[\d.]/g, '').trim() || '';
     // 提取已使用内存的单位
     const usedUnit = used.replace(/[\d.]/g, '').trim() || '';
-    
+
     // 单位转换，将所有值转换为MB进行计算
     // 根据后端formatSize方法的逻辑，单位可能是B, KB, MB, GB, TB, PB, EB
     const convertToMB = (value: number, unit: string) => {
@@ -147,11 +167,11 @@ const SystemInfoVisualization = () => {
           return value;
       }
     };
-    
+
     const usedInMB = convertToMB(usedValue, usedUnit);
     const totalInMB = convertToMB(totalValue, totalUnit);
-    
-    return { 
+
+    return {
       used: usedValue, // 保持原始值用于显示
       total: totalValue, // 保持原始值用于显示
       usedUnit: usedUnit,
@@ -171,9 +191,14 @@ const SystemInfoVisualization = () => {
   const diskData = parseUsage(systemInfo.diskUsage);
   const jvmData = parseJvmUsage(systemInfo.jvmMemoryUsage);
 
+  // @ts-ignore
   const memoryPercentage = calculatePercentage(memoryData.usedInMB, memoryData.totalInMB);
+  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const cpuPercentage = calculatePercentage(cpuData.used, cpuData.total);
+  // @ts-ignore
   const diskPercentage = calculatePercentage(diskData.usedInMB, diskData.totalInMB);
+  // @ts-ignore
   const jvmPercentage = calculatePercentage(jvmData.usedInMB, jvmData.totalInMB);
 
   // 环形图配置
@@ -264,11 +289,112 @@ const SystemInfoVisualization = () => {
       flexWrap: 'wrap',
       justifyContent: 'center',
       gap: 24,
-      marginTop: 24,
-      marginBottom: 24,
+      marginTop: 0,
+      marginBottom: 0,
     }}
   >
-    {/* 第一行：内存使用率和CPU使用率 */}
+    {/* 第一行：其他系统信息 */}
+    <div
+      style={{
+        flex: '0 0 calc(100% - 24px)',
+        minWidth: 700,
+        maxWidth: 1200,
+        background: '#fff',
+        borderRadius: 12,
+        overflow: 'hidden',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        transition: 'transform 0.3s ease',
+        padding: '16px 12px',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'scale(1.01)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'scale(1)';
+      }}
+    >
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '24px',
+        width: '100%'
+      }}>
+        <div style={{ flex: '1 1 calc(25% - 24px)', minWidth: '150px' }}>
+          <StatisticCard
+            statistic={{
+              title: '主任人数',
+              value: systemInfo.totalDeptCount.toString(),
+              valueStyle: { color: '#d18aec' }
+            }}
+          />
+        </div>
+        <div style={{ flex: '1 1 calc(25% - 24px)', minWidth: '150px' }}>
+          <StatisticCard
+            statistic={{
+              title: '教师人数',
+              value: systemInfo.totalTeacherCount.toString(),
+              valueStyle: { color: '#eee86e' }
+            }}
+          />
+        </div>
+        <div style={{ flex: '1 1 calc(25% - 24px)', minWidth: '150px' }}>
+          <StatisticCard
+            statistic={{
+              title: '学生人数',
+              value: systemInfo.totalStudentCount.toString(),
+              valueStyle: { color: '#5ee7e7' }
+            }}
+          />
+        </div>
+        <div style={{ flex: '1 1 calc(25% - 24px)', minWidth: '150px' }}>
+          <StatisticCard
+            statistic={{
+              title: '已初始帐号的用户',
+              value: systemInfo.loginUserCount.toString(),
+              valueStyle: { color: '#5d9fea' }
+            }}
+          />
+        </div>
+        <div style={{ flex: '1 1 calc(25% - 24px)', minWidth: '150px' }}>
+          <StatisticCard
+            statistic={{
+              title: '当前系统审核通过的题目数量',
+              value: systemInfo.auditPassTopicCount.toString(),
+              valueStyle: { color: '#5ee7e7' }
+            }}
+          />
+        </div>
+        <div style={{ flex: '1 1 calc(25% - 24px)', minWidth: '150px' }}>
+          <StatisticCard
+            statistic={{
+              title: '当前系统审核打回的题目数量',
+              value: systemInfo.auditBackTopicCount.toString(),
+              valueStyle: { color: '#eee86e' }
+            }}
+          />
+        </div>
+        <div style={{ flex: '1 1 calc(25% - 24px)', minWidth: '150px' }}>
+          <StatisticCard
+            statistic={{
+              title: '当前系统审核待审的题目数量',
+              value: systemInfo.auditTopicCount.toString(),
+              valueStyle: { color: '#d18aec' }
+            }}
+          />
+        </div>
+        <div style={{ flex: '1 1 calc(25% - 24px)', minWidth: '150px' }}>
+          <StatisticCard
+            statistic={{
+              title: '当前系统处于发布的题目数量',
+              value: systemInfo.releaseTopicCount.toString(),
+              valueStyle: { color: '#5d9fea' }
+            }}
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* 第二行：内存使用率和CPU使用率 */}
     <div
       style={{
         display: 'flex',
@@ -276,6 +402,7 @@ const SystemInfoVisualization = () => {
         justifyContent: 'center',
         gap: 24,
         width: '100%',
+        marginTop: 2,
       }}
     >
       {[
@@ -295,7 +422,7 @@ const SystemInfoVisualization = () => {
         <div
           key={title}
           style={{
-            flex: '0 0 calc(50% - 12px)',
+            flex: '0 0 calc(50% - 24px)',
             minWidth: 280,
             maxWidth: 500,
             background: '#fff',
@@ -334,7 +461,7 @@ const SystemInfoVisualization = () => {
       ))}
     </div>
 
-    {/* 第二行：磁盘使用率和JVM内存使用率 */}
+    {/* 第三行：磁盘使用率和JVM内存使用率 */}
     <div
       style={{
         display: 'flex',
@@ -342,6 +469,7 @@ const SystemInfoVisualization = () => {
         justifyContent: 'center',
         gap: 24,
         width: '100%',
+        marginTop: 2,
       }}
     >
       {[
@@ -361,7 +489,7 @@ const SystemInfoVisualization = () => {
         <div
           key={title}
           style={{
-            flex: '0 0 calc(50% - 12px)',
+            flex: '0 0 calc(50% - 24px)',
             minWidth: 280,
             maxWidth: 500,
             background: '#fff',

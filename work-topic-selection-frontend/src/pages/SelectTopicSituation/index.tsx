@@ -191,7 +191,9 @@ const YourComponent = () => {
           ))}
         </div>
       </RcResizeObserver>
-      <SystemInfoVisualization />
+      <div style={{ marginTop: 24 }}>
+        <SystemInfoVisualization />
+      </div>
     </div>
   );
 };
