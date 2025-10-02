@@ -9,9 +9,6 @@ import cn.com.edtechhub.worktopicselection.manager.ai.AIManager;
 import cn.com.edtechhub.worktopicselection.manager.ai.AIResult;
 import cn.com.edtechhub.worktopicselection.manager.redis.RedisManager;
 import cn.com.edtechhub.worktopicselection.manager.sentine.SentineManager;
-import cn.com.edtechhub.worktopicselection.model.dto.user.CaptchaRequest;
-import cn.com.edtechhub.worktopicselection.model.dto.user.CheckCaptchaRequest;
-import cn.com.edtechhub.worktopicselection.model.dto.user.SendCodeRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeleteDeptRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeptAddRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeptQueryRequest;
@@ -2474,6 +2471,55 @@ public class UserController {
 
         // 创建存储系统信息的 VO 对象
         TheSystemInfoVO theSystemInfoVo = new TheSystemInfoVO();
+
+        // 选题信息
+        theSystemInfoVo.setTotalDeptCount(userService
+                .lambdaQuery()
+                .eq(User::getUserRole, 2)
+                .count()
+        );
+
+        theSystemInfoVo.setTotalTeacherCount(userService
+                .lambdaQuery()
+                .eq(User::getUserRole, 1)
+                .count()
+        );
+
+        theSystemInfoVo.setTotalStudentCount(userService
+                .lambdaQuery()
+                .eq(User::getUserRole, 0)
+                .count()
+        );
+
+        theSystemInfoVo.setLoginUserCount(userService
+                .lambdaQuery()
+                .eq(User::getStatus, "老用户")
+                .count()
+        );
+
+        theSystemInfoVo.setAuditPassTopicCount(topicService
+                .lambdaQuery()
+                .eq(Topic::getStatus, 0)
+                .count()
+        );
+
+        theSystemInfoVo.setAuditBackTopicCount(topicService
+                .lambdaQuery()
+                .eq(Topic::getStatus, -2)
+                .count()
+        );
+
+        theSystemInfoVo.setAuditTopicCount(topicService
+                .lambdaQuery()
+                .eq(Topic::getStatus, -1)
+                .count()
+        );
+
+        theSystemInfoVo.setReleaseTopicCount(topicService
+                .lambdaQuery()
+                .eq(Topic::getStatus, 1)
+                .count()
+        );
 
         // 系统信息
         OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
