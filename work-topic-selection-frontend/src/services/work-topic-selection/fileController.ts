@@ -2,6 +2,22 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
+/** exportTopicList POST /file/export/topic_list */
+export async function exportTopicListUsingPost(options?: { [key: string]: any }) {
+  return request<any>('/file/export/topic_list', {
+    method: 'POST',
+    ...(options || {}),
+  });
+}
+
+/** exportUserList POST /file/export/user_list */
+export async function exportUserListUsingPost(options?: { [key: string]: any }) {
+  return request<any>('/file/export/user_list', {
+    method: 'POST',
+    ...(options || {}),
+  });
+}
+
 /** getSelectTopicStudentListCsv POST /file/get/select/topic/student/list */
 export async function getSelectTopicStudentListCsvUsingPost(options?: { [key: string]: any }) {
   return request<any>('/file/get/select/topic/student/list', {

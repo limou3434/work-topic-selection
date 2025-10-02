@@ -1,8 +1,8 @@
-import { getSelectTopicStudentListCsvUsingPost } from '@/services/work-topic-selection/fileController';
+import { exportTopicListUsingPost, exportUserListUsingPost, getSelectTopicStudentListCsvUsingPost } from '@/services/work-topic-selection/fileController';
 import { getSelectTopicSituationUsingPost } from '@/services/work-topic-selection/userController';
-import { FileTextOutlined } from '@ant-design/icons';
+import { DownOutlined, FileTextOutlined, UserOutlined, BookOutlined } from '@ant-design/icons';
 import { StatisticCard } from '@ant-design/pro-components';
-import { FloatButton, message } from 'antd';
+import { Button, Dropdown, FloatButton, Menu, message } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import RcResizeObserver from 'rc-resize-observer';
 import { useEffect, useState } from 'react';
@@ -28,6 +28,71 @@ const YourComponent = () => {
       }
     })();
   }, []);
+
+  const exportSelectedStudents = async () => {
+    try {
+      const response = await getSelectTopicStudentListCsvUsingPost();
+      const blob = new Blob([response], { type: 'text/csv;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '已选题学生列表.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      message.error('导出失败，请稍后重试！');
+    }
+  };
+
+  const exportUserList = async () => {
+    try {
+      const response = await exportUserListUsingPost();
+      const blob = new Blob([response], { type: 'text/csv;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '用户列表.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      message.error('导出用户列表失败，请稍后重试！');
+    }
+  };
+
+  const exportTopicList = async () => {
+    try {
+      const response = await exportTopicListUsingPost();
+      const blob = new Blob([response], { type: 'text/csv;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '题目列表.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      message.error('导出题目列表失败，请稍后重试！');
+    }
+  };
+
+  const menu = (
+    <Menu>
+      <Menu.Item key="1" icon={<UserOutlined />} onClick={exportUserList}>
+        导出学生列表
+      </Menu.Item>
+      <Menu.Item key="2" icon={<BookOutlined />} onClick={exportTopicList}>
+        导出题目列表
+      </Menu.Item>
+      {/*<Menu.Item key="3" icon={<FileTextOutlined />} onClick={exportSelectedStudents}>*/}
+      {/*  导出已选名单*/}
+      {/*</Menu.Item>*/}
+    </Menu>
+  );
 
   const totalChartOption = {
     tooltip: {
@@ -88,32 +153,15 @@ const YourComponent = () => {
     ],
   };
 
-  const exportSelectedStudents = async () => {
-    try {
-      const response = await getSelectTopicStudentListCsvUsingPost();
-      const blob = new Blob([response], { type: 'text/csv;charset=utf-8' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = '已选题学生列表.csv';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      message.error('导出失败，请稍后重试！');
-    }
-  };
-
   return (
     <div style={{ padding: 12, maxWidth: '100%' }}>
-    <FloatButton
-        icon={<FileTextOutlined />}
-        description="导出已选名单"
-        shape="square"
-        type="primary"
-        onClick={exportSelectedStudents}
-      />
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+        <Dropdown overlay={menu} trigger={['click']}>
+          <Button type="primary">
+            导出列表 <DownOutlined />
+          </Button>
+        </Dropdown>
+      </div>
       <RcResizeObserver onResize={() => {}}>
         <div
           style={{
