@@ -184,6 +184,13 @@ public class UserController {
         String userDeptName = request.getDeptName();
         ThrowUtils.throwIf(StringUtils.isBlank(userDeptName), CodeBindMessageEnums.PARAMS_ERROR, "缺少系部名称");
 
+        // 不允许添加相同角色并且名字相同的用户
+        User aUser = userService.getOne(new QueryWrapper<User>()
+                .eq("userName", userName)
+                .eq("userRole", userRole)
+        );
+        ThrowUtils.throwIf(aUser != null, CodeBindMessageEnums.PARAMS_ERROR, "不允许添加同名的用户, 请不要重复添加, 请加上数字后缀避免相同");
+
         // 如果有选择专业则必须选择系部所属的专业
         String userProject = request.getProject();
         if (StringUtils.isNotBlank(userProject)) {
@@ -1217,9 +1224,17 @@ public class UserController {
         return transactionTemplate.execute(transactionStatus -> {
             topic.setStatus(status);
 
-            // 如果有审核理由则添加否则去除
+            // 如果有审核理由则添加否则去除(并且必要时需要进行邮件通知)
             if (reason != null) {
                 topic.setReason(reason);
+                String name = topic.getTeacherName();
+                User user = userService.getOne(new QueryWrapper<User>()
+                        .eq("userName", name)
+                        .eq("userRole", UserRoleEnum.TEACHER.getCode())
+                );
+                if (user != null && StringUtils.isNotBlank(user.getEmail())) {
+                    mailService.sendReasonMail(user.getEmail(), "广州南方学院毕业设计选题系统", topic.getReason());
+                }
             } else {
                 topic.setReason("");
             }
@@ -1535,7 +1550,7 @@ public class UserController {
                         .eq("topic", topicName)
                         .eq("teacherName", loginUser.getUserName())
                         .eq("deptName", loginUser.getDept())
-        ); // TODO: 这里有极端情况, 如果恰巧有相同名字的教师, 处于相同系部, 在同一时间点修改了恰好导入相同名字的题目, 就会出现问题(但是我感觉不太可能因为题目首先就不可能导入一样的)
+        );
 
         topic.setType(type);
         topic.setDescription(description);

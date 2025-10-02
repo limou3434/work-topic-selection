@@ -34,4 +34,14 @@ public interface MailService {
      */
     void sendCaptchaMail(String to, String subject, String content);
 
+    /**
+     * 发送题目打回邮件
+     *
+     * @param to      收件人邮箱
+     * @param subject 邮件主题
+     * @param text    邮件内容
+     */
+    void sendReasonMail(String to, String subject, String text);
+
+
 }
