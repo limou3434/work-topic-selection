@@ -1394,9 +1394,7 @@ public class UserController {
                 else if (studentTopicSelectionStatusEnum == StudentTopicSelectionStatusEnum.UN_PRESELECT) {
                     // 修改关联记录
                     boolean remove = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", request.getId()));
-                    if (!remove) {
-                        throw new BusinessException(CodeBindMessageEnums.NOT_FOUND_ERROR, "");
-                    }
+                    ThrowUtils.throwIf(!remove, CodeBindMessageEnums.NOT_FOUND_ERROR, "不存在需要取消预选的题目");
 
                     // 修改操作标志位
                     opt = -1;
