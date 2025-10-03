@@ -1601,6 +1601,9 @@ public class UserController {
         // 如果课题处于还没有处于发布状态, 则无法选择学生
         ThrowUtils.throwIf(topic.getStatus() != TopicStatusEnum.PUBLISHED.getCode(), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "该课题尚未发布, 暂时无法选择学生");
 
+        // 如果当前时间没有处于发布时间段内, 则无法选择学生
+        ThrowUtils.throwIf(System.currentTimeMillis() < topic.getStartTime().getTime() || System.currentTimeMillis() > topic.getEndTime().getTime(), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "该选题尚未到开放时间, 请等待管理员设置");
+
         // 教师直接分配题目给学生
         synchronized (topicId) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
             return transactionTemplate.execute(transactionStatus -> {
