@@ -101,7 +101,7 @@ CREATE TABLE `student_topic_selection`
     `createTime`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updateTime`  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     `isDelete`    TINYINT      NOT NULL DEFAULT '0' COMMENT '是否删除',
-    `status`      INT          NOT NULL DEFAULT '0' COMMENT '选题状态: 0-预选, 1-抢到',
+    `status`      INT          NOT NULL DEFAULT '0' COMMENT '选题状态: -1-取消预选, 0-确认预选, 1-取消选题, 2-确认选题',
     PRIMARY KEY (`id`) USING BTREE,
     KEY `userAccount` (`userAccount`) USING BTREE
 )

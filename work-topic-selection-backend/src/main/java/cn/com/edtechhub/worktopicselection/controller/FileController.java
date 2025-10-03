@@ -456,4 +456,124 @@ public class FileController {
         }
     }
 
+    /**
+     * 导出系统内已选学生
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/export/student_topic_list/en_select")
+    public void exportStudentTopicListEnSelect(HttpServletResponse httpServletResponse) {
+        String fileName = "已选学生.csv";
+        String sql = "SELECT\n" +
+                "    u.`userAccount` AS `学号`,\n" +
+                "    u.`userName` AS `姓名`,\n" +
+                "    u.`dept` AS `系部`,\n" +
+                "    u.`project` AS `专业`,\n" +
+                "    u.`email` AS `邮箱`,\n" +
+                "    s.`createTime` AS `确认时间`,\n" +
+                "    t.`teacherName` AS `指导教师`,\n" +
+                "    t.`topic`       AS `题目标题`,\n" +
+                "    t.`description` AS `题目内容`,\n" +
+                "    t.`requirement` AS `题目要求`\n" +
+                "FROM `student_topic_selection` s\n" +
+                "JOIN `user` u ON s.userAccount = u.userAccount\n" +
+                "JOIN `topic` t ON s.topicId = t.id\n" +
+                "WHERE\n" +
+                "    s.status = 2 AND\n" +
+                "    u.userRole = 0 AND\n" +
+                "    s.isDelete = 0 AND\n" +
+                "    u.isDelete = 0 AND\n" +
+                "    t.isDelete = 0;\n";
+
+        // 调用 SQL 服务获取结果
+        List<Map<String, Object>> rows = sqlExportService.executeQuery(sql);
+
+        httpServletResponse.setContentType("text/csv");
+        String encodedFileName = null;
+        try {
+            encodedFileName = java.net.URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"" + encodedFileName);
+
+        try (ServletOutputStream outputStream = httpServletResponse.getOutputStream();
+             OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+             CSVPrinter csvPrinter = new CSVPrinter(writer,
+                     CSVFormat.DEFAULT.withHeader(rows.isEmpty() ? new String[]{"无数据"} : rows.get(0).keySet().toArray(new String[0])))) {
+
+            // 遍历行写入 CSV
+            for (Map<String, Object> row : rows) {
+                List<Object> values = new ArrayList<>();
+                for (String key : row.keySet()) {
+                    values.add(row.get(key));
+                }
+                csvPrinter.printRecord(values);
+            }
+
+            csvPrinter.flush();
+        } catch (IOException e) {
+            ThrowUtils.throwIf(true, CodeBindMessageEnums.OPERATION_ERROR, "导出 CSV 失败");
+        }
+    }
+
+    /**
+     * 导出系统内未选学生
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/export/student_topic_list/un_select")
+    public void exportStudentTopicListUnSelect(HttpServletResponse httpServletResponse) {
+        String fileName = "未选学生.csv";
+        String sql = "SELECT\n" +
+                "    u.`userAccount` AS `学号`,\n" +
+                "    u.`userName`    AS `姓名`,\n" +
+                "    u.`dept`        AS `系部`,\n" +
+                "    u.`project`     AS `专业`,\n" +
+                "    u.`email`       AS `邮箱`\n" +
+                "FROM `user` u\n" +
+                "WHERE\n" +
+                "    u.userRole = 0 AND\n" +
+                "    u.isDelete = 0 AND\n" +
+                "NOT EXISTS (\n" +
+                "    SELECT 1\n" +
+                "    FROM student_topic_selection s\n" +
+                "    WHERE\n" +
+                "        s.userAccount = u.userAccount AND\n" +
+                "        s.status = 2 AND\n" +
+                "        s.isDelete = 0\n" +
+                ");\n";
+
+        // 调用 SQL 服务获取结果
+        List<Map<String, Object>> rows = sqlExportService.executeQuery(sql);
+
+        httpServletResponse.setContentType("text/csv");
+        String encodedFileName = null;
+        try {
+            encodedFileName = java.net.URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"" + encodedFileName);
+
+        try (ServletOutputStream outputStream = httpServletResponse.getOutputStream();
+             OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+             CSVPrinter csvPrinter = new CSVPrinter(writer,
+                     CSVFormat.DEFAULT.withHeader(rows.isEmpty() ? new String[]{"无数据"} : rows.get(0).keySet().toArray(new String[0])))) {
+
+            // 遍历行写入 CSV
+            for (Map<String, Object> row : rows) {
+                List<Object> values = new ArrayList<>();
+                for (String key : row.keySet()) {
+                    values.add(row.get(key));
+                }
+                csvPrinter.printRecord(values);
+            }
+
+            csvPrinter.flush();
+        } catch (IOException e) {
+            ThrowUtils.throwIf(true, CodeBindMessageEnums.OPERATION_ERROR, "导出 CSV 失败");
+        }
+    }
+
 }

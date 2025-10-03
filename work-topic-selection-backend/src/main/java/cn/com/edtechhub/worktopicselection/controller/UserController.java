@@ -1798,8 +1798,10 @@ public class UserController {
         int selectedStudents = 0;
         for (User user : userList) {
             final String userAccount = user.getUserAccount();
-            selectedStudents += (int) studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount) // 获取当前用户的记录
-                    .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode()) // 查询状态为已选题的
+            selectedStudents += (int) studentTopicSelectionService
+                    .count(new QueryWrapper<StudentTopicSelection>()
+                            .eq("userAccount", userAccount) // 获取当前用户的记录
+                            .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode()) // 查询状态为已选题的
             );
         }
 
