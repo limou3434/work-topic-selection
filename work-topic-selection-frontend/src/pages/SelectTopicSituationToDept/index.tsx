@@ -13,6 +13,7 @@ const YourComponent = () => {
   const [data, setData] = useState({ amount: 0, selectAmount: 0, unselectAmount: 0 });
 
   useEffect(() => {
+    // 立即执行一次
     (async () => {
       try {
         const response = await getSelectTopicSituationUsingPost();
@@ -26,6 +27,26 @@ const YourComponent = () => {
         console.error('数据获取失败:', error);
       }
     })();
+
+    // 每5秒执行一次
+    const intervalId = setInterval(async () => {
+      try {
+        const response = await getSelectTopicSituationUsingPost();
+        if (response.code === 0) {
+          // @ts-ignore
+          setData(response.data);
+        } else {
+          console.error('数据获取失败:', response.message);
+        }
+      } catch (error) {
+        console.error('数据获取失败:', error);
+      }
+    }, 5000);
+
+    // 清理函数
+    return () => {
+      clearInterval(intervalId);
+    };
   }, []);
 
   const totalChartOption = {
