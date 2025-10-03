@@ -1984,7 +1984,7 @@ public class UserController {
 
         // 查找确认最终选题的记录
         StudentTopicSelection studentTopicSelection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount).eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode()));
-        log.info("用户: {} 确认了最终选题", userAccount);
+        log.info("用户: {} 确认了自己是否有最终选题", userAccount);
 
         ThrowUtils.throwIf(studentTopicSelection == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "当前用户没有确认最终的选题");
         assert studentTopicSelection != null;
