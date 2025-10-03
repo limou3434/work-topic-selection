@@ -1,8 +1,8 @@
-import { exportTopicListUsingPost, exportUserListUsingPost, getSelectTopicStudentListCsvUsingPost } from '@/services/work-topic-selection/fileController';
+import { exportStudentTopicListEnSelectUsingPost, exportStudentTopicListUnSelectUsingPost, exportTopicListUsingPost, exportUserListUsingPost } from '@/services/work-topic-selection/fileController';
 import { getSelectTopicSituationUsingPost } from '@/services/work-topic-selection/userController';
-import { DownOutlined, FileTextOutlined, UserOutlined, BookOutlined } from '@ant-design/icons';
+import { DownOutlined, FileTextOutlined, UserOutlined, BookOutlined, TeamOutlined, FileDoneOutlined } from '@ant-design/icons';
 import { StatisticCard } from '@ant-design/pro-components';
-import { Button, Dropdown, FloatButton, Menu, message } from 'antd';
+import { Button, Dropdown, Menu, message } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import RcResizeObserver from 'rc-resize-observer';
 import { useEffect, useState } from 'react';
@@ -52,12 +52,29 @@ const YourComponent = () => {
 
   const exportSelectedStudents = async () => {
     try {
-      const response = await getSelectTopicStudentListCsvUsingPost();
+      const response = await exportStudentTopicListEnSelectUsingPost();
       const blob = new Blob([response], { type: 'text/csv;charset=utf-8' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = '已选题学生列表.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      message.error('导出失败，请稍后重试！');
+    }
+  };
+
+  const exportUnselectedStudents = async () => {
+    try {
+      const response = await exportStudentTopicListUnSelectUsingPost();
+      const blob = new Blob([response], { type: 'text/csv;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '未选题学生列表.csv';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -103,15 +120,18 @@ const YourComponent = () => {
 
   const menu = (
     <Menu>
-      <Menu.Item key="1" icon={<UserOutlined />} onClick={exportUserList}>
+      <Menu.Item key="1" icon={<TeamOutlined />} onClick={exportUserList}>
         导出用户列表
       </Menu.Item>
       <Menu.Item key="2" icon={<BookOutlined />} onClick={exportTopicList}>
         导出题目列表
       </Menu.Item>
-      {/*<Menu.Item key="3" icon={<FileTextOutlined />} onClick={exportSelectedStudents}>*/}
-      {/*  导出已选名单*/}
-      {/*</Menu.Item>*/}
+      <Menu.Item key="3" icon={<FileDoneOutlined />} onClick={exportSelectedStudents}>
+        导出已选名单
+      </Menu.Item>
+      <Menu.Item key="4" icon={<FileTextOutlined />} onClick={exportUnselectedStudents}>
+        导出未选名单
+      </Menu.Item>
     </Menu>
   );
 
@@ -176,12 +196,14 @@ const YourComponent = () => {
 
   return (
     <div style={{ padding: 12, maxWidth: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-        <Dropdown overlay={menu} trigger={['click']}>
-          <Button type="primary">
-            导出列表 <DownOutlined />
-          </Button>
-        </Dropdown>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+        <div style={{ width: '100%', maxWidth: 1000, display: 'flex', justifyContent: 'flex-end' }}>
+          <Dropdown overlay={menu} trigger={['click']}>
+            <Button type="primary">
+              导出列表 <DownOutlined />
+            </Button>
+          </Dropdown>
+        </div>
       </div>
       <RcResizeObserver onResize={() => {}}>
         <div

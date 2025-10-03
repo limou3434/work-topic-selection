@@ -1,8 +1,8 @@
-import { getSelectTopicStudentListCsvUsingPost } from '@/services/work-topic-selection/fileController';
+import { exportStudentTopicListEnSelectUsingPost, exportStudentTopicListUnSelectUsingPost } from '@/services/work-topic-selection/fileController';
 import { getSelectTopicSituationUsingPost } from '@/services/work-topic-selection/userController';
-import { FileTextOutlined } from '@ant-design/icons';
+import { FileTextOutlined, DownloadOutlined, FileDoneOutlined, TeamOutlined } from '@ant-design/icons';
 import { StatisticCard } from '@ant-design/pro-components';
-import { FloatButton, message } from 'antd';
+import { Button, Dropdown, Menu, message } from 'antd';
 import ReactECharts from 'echarts-for-react';
 import RcResizeObserver from 'rc-resize-observer';
 import { useEffect, useState } from 'react';
@@ -110,7 +110,7 @@ const YourComponent = () => {
 
   const exportSelectedStudents = async () => {
     try {
-      const response = await getSelectTopicStudentListCsvUsingPost();
+      const response = await exportStudentTopicListEnSelectUsingPost();
       const blob = new Blob([response], { type: 'text/csv;charset=utf-8' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -125,16 +125,45 @@ const YourComponent = () => {
     }
   };
 
+  const exportUnselectedStudents = async () => {
+    try {
+      const response = await exportStudentTopicListUnSelectUsingPost();
+      const blob = new Blob([response], { type: 'text/csv;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '未选题学生列表.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      message.error('导出失败，请稍后重试！');
+    }
+  };
+
+  const menu = (
+    <Menu>
+      <Menu.Item key="1" icon={<FileDoneOutlined />} onClick={exportSelectedStudents}>
+        导出已选名单
+      </Menu.Item>
+      <Menu.Item key="2" icon={<TeamOutlined />} onClick={exportUnselectedStudents}>
+        导出未选名单
+      </Menu.Item>
+    </Menu>
+  );
+
   return (
     <div style={{ padding: 24, maxWidth: 1600, margin: '0 auto' }}>
-      <FloatButton
-        icon={<FileTextOutlined />}
-        description="导出已选名单"
-        shape="square"
-        type="primary"
-        style={{ insetInlineEnd: 24, width: 40 }} // 不一定生效
-        onClick={exportSelectedStudents}
-      />
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+        <div style={{ width: '100%', maxWidth: 1000, display: 'flex', justifyContent: 'flex-end' }}>
+          <Dropdown overlay={menu} trigger={['click']}>
+            <Button type="primary">
+              导出列表 <DownloadOutlined />
+            </Button>
+          </Dropdown>
+        </div>
+      </div>
       <RcResizeObserver onResize={() => {}}>
         <div
           style={{
