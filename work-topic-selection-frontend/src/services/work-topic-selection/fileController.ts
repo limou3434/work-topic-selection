@@ -2,6 +2,22 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
+/** exportStudentTopicListEnSelect POST /file/export/student_topic_list/en_select */
+export async function exportStudentTopicListEnSelectUsingPost(options?: { [key: string]: any }) {
+  return request<any>('/file/export/student_topic_list/en_select', {
+    method: 'POST',
+    ...(options || {}),
+  });
+}
+
+/** exportStudentTopicListUnSelect POST /file/export/student_topic_list/un_select */
+export async function exportStudentTopicListUnSelectUsingPost(options?: { [key: string]: any }) {
+  return request<any>('/file/export/student_topic_list/un_select', {
+    method: 'POST',
+    ...(options || {}),
+  });
+}
+
 /** exportTopicList POST /file/export/topic_list */
 export async function exportTopicListUsingPost(options?: { [key: string]: any }) {
   return request<any>('/file/export/topic_list', {
