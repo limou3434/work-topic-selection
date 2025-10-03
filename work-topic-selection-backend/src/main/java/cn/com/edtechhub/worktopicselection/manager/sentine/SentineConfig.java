@@ -22,9 +22,9 @@ public class SentineConfig {
     private double u = 2000;
 
     /**
-     * 高峰同时在线比例, 0~1, 比如 0.05 表示 5% 同时请求(当前给出 0.5)
+     * 高峰同时在线比例, 0~1, 比如 0.05 表示 5% 同时请求
      */
-    private double p = 0.5;
+    private double p = 0.75;
 
     /**
      * 每个在线用户每秒平均请求某个接口的次数, 接口特性

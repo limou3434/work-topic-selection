@@ -462,7 +462,7 @@ public class FileController {
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/export/student_topic_list/en_select")
-        public void exportStudentTopicListEnSelect(HttpServletResponse httpServletResponse) {
+    public void exportStudentTopicListEnSelect(HttpServletResponse httpServletResponse) {
         String fileName = "已选学生.csv";
         String sql = "SELECT\n" +
                 "    u.`userAccount` AS `学号`,\n" +
