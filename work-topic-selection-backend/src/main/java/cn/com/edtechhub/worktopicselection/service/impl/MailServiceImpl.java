@@ -85,7 +85,7 @@ public class MailServiceImpl implements MailService {
         String content = "<html>" +
                 "<body style='font-family: Arial, sans-serif; background-color:#f5f5f5; padding:20px;'>" +
                 "  <div style='max-width:600px; margin:0 auto; background:white; border-radius:8px; padding:30px; box-shadow:0 4px 10px rgba(0,0,0,0.1);'>" +
-                "    <h2 style='color:#00785a; text-align:center;'>系统消息</h2>" +
+                "    <h2 style='color:#00785a; text-align:center;'>验证消息</h2>" +
                 "    <p style='font-size:16px; color:#333;'>您好，感谢您使用 <b>广州南方学院毕业设计选题系统</b> 。</p>" +
                 "    <p style='font-size:16px; color:#333;'>以下是您的验证码: </p>" +
                 "    <div style='text-align:center; margin:20px 0;'>" +
