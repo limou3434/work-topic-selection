@@ -3,6 +3,7 @@ import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Modal } from 'antd';
 import { useRef, useState } from 'react';
 import TopicTable from '@/components/TopicTable'; // ✅ 改成默认导入
+import QRCodeNotification from '@/components/QRCodeNotification';
 
 type GithubIssueItem = {
   topicAmount: number;
@@ -135,6 +136,8 @@ export default () => {
       >
         <TopicTable teacherName={currentTeacher} />
       </Modal>
+      
+      <QRCodeNotification />
     </>
   );
 };
