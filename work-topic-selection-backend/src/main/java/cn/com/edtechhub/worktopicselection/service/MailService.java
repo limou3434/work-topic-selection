@@ -21,18 +21,18 @@ public interface MailService {
      *
      * @param to      收件人邮箱
      * @param subject 邮件主题
-     * @param content 邮件内容
+     * @param text 邮件内容
      */
-    void sendCodeMail(String to, String subject, String content);
+    void sendCodeMail(String to, String subject, String text);
 
     /**
      * 发送验证码邮箱
      *
      * @param to      收件人邮箱
      * @param subject 邮件主题
-     * @param content 邮件内容
+     * @param text 邮件内容
      */
-    void sendCaptchaMail(String to, String subject, String content);
+    void sendCaptchaMail(String to, String subject, String text);
 
     /**
      * 发送题目打回邮件
@@ -43,5 +43,13 @@ public interface MailService {
      */
     void sendReasonMail(String to, String subject, String text);
 
+    /**
+     * 发送题目退选邮件
+     *
+     * @param to      收件人邮箱
+     * @param subject 邮件主题
+     * @param text    邮件内容
+     */
+    void sendTopicMail(String to, String subject, String text);
 
 }

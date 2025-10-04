@@ -1716,6 +1716,14 @@ public class UserController {
                 boolean updateSuccess = topicService.updateById(topic);
                 ThrowUtils.throwIf(!updateSuccess, CodeBindMessageEnums.OPERATION_ERROR, "无法退选");
 
+                // 先发送邮箱
+                StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("topicId", topicId));
+                User user = userService.userIsExist(selection.getUserAccount());
+                String email = user.getEmail();
+                if (StringUtils.isNotBlank(email)) {
+                    mailService.sendTopicMail(email, "广州南方学院毕业设计选题系统", "您被退选题目 [" + topic.getTopic() + "], " + "操作人为 " + userService.userGetCurrentLoginUser().getUserName() + ", 请前往系统查看");
+                }
+
                 // 删除学生的选题记录
                 boolean removeSuccess = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("topicId", topicId));
                 ThrowUtils.throwIf(!removeSuccess, CodeBindMessageEnums.OPERATION_ERROR, "删除学生选题记录失败");
