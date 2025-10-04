@@ -4,7 +4,7 @@ import {
 import {ActionType, ProColumns} from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import React, { useRef } from 'react';
-import {Button, Dropdown, message} from "antd";
+import {Button, Dropdown, message, Modal} from "antd";
 import {EllipsisOutlined} from "@ant-design/icons";
 import {useParams } from "react-router-dom"
 
@@ -50,14 +50,22 @@ export default () => {
         <a
           key="select"
           onClick={async () => {
-            //@ts-ignore
-            const res = await withdrawUsingPost({id: id})
-            if (res.code === 0) {
-              message.success(res.message)
-            } else {
-              message.error(res.message)
-            }
-            action?.reload();
+            Modal.confirm({
+              title: '确认退选',
+              content: '确定要退选吗？此操作不可恢复。',
+              okText: '确认',
+              cancelText: '取消',
+              onOk: async () => {
+                //@ts-ignore
+                const res = await withdrawUsingPost({id: id})
+                if (res.code === 0) {
+                  message.success(res.message)
+                } else {
+                  message.error(res.message)
+                }
+                action?.reload();
+              },
+            });
           }}
         >
           退选
