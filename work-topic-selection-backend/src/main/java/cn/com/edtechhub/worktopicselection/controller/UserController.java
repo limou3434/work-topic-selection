@@ -1485,10 +1485,10 @@ public class UserController {
         ThrowUtils.throwIf(!topic.getStatus().equals(TopicStatusEnum.PUBLISHED.getCode()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "该题目未发布, 还不可以选中");
 
         Date startTime = topic.getStartTime();
-        ThrowUtils.throwIf(startTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有传递开始时间");
+        ThrowUtils.throwIf(startTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有设置开始时间");
 
         Date endTime = topic.getEndTime();
-        ThrowUtils.throwIf(endTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有传递结束时间");
+        ThrowUtils.throwIf(endTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有设置结束时间");
 
         Date now = new Date();
         ThrowUtils.throwIf(now.before(startTime) || now.after(endTime), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前不在选题开放范围内, 请等待管理员开放选题");
@@ -1647,7 +1647,14 @@ public class UserController {
         ThrowUtils.throwIf(topic.getStatus() != TopicStatusEnum.PUBLISHED.getCode(), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "该课题尚未发布, 暂时无法选择学生");
 
         // 如果当前时间没有处于发布时间段内, 则无法选择学生
-        ThrowUtils.throwIf(System.currentTimeMillis() < topic.getStartTime().getTime() || System.currentTimeMillis() > topic.getEndTime().getTime(), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "该选题尚未到开放时间, 请等待管理员设置");
+        Date startTime = topic.getStartTime();
+        ThrowUtils.throwIf(startTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有设置开始时间");
+
+        Date endTime = topic.getEndTime();
+        ThrowUtils.throwIf(endTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有设置结束时间");
+
+        Date now = new Date();
+        ThrowUtils.throwIf(now.before(startTime) || now.after(endTime), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前不在选题开放范围内, 请等待管理员开放选题");
 
         // 教师直接分配题目给学生
         synchronized (topicId) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
