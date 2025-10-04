@@ -257,6 +257,53 @@ public class UserController {
             Long id = user.getId();
             ThrowUtils.throwIf(id == 1L, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "无法删除超级管理员");
 
+            // 如果删除的是教师, 则需要把该教师关联的选题记录删除, 同时清空选题关联记录(无论是否预选)
+            if (userService.userIsTeacher(user)) {
+                // 先找出该教师的所有关联题目的 id
+                List<Topic> topicList = topicService.list(
+                        new QueryWrapper<Topic>().eq("teacherName", user.getUserName())
+                );
+                List<Long> topicIds = topicList
+                        .stream()
+                        .map(Topic::getId)
+                        .collect(Collectors.toList());
+
+                // 如果该教师确实有题目
+                if (!topicIds.isEmpty()) {
+                    // 删除关联的学生选题记录
+                    studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().in("topicId", topicIds));
+                    // 同时删除这些题目
+                    topicService.removeByIds(topicIds);
+                }
+            }
+
+            // 如果删除的是学生, 则需要清空选题关联记录(无论是否预选)
+            if (userService.userIsStudent(user)) {
+                // 查询该学生已选的所有题目
+                List<StudentTopicSelection> selections = studentTopicSelectionService.list(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount));
+
+                // 如果该确实有关联记录
+                if (!selections.isEmpty()) {
+                    // 获取所有 topicId
+                    List<Long> topicIds = selections
+                            .stream()
+                            .map(StudentTopicSelection::getTopicId)
+                            .collect(Collectors.toList());
+
+                    // 删除所有学生选题记录
+                    studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount));
+
+                    // 对应题目余量 +1
+                    for (Long topicId : topicIds) {
+                        Topic topic = topicService.getById(topicId);
+                        if (topic != null) {
+                            topic.setSurplusQuantity(topic.getSurplusQuantity() + 1); // 虽然预选人数可能会乱, 但是这个本来就是参考数值, 最重要的是剩余数量需要释放出来
+                            topicService.updateById(topic);
+                        }
+                    }
+                }
+            }
+
             // 删除用户
             boolean result = userService.removeById(user.getId());
             ThrowUtils.throwIf(!result, CodeBindMessageEnums.SYSTEM_ERROR, "删除用户失败");
