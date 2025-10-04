@@ -100,7 +100,7 @@ public class RequestLogAOP implements HandlerInterceptor {
 
                 // 短暂封禁用户
                 StpUtil.disable(loginId, BAN_TIME_SECONDS);
-                log.info("[RequestLogAOP] 拦截到请求, 来自: {} {} -> {} {} {} {}/{} {} -> {}", ip, device, loginId, method, uri, count, MAX_REQUESTS, unbanDate, deviceInfo);
+                log.info("[RequestLogAOP] 拦截到请求, 来自: {} {} == {} {} {} {}_{} {} == {}", ip, device, loginId, method, uri, count, MAX_REQUESTS, unbanDate, deviceInfo);
                 mailService.sendSystemMail("898738804@qq.com", "广州南方学院毕业设计选题系统", "从 IP 地址 " + ip + " 处有异常的账户 " + loginId + " 使用了 " + method + " " + uri + " 请求方法 " + ", 并且该用户已经重复请求了 " + count + " 次, " + "解禁时间为 " + unbanDate + ", 请持续关注该用户!");
                 ThrowUtils.throwIf(true, CodeBindMessageEnums.USER_DISABLE_ERROR, "您的帐号被封禁中, 请等待一段时间再操作, 将在 " + unbanDate + " 解封, 您接下来的操作过程已发送给管理员, 请不要恶意访问本站");
             } else {
@@ -108,7 +108,7 @@ public class RequestLogAOP implements HandlerInterceptor {
                 redisManager.setValue(redisKey, String.valueOf(count + 1), TIME_WINDOW_SECONDS);
             }
         }
-        log.info("[RequestLogAOP] 拦截到请求, 来自: {} {} -> {} {} {} {}/{} {} -> {}", ip, device, loginId, method, uri, count, MAX_REQUESTS, "not ban", deviceInfo);
+        log.info("[RequestLogAOP] 拦截到请求, 来自: {} {} == {} {} {} {}_{} {} == {}", ip, device, loginId, method, uri, count, MAX_REQUESTS, "not-ban", deviceInfo);
         return true; // 返回 false 会终止请求, 可以利用这一点进行 IP 屏蔽
     }
 
