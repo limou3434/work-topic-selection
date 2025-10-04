@@ -1681,7 +1681,7 @@ public class UserController {
     }
 
     /**
-     * 教师或学生直接生取消提交题目
+     * 教师或学生直接取消提交题目
      */
     @SaCheckRole(value = {"teacher", "student"}, mode = SaMode.OR)
     @PostMapping("/withdraw")
