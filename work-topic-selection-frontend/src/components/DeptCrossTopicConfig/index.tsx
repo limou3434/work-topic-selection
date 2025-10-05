@@ -118,7 +118,7 @@ const DeptCrossTopicConfig: React.FC = () => {
   };
 
   return (
-    <Card style={{ marginBottom: 24 }}>
+    <Card bordered={false} style={{ marginBottom: 24 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* 选择系部下拉框和设置规则按钮 */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -148,7 +148,7 @@ const DeptCrossTopicConfig: React.FC = () => {
             </div>
             <Transfer
               dataSource={mockData}
-              titles={['可选系部', '已选系部']}
+              titles={['目标系部', '可选系部']}
               targetKeys={targetKeys}
               onChange={handleChange}
               render={(item) => item.title}
