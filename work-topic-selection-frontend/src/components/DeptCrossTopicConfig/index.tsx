@@ -107,24 +107,24 @@ const DeptCrossTopicConfig: React.FC = () => {
 
   // 设置规则
   const handleSetRules = async () => {
+    // 检查是否选择了系部
+    if (!selectedDept) {
+      message.warning('请先选择一个系部');
+      return;
+    }
+
     try {
       // 构造配置数据
       const enableSelectDeptsList: Record<string, string[]> = {};
 
-      // 如果有选中的系部，则更新配置
-      if (selectedDept) {
-        // 先复制现有的配置
-        Object.keys(deptConfig?.enableSelectDeptsList || {}).forEach((deptName) => {
-          if (deptName !== selectedDept) {
-            enableSelectDeptsList[deptName] = deptConfig.enableSelectDeptsList![deptName];
-          }
-        });
-        // 更新当前选中系部的配置
-        enableSelectDeptsList[selectedDept] = targetKeys;
-      } else {
-        // 如果没有选中系部，保持现有配置
-        Object.assign(enableSelectDeptsList, deptConfig?.enableSelectDeptsList || {});
-      }
+      // 更新当前选中系部的配置
+      Object.keys(deptConfig?.enableSelectDeptsList || {}).forEach((deptName) => {
+        if (deptName !== selectedDept) {
+          enableSelectDeptsList[deptName] = deptConfig.enableSelectDeptsList![deptName];
+        }
+      });
+      // 更新当前选中系部的配置
+      enableSelectDeptsList[selectedDept] = targetKeys;
 
       const res = await setDeptConfigUsingPost({
         enableSelectDeptsList,
@@ -144,36 +144,91 @@ const DeptCrossTopicConfig: React.FC = () => {
   };
 
   return (
-    <Card bordered={false} style={{ marginBottom: 24 }}>
+    <div style={{
+      background: '#ffffff',
+      borderRadius: 6,
+      padding: '16px',
+      marginBottom: 24,
+      boxShadow: 'none',
+    }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* 选择系部下拉框和设置规则按钮 */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <span style={{ fontWeight: 500, width: 100 }}>配置跨选规则：</span>
-            <Select
-              style={{ width: 300 }}
-              placeholder="请选择系部"
-              value={selectedDept || undefined}
-              onChange={(value) => setSelectedDept(value)}
-              options={deptList.map((dept) => ({
-                label: dept.label,
-                value: dept.value,
-              }))}
-            />
-          </div>
-          <div style={{ display: 'flex', gap: 16 }}>
-            <Button type="primary" onClick={handleSetRules}>
-              设置规则
-            </Button>
-            <Button danger onClick={handleClearConfig}>
-              清理配置
-            </Button>
+        <div style={{
+          background: '#ffffff',
+          padding: '12px 16px',
+          borderRadius: 6,
+          marginBottom: 16,
+          boxShadow: 'none',
+          border: '1px solid #f0f0f0',
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            gap: '12px'
+          }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 16,
+              flex: 1,
+              minWidth: 0
+            }}>
+              <span style={{ 
+                fontWeight: 500, 
+                width: 100,
+                flexShrink: 0
+              }}>配置跨选规则：</span>
+              <Select
+                style={{ 
+                  flex: 1,
+                  minWidth: 150
+                }}
+                placeholder="请选择系部"
+                value={selectedDept || undefined}
+                onChange={(value) => setSelectedDept(value)}
+                options={deptList.map((dept) => ({
+                  label: dept.label,
+                  value: dept.value,
+                }))}
+              />
+            </div>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              gap: 16,
+              justifyContent: 'space-between'
+            }}>
+              <div style={{ 
+                color: '#888888', 
+                fontSize: '12px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>
+                <span style={{ color: '#8B0000' }}>*</span> 对一个系部配置空规则相当于允许该系部跨选所有专业
+              </div>
+              <div style={{ 
+                display: 'flex', 
+                gap: 16
+              }}>
+                <Button type="primary" onClick={handleSetRules}>
+                  设置规则
+                </Button>
+                <Button danger onClick={handleClearConfig}>
+                  清理配置
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* 穿梭框 */}
         {selectedDept && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: 16 
+          }}>
             <div style={{ fontWeight: 500 }}>
               配置 {selectedDept} 系可选其他系部:
             </div>
@@ -184,14 +239,19 @@ const DeptCrossTopicConfig: React.FC = () => {
               onChange={handleChange}
               render={(item) => item.title}
               listStyle={{
-                width: 300,
+                width: '100%',
+                maxWidth: 300,
                 height: 300,
+              }}
+              style={{
+                display: 'flex',
+                justifyContent: 'center'
               }}
             />
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 };
 
