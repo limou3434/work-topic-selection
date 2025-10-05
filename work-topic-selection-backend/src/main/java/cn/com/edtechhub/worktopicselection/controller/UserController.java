@@ -1942,7 +1942,7 @@ public class UserController {
                     .count(new QueryWrapper<StudentTopicSelection>()
                             .eq("userAccount", userAccount) // 获取当前用户的记录
                             .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode()) // 查询状态为已选题的
-            );
+                    );
         }
 
         // 获取未选题人数
@@ -2562,7 +2562,7 @@ public class UserController {
     }
 
     /**
-     * 设置系部选跨选配置
+     * 设置系部选跨选配置(request.enableSelectDeptsList 传递空 [] 则清空所有配置)
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
@@ -2578,26 +2578,27 @@ public class UserController {
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
         assert request != null;
 
+        // 取出没有开启跨系开关的情况
+        ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH), CodeBindMessageEnums.PARAMS_ERROR, "请先开启跨系开关后再配置选题规则");
+
+        // 清空配置
+        Set<String> keys = redisManager.getKeysByPattern(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":*");
+        redisManager.deleteKeys(keys);
+
+        // 如果传递空参数就清空配置
         Map<String, List<String>> enableSelectDeptsList = request.getEnableSelectDeptsList();
-        ThrowUtils.throwIf(enableSelectDeptsList == null, CodeBindMessageEnums.PARAMS_ERROR, "配置不能为空");
         assert enableSelectDeptsList != null;
-
-        // 如果有开启跨系开关, 就把配置设置到 Redis 中进行缓存
-        boolean crossTopicSwitch = switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH);
-        if (crossTopicSwitch) {
-            // 清空配置
-            Set<String> keys = redisManager.getKeysByPattern(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":*");
-            redisManager.deleteKeys(keys);
-
-            // 重新配置
-            for (Map.Entry<String, List<String>> entry : enableSelectDeptsList.entrySet()) {
-                String objectDeptName = entry.getKey();
-                List<String> enableSelectDepts = entry.getValue();
-                redisManager.setValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + objectDeptName, JSONUtil.toJsonStr(enableSelectDepts));
-            }
+        if (enableSelectDeptsList == null && enableSelectDeptsList.isEmpty()) {
+            return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
         }
 
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, crossTopicSwitch);
+        // 重新配置
+        for (Map.Entry<String, List<String>> entry : enableSelectDeptsList.entrySet()) {
+            String objectDeptName = entry.getKey();
+            List<String> enableSelectDepts = entry.getValue();
+            redisManager.setValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + objectDeptName, JSONUtil.toJsonStr(enableSelectDepts));
+        }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
     }
 
     /**
@@ -2703,12 +2704,22 @@ public class UserController {
     }
 
     /**
-     * 是否允许该系部的学生跨选
+     * 判断该系部的学生在跨选配置中是否允许跨选
      */
     private Boolean isStudentAllowedCrossSelect(String userDeptName, String objDeptName) {
+        // 如果不存在配置就默认允许全部跨选
+        Set<String> keys = redisManager.getKeysByPattern(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":*");
+        if (keys == null || keys.isEmpty()) {
+            return true;
+        }
+
+        // 如果有存在配置就默认按照规则跨选
         String value = redisManager.getValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + userDeptName);
-        List<Long> enableSelectDepts = JSONUtil.toList(value, Long.class);
-        return true;
+        if (value == null) {
+            return true;
+        }
+        List<String> enableSelectDepts = JSONUtil.toList(value, String.class);
+        return enableSelectDepts.contains(objDeptName);
     }
 
 }
