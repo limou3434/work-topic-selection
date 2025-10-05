@@ -1496,7 +1496,7 @@ public class UserController {
                     ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH) && !loginUser.getDept().equals(topic.getDeptName()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "不允许跨系部选题, 请等待开放");
 
                     // 如果处于跨选阶段, 则查看是否符合配置
-                    ThrowUtils.throwIf(switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH) && !this.isStudentAllowedCrossSelect(loginUser.getDept(), topic.getDeptName()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前系统配置中, 您的系部不允许预选该题目, 只能选择 " + redisManager.getValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + loginUser.getDept()) + " 系部下的题目");
+                    ThrowUtils.throwIf(switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH) && !this.isStudentAllowedCrossSelect(loginUser.getDept(), topic.getDeptName()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前系统配置中, 您的系部不允许预选该题目, 只能选择 “" + this.beautifyList(redisManager.getValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + loginUser.getDept())) + "” 系部下的题目");
 
                     // 不允许重复确认预选
                     long count = studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", topicId));
@@ -1607,7 +1607,7 @@ public class UserController {
                     ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.SWITCH_SINGLE_CHOICE), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前模式为教师选择学生模式, 无法选题");
 
                     // 如果支持跨选, 则需要检查是否通过跨选规则配置
-                    ThrowUtils.throwIf(switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH) && !this.isStudentAllowedCrossSelect(loginUser.getDept(), topic.getDeptName()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前系统配置中, 您的系部不允许确认该题目, 只能选择 " + redisManager.getValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + loginUser.getDept()) + " 系部下的题目");
+                    ThrowUtils.throwIf(switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH) && !this.isStudentAllowedCrossSelect(loginUser.getDept(), topic.getDeptName()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前系统配置中, 您的系部不允许确认该题目, 只能选择 “" + this.beautifyList(redisManager.getValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + loginUser.getDept())) + "” 系部下的题目");
 
                     // 如果此时不允许跨选则不允许选中和当前登陆用户不同系部的选题
                     ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH) && !loginUser.getDept().equals(topic.getDeptName()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "不允许跨系部选题, 请等待开放");
@@ -2764,6 +2764,14 @@ public class UserController {
         }
         List<String> enableSelectDepts = JSONUtil.toList(value, String.class);
         return enableSelectDepts.contains(objDeptName);
+    }
+
+    /**
+     * 美观 JSON 列表
+     */
+    private String beautifyList(String raw) {
+        List<String> list = JSONUtil.toList(raw, String.class);
+        return String.join("、", list);
     }
 
 }

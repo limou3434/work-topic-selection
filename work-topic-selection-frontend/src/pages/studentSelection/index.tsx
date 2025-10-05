@@ -32,6 +32,10 @@ export default () => {
       dataIndex: 'teacherName',
     },
     {
+      title: '系部',
+      dataIndex: 'deptName',
+    },
+    {
       title: '题目数量',
       dataIndex: 'topicAmount',
       search: false,
@@ -67,14 +71,14 @@ export default () => {
         request={async (params = {}) => {
           const currentPage = params.current || 1;
           const currentPageSize = params.pageSize || 10;
-          
+
           // 与StudentList页面保持一致，将所有params传递给后端
           const requestParams = {
             ...params,
             current: currentPage,
             pageSize: currentPageSize,
           };
-          
+
           try {
             const response = await getTeacherUsingPost(requestParams);
             // 检查响应是否有效
@@ -85,18 +89,18 @@ export default () => {
                 success: false,
               };
             }
-            
+
             // 为数据添加索引字段
             const dataWithIndex = response.data?.records?.map((item, index) => ({
               ...item,
               index: (currentPage - 1) * currentPageSize + index + 1,
             })) || [];
-            
+
             const total = response.data?.total || 0;
             setTotal(total);
             setPageNum(currentPage);
             setPageSize(currentPageSize);
-            
+
             return {
               data: dataWithIndex,
               total: total,
@@ -136,7 +140,7 @@ export default () => {
       >
         <TopicTable teacherName={currentTeacher} />
       </Modal>
-      
+
       <QRCodeNotification />
     </>
   );
