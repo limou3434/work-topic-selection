@@ -199,6 +199,14 @@ export async function getUserByIdUsingGet(
   });
 }
 
+/** getDeptConfig GET /user/get/dept/config */
+export async function getDeptConfigUsingGet(options?: { [key: string]: any }) {
+  return request<API.BaseResponseDeptConfigVO_>('/user/get/dept/config', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
 /** getDeptList POST /user/get/dept/list */
 export async function getDeptListUsingPost(
   body: API.DeptQueryRequest,
@@ -615,6 +623,21 @@ export async function sendCodeUsingPost(
   });
 }
 
+/** setDeptConfig POST /user/set/dept/config */
+export async function setDeptConfigUsingPost(
+  body: API.SetDeptConfigRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseBoolean_>('/user/set/dept/config', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** setTeacherTopicAmount POST /user/set/teacher/topicAmount */
 export async function setTeacherTopicAmountUsingPost(
   body: API.SetTeacherTopicAmountRequest,
@@ -664,6 +687,14 @@ export async function setSwitchSingleChoiceStatusUsingPost(
     params: {
       ...params,
     },
+    ...(options || {}),
+  });
+}
+
+/** test GET /user/test */
+export async function testUsingGet(options?: { [key: string]: any }) {
+  return request<API.BaseResponseString_>('/user/test', {
+    method: 'GET',
     ...(options || {}),
   });
 }

@@ -32,6 +32,12 @@ declare namespace API {
     message?: string;
   };
 
+  type BaseResponseDeptConfigVO_ = {
+    code?: number;
+    data?: DeptConfigVO;
+    message?: string;
+  };
+
   type BaseResponseInt_ = {
     code?: number;
     data?: number;
@@ -193,6 +199,10 @@ declare namespace API {
 
   type DeptAddRequest = {
     deptName?: string;
+  };
+
+  type DeptConfigVO = {
+    enableSelectDeptsList?: Record<string, any>;
   };
 
   type DeptQueryRequest = {
@@ -403,6 +413,10 @@ declare namespace API {
   type setCrossTopicStatusUsingPOSTParams = {
     /** enabled */
     enabled: boolean;
+  };
+
+  type SetDeptConfigRequest = {
+    enableSelectDeptsList?: Record<string, any>;
   };
 
   type setSwitchSingleChoiceStatusUsingPOSTParams = {
