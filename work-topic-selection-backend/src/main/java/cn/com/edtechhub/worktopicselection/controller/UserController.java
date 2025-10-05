@@ -144,6 +144,12 @@ public class UserController {
     @Resource
     private SwitchService switchService;
 
+    /// 测试相关接口 ///
+    @GetMapping("/test")
+    public BaseResponse<String> test() {
+        return TheResult.notyet();
+    }
+
     /// 用户相关接口 ///
 
     /**
@@ -2707,6 +2713,9 @@ public class UserController {
      * 判断该系部的学生在跨选配置中是否允许跨选
      */
     private Boolean isStudentAllowedCrossSelect(String userDeptName, String objDeptName) {
+        ThrowUtils.throwIf(StringUtils.isBlank(userDeptName), CodeBindMessageEnums.PARAMS_ERROR, "用户系部不能为空");
+        ThrowUtils.throwIf(StringUtils.isBlank(objDeptName), CodeBindMessageEnums.PARAMS_ERROR, "目标系部不能为空");
+
         // 如果不存在配置就默认允许全部跨选
         Set<String> keys = redisManager.getKeysByPattern(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":*");
         if (keys == null || keys.isEmpty()) {
