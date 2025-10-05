@@ -1495,8 +1495,8 @@ public class UserController {
                     // 如果此时不允许跨选则不允许预选和当前登陆用户不同系部的选题
                     ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH) && !loginUser.getDept().equals(topic.getDeptName()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "不允许跨系部选题, 请等待开放");
 
-                    // 检查是否通过跨选配置
-                    ThrowUtils.throwIf(!this.isStudentAllowedCrossSelect(loginUser.getDept(), topic.getDeptName()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前系统配置中, 您的系部不允许预选该题目, 只能选择 " + redisManager.getValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + loginUser.getDept()));
+                    // 如果处于跨选阶段, 则查看是否符合配置
+                    ThrowUtils.throwIf(switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH) && !this.isStudentAllowedCrossSelect(loginUser.getDept(), topic.getDeptName()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前系统配置中, 您的系部不允许预选该题目, 只能选择 " + redisManager.getValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + loginUser.getDept()) + " 系部下的题目");
 
                     // 不允许重复确认预选
                     long count = studentTopicSelectionService.count(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", topicId));
@@ -1606,8 +1606,8 @@ public class UserController {
                     // 检查当前单选模式能否可选题
                     ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.SWITCH_SINGLE_CHOICE), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前模式为教师选择学生模式, 无法选题");
 
-                    // 检查是否通过跨选规则配置
-                    ThrowUtils.throwIf(!this.isStudentAllowedCrossSelect(loginUser.getDept(), topic.getDeptName()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前系统配置中, 您的系部不允许预选该题目, 只能选择 " + redisManager.getValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + loginUser.getDept()));
+                    // 如果支持跨选, 则需要检查是否通过跨选规则配置
+                    ThrowUtils.throwIf(switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH) && !this.isStudentAllowedCrossSelect(loginUser.getDept(), topic.getDeptName()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前系统配置中, 您的系部不允许确认该题目, 只能选择 " + redisManager.getValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + loginUser.getDept()) + " 系部下的题目");
 
                     // 如果此时不允许跨选则不允许选中和当前登陆用户不同系部的选题
                     ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH) && !loginUser.getDept().equals(topic.getDeptName()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "不允许跨系部选题, 请等待开放");
@@ -2032,6 +2032,9 @@ public class UserController {
             // 获得教师的名字
             String userName = user.getUserName();
 
+            // 获得教师系部
+            String dept = user.getDept();
+
             // 获得教师的对应选题
             QueryWrapper<Topic> topicQueryWrapper = new QueryWrapper<>();
             topicQueryWrapper
@@ -2052,6 +2055,7 @@ public class UserController {
             if (count != 0) {
                 DeptTeacherVO teacherVO = new DeptTeacherVO();
                 teacherVO.setTeacherName(userName);
+                teacherVO.setDeptName(dept);
                 teacherVO.setSurplusQuantity(surplusQuantity);
                 teacherVO.setSelectAmount(selectAmount);
                 teacherVO.setTopicAmount(count);
@@ -2595,18 +2599,22 @@ public class UserController {
         // 取出没有开启跨系开关的情况
         ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "请先开启跨系开关后再配置选题规则");
 
-        // 清空配置
+        // 清空配置(因此就必须保证每次都是全量配置, 所以配置方需要先读取一次配置后再修改配置)
         Set<String> keys = redisManager.getKeysByPattern(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":*");
         redisManager.deleteKeys(keys);
 
-        // 配置规则
+        // 如果配置规则为空, 则直接清空不要重复生成空键值对
         Map<String, List<String>> enableSelectDeptsList = request.getEnableSelectDeptsList();
+        ThrowUtils.throwIf(enableSelectDeptsList.isEmpty(), CodeBindMessageEnums.PARAMS_ERROR, "请至少选择一个系部后再配置");
         assert enableSelectDeptsList != null;
 
+        // 配置规则
         for (Map.Entry<String, List<String>> entry : enableSelectDeptsList.entrySet()) {
             String objectDeptName = entry.getKey();
             List<String> enableSelectDepts = entry.getValue();
-            redisManager.setValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + objectDeptName, JSONUtil.toJsonStr(enableSelectDepts));
+            if (!enableSelectDepts.isEmpty()) {
+                redisManager.setValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + objectDeptName, JSONUtil.toJsonStr(enableSelectDepts));
+            }
         }
         return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
     }
@@ -2624,7 +2632,7 @@ public class UserController {
         sentineManager.initFlowRules(entryName);
         SphU.entry(entryName);
 
-        // 避免原本的跨选规则失效
+        // 必须开启跨选开关
         ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "请先开启跨系开关后再清除跨选规则");
 
         // 清理所有的跨选规则
@@ -2739,15 +2747,11 @@ public class UserController {
      * 判断该系部的学生在跨选配置中是否允许跨选
      */
     private Boolean isStudentAllowedCrossSelect(String userDeptName, String objDeptName) {
+        // 检查参数
         ThrowUtils.throwIf(StringUtils.isBlank(userDeptName), CodeBindMessageEnums.PARAMS_ERROR, "用户系部不能为空");
         ThrowUtils.throwIf(StringUtils.isBlank(objDeptName), CodeBindMessageEnums.PARAMS_ERROR, "目标系部不能为空");
 
-        // 如果没有处于跨选阶段直接返回 true
-        if (!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH)) {
-            return true;
-        }
-
-        // 如果有存在配置就默认按照规则跨选
+        // 如果有存在配置就默认按照规则跨选, 不存在就直接允许跨选所有系部
         String value = redisManager.getValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + userDeptName);
         if (value == null) {
             return true;
