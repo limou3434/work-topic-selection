@@ -218,10 +218,12 @@ declare namespace API {
     pageSize?: number;
     sortField?: string;
     sortOrder?: string;
+    teacherDept?: string;
     teacherName?: string;
   };
 
   type DeptTeacherVO = {
+    deptName?: string;
     selectAmount?: number;
     surplusQuantity?: number;
     teacherName?: string;

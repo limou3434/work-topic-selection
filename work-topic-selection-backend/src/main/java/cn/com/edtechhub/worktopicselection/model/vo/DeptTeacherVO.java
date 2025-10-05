@@ -16,6 +16,11 @@ public class DeptTeacherVO {
     private String teacherName;
 
     /**
+     * 系部名称
+     */
+    private String deptName;
+
+    /**
      * 选题数量
      */
     private int topicAmount;

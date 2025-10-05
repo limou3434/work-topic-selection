@@ -23,4 +23,9 @@ public class DeptTeacherQueryRequest extends PageRequest implements Serializable
      */
     private String teacherName;
 
+    /**
+     * 教师系部
+     */
+    private String deptName;
+
 }

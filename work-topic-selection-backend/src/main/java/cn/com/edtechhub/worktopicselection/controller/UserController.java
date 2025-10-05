@@ -1996,6 +1996,7 @@ public class UserController {
         String sortField = request.getSortField();
         String sortOrder = request.getSortOrder();
         String teacherName = request.getTeacherName();
+        String deptName = request.getDeptName();
 
         // 获取当前登陆用
         User loginUser = userService.userGetCurrentLoginUser();
@@ -2009,9 +2010,14 @@ public class UserController {
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper.eq("userRole", UserRoleEnum.TEACHER.getCode()); // 是教师的
 
-        // 如果有教师姓名搜索条件，则添加搜索条件
+        // 如果有教师姓名搜索条件, 则添加搜索条件
         if (StringUtils.isNotBlank(teacherName)) {
             userQueryWrapper.like("userName", teacherName);
+        }
+
+        // 如果有教师系部搜索条件, 则添加搜索条件
+        if (StringUtils.isNotBlank(deptName)) {
+            userQueryWrapper.like("dept", deptName);
         }
 
         // 如果此时不允许跨选则不允许看到和当前登陆用户不同系部的教师
