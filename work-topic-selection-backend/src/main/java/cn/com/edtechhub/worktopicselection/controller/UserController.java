@@ -2568,7 +2568,7 @@ public class UserController {
     }
 
     /**
-     * 设置系部选跨选配置(request.enableSelectDeptsList 传递空 [] 则清空所有配置)
+     * 设置系部选跨选配置
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
@@ -2585,25 +2585,39 @@ public class UserController {
         assert request != null;
 
         // 取出没有开启跨系开关的情况
-        ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH), CodeBindMessageEnums.PARAMS_ERROR, "请先开启跨系开关后再配置选题规则");
+        ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "请先开启跨系开关后再配置选题规则");
 
         // 清空配置
         Set<String> keys = redisManager.getKeysByPattern(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":*");
         redisManager.deleteKeys(keys);
 
-        // 如果传递空参数就清空配置
+        // 配置规则
         Map<String, List<String>> enableSelectDeptsList = request.getEnableSelectDeptsList();
         assert enableSelectDeptsList != null;
-        if (enableSelectDeptsList == null && enableSelectDeptsList.isEmpty()) {
-            return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
-        }
 
-        // 重新配置
         for (Map.Entry<String, List<String>> entry : enableSelectDeptsList.entrySet()) {
             String objectDeptName = entry.getKey();
             List<String> enableSelectDepts = entry.getValue();
             redisManager.setValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + objectDeptName, JSONUtil.toJsonStr(enableSelectDepts));
         }
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
+    }
+
+    /**
+     * 清除系部选跨选配置
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/del/dept/config")
+    public BaseResponse<Boolean> delDeptConfig() throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        Set<String> keys = redisManager.getKeysByPattern(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":*");
+        redisManager.deleteKeys(keys);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
     }
 
@@ -2716,9 +2730,8 @@ public class UserController {
         ThrowUtils.throwIf(StringUtils.isBlank(userDeptName), CodeBindMessageEnums.PARAMS_ERROR, "用户系部不能为空");
         ThrowUtils.throwIf(StringUtils.isBlank(objDeptName), CodeBindMessageEnums.PARAMS_ERROR, "目标系部不能为空");
 
-        // 如果不存在配置就默认允许全部跨选
-        Set<String> keys = redisManager.getKeysByPattern(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":*");
-        if (keys == null || keys.isEmpty()) {
+        // 如果没有处于跨选阶段直接返回 true
+        if (!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH)) {
             return true;
         }
 

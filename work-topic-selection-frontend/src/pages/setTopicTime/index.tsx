@@ -15,6 +15,7 @@ import {
 import {ClockCircleOutlined, EyeOutlined, MinusOutlined, PlusOutlined} from "@ant-design/icons";
 import {ModalForm} from "@ant-design/pro-form/lib";
 import {ProFormDateTimeRangePicker} from '@ant-design/pro-form';
+import { DeptCrossTopicConfig } from '@/components';
 
 export type TableListItem = {
   id: number;
@@ -279,6 +280,8 @@ export default () => {
                     </div>
                   </div>
                 </div>
+                {/* 跨系选题配置区域 */}
+                <DeptCrossTopicConfig />
                 <ProTable<TableListItem>
                   columns={unpublishedColumns}
                   rowSelection={{

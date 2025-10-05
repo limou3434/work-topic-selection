@@ -124,6 +124,14 @@ export async function setCrossTopicStatusUsingPost(
   });
 }
 
+/** delDeptConfig POST /user/del/dept/config */
+export async function delDeptConfigUsingPost(options?: { [key: string]: any }) {
+  return request<API.BaseResponseBoolean_>('/user/del/dept/config', {
+    method: 'POST',
+    ...(options || {}),
+  });
+}
+
 /** deleteUser POST /user/delete */
 export async function deleteUserUsingPost(
   body: API.DeleteRequest,
