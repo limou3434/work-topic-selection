@@ -2616,6 +2616,10 @@ public class UserController {
         sentineManager.initFlowRules(entryName);
         SphU.entry(entryName);
 
+        // 避免原本的跨选规则失效
+        ThrowUtils.throwIf(!switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "请先开启跨系开关后再清除跨选规则");
+
+        // 清理所有的跨选规则
         Set<String> keys = redisManager.getKeysByPattern(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":*");
         redisManager.deleteKeys(keys);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, true);

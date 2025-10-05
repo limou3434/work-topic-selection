@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Card, message, Select, Transfer } from 'antd';
+import { Button, Card, message, Modal, Select, Transfer } from 'antd';
 import type { TransferItem } from 'antd/es/transfer';
 import {
+  delDeptConfigUsingPost,
   getDeptConfigUsingGet,
   getDeptListUsingPost,
   setDeptConfigUsingPost,
@@ -57,6 +58,31 @@ const DeptCrossTopicConfig: React.FC = () => {
       console.error('获取跨系配置失败:', error);
       message.error('获取跨系配置失败');
     }
+  };
+
+  // 清理配置
+  const handleClearConfig = async () => {
+    Modal.confirm({
+      title: '确认清理配置',
+      content: '清理配置后，学生在跨选模式下将可以选择所有系部的题目，确定要执行此操作吗？',
+      okText: '确认',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          const res = await delDeptConfigUsingPost();
+          if (res.code === 0) {
+            message.success('配置清理成功');
+            // 重新获取配置
+            fetchDeptConfig();
+          } else {
+            message.error(res.message || '配置清理失败');
+          }
+        } catch (error) {
+          console.error('配置清理失败:', error);
+          message.error('配置清理失败');
+        }
+      },
+    });
   };
 
   // 初始化数据
@@ -135,9 +161,14 @@ const DeptCrossTopicConfig: React.FC = () => {
               }))}
             />
           </div>
-          <Button type="primary" onClick={handleSetRules}>
-            设置规则
-          </Button>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <Button type="primary" onClick={handleSetRules}>
+              设置规则
+            </Button>
+            <Button danger onClick={handleClearConfig}>
+              清理配置
+            </Button>
+          </div>
         </div>
 
         {/* 穿梭框 */}
