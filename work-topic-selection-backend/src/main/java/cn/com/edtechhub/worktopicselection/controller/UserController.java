@@ -3,7 +3,6 @@ package cn.com.edtechhub.worktopicselection.controller;
 import cn.com.edtechhub.worktopicselection.constant.CommonConstant;
 import cn.com.edtechhub.worktopicselection.constant.TopicConstant;
 import cn.com.edtechhub.worktopicselection.constant.UserConstant;
-import cn.com.edtechhub.worktopicselection.exception.BusinessException;
 import cn.com.edtechhub.worktopicselection.exception.CodeBindMessageEnums;
 import cn.com.edtechhub.worktopicselection.manager.ai.AIManager;
 import cn.com.edtechhub.worktopicselection.manager.ai.AIResult;
@@ -12,6 +11,7 @@ import cn.com.edtechhub.worktopicselection.manager.sentine.SentineManager;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeleteDeptRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeptAddRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.dept.DeptQueryRequest;
+import cn.com.edtechhub.worktopicselection.model.dto.dept.SetDeptConfigRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.project.DeleteProjectRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.project.ProjectAddRequest;
 import cn.com.edtechhub.worktopicselection.model.dto.project.ProjectQueryRequest;
@@ -37,6 +37,7 @@ import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.annotation.SaMode;
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.json.JSONUtil;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -1226,6 +1227,82 @@ public class UserController {
     }
 
     /**
+     * 获取教师题目上限
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/get/teacher/topicAmount")
+    public BaseResponse<Integer> getTeacherTopicAmount(@RequestBody GetTeacherTopicAmountRequest request) throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        // 参数检查
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
+
+        Long teacherId = request.getTeacherId();
+        ThrowUtils.throwIf(teacherId == null || teacherId <= 0, CodeBindMessageEnums.PARAMS_ERROR, "教师标识不合法");
+
+        // 获取教师信息
+        User teacher = userService.getById(teacherId);
+        ThrowUtils.throwIf(teacher == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "教师不存在");
+        assert teacher != null;
+        ThrowUtils.throwIf(!teacher.getUserRole().equals(UserRoleEnum.TEACHER.getCode()), CodeBindMessageEnums.PARAMS_ERROR, "该用户不是教师");
+
+        // 返回教师题目上限
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, teacher.getTopicAmount());
+    }
+
+    /**
+     * 修改教师题目上限
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/set/teacher/topicAmount")
+    public BaseResponse<Boolean> setTeacherTopicAmount(@RequestBody SetTeacherTopicAmountRequest request) throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        // 参数检查
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
+
+        Long teacherId = request.getTeacherId();
+        ThrowUtils.throwIf(teacherId == null || teacherId <= 0, CodeBindMessageEnums.PARAMS_ERROR, "教师标识不合法");
+        assert teacherId != null;
+
+        Integer topicAmount = request.getTopicAmount();
+        ThrowUtils.throwIf(topicAmount == null || topicAmount < 0 || topicAmount > 20, CodeBindMessageEnums.PARAMS_ERROR, "题目上限数量必须在 0-20 之间");
+        assert topicAmount != null;
+
+        // 获取教师信息
+        User teacher = userService.getById(teacherId);
+        ThrowUtils.throwIf(teacher == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "教师不存在");
+        assert teacher != null;
+        ThrowUtils.throwIf(!teacher.getUserRole().equals(UserRoleEnum.TEACHER.getCode()), CodeBindMessageEnums.PARAMS_ERROR, "该用户不是教师");
+
+        // 检查教师目前的题目数量, 如果目前的题目数量已经到上限, 则不允许改小
+        long currentTopicCount = topicService.count(new QueryWrapper<Topic>().eq("teacherName", teacher.getUserName()));
+        ThrowUtils.throwIf(topicAmount < currentTopicCount, CodeBindMessageEnums.PARAMS_ERROR, "不能将题目上限设置为小于当前已出题目数量(" + currentTopicCount + ")");
+
+        // 更新教师题目上限
+        synchronized (teacherId) { // 用教师 id 来加锁, 这样对同一个选题只能一个线程进行操作
+            return transactionTemplate.execute(transactionStatus -> {
+                teacher.setTopicAmount(topicAmount);
+                boolean result = userService.updateById(teacher);
+                ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "更新教师题目上限失败");
+                return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
+            });
+        }
+    }
+
+    /**
      * 审核题目或重新审核题目
      */
     @SaCheckLogin
@@ -2396,7 +2473,7 @@ public class UserController {
     }
 
     /**
-     * 查询学生查看选题开关
+     * 设置学生查看选题开关
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
@@ -2429,7 +2506,7 @@ public class UserController {
     }
 
     /**
-     * 查询单选模式切换开关
+     * 设置单选模式切换开关
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
@@ -2446,79 +2523,81 @@ public class UserController {
     }
 
     /**
-     * 获取教师题目上限
+     * 查看系部选跨选配置
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
-    @PostMapping("/get/teacher/topicAmount")
-    public BaseResponse<Integer> getTeacherTopicAmount(@RequestBody GetTeacherTopicAmountRequest request) throws BlockException {
+    @GetMapping("/get/dept/config")
+    public BaseResponse<DeptConfigVO> getDeptConfig() throws BlockException {
         // 流量控制
         String entryName = new Object() {
         }.getClass().getEnclosingMethod().getName();
         sentineManager.initFlowRules(entryName);
         SphU.entry(entryName);
 
-        // 参数检查
-        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
-        assert request != null;
+        DeptConfigVO deptConfigVO = new DeptConfigVO();
+        if (switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH)) {
+            Set<String> keys = redisManager.getKeysByPattern(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":*");
+            if (keys != null && !keys.isEmpty()) {
+                Map<String, List<String>> enableSelectDeptsList = new HashMap<>();
 
-        Long teacherId = request.getTeacherId();
-        ThrowUtils.throwIf(teacherId == null || teacherId <= 0, CodeBindMessageEnums.PARAMS_ERROR, "教师标识不合法");
+                for (String key : keys) {
+                    String value = redisManager.getValue(key);
+                    if (value != null) {
+                        // key 格式为 DEPT_CROSS_TOPIC_CONFIG:<deptId>
+                        String objectDeptName = key.split(":")[1];
 
-        // 获取教师信息
-        User teacher = userService.getById(teacherId);
-        ThrowUtils.throwIf(teacher == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "教师不存在");
-        assert teacher != null;
-        ThrowUtils.throwIf(!teacher.getUserRole().equals(UserRoleEnum.TEACHER.getCode()), CodeBindMessageEnums.PARAMS_ERROR, "该用户不是教师");
+                        // value 存储的是 JSON 字符串，需要反序列化
+                        List<String> enableSelectDepts = JSONUtil.toList(value, String.class);
 
-        // 返回教师题目上限
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, teacher.getTopicAmount());
+                        enableSelectDeptsList.put(objectDeptName, enableSelectDepts);
+                    }
+                }
+
+                deptConfigVO.setEnableSelectDeptsList(enableSelectDeptsList);
+            }
+        }
+
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, deptConfigVO);
     }
 
     /**
-     * 修改教师题目上限
+     * 设置系部选跨选配置
      */
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
-    @PostMapping("/set/teacher/topicAmount")
-    public BaseResponse<Boolean> setTeacherTopicAmount(@RequestBody SetTeacherTopicAmountRequest request) throws BlockException {
+    @PostMapping("/set/dept/config")
+    public BaseResponse<Boolean> setDeptConfig(@RequestBody SetDeptConfigRequest request) throws BlockException {
         // 流量控制
         String entryName = new Object() {
         }.getClass().getEnclosingMethod().getName();
         sentineManager.initFlowRules(entryName);
         SphU.entry(entryName);
 
-        // 参数检查
+        // 检查参数
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
         assert request != null;
 
-        Long teacherId = request.getTeacherId();
-        ThrowUtils.throwIf(teacherId == null || teacherId <= 0, CodeBindMessageEnums.PARAMS_ERROR, "教师标识不合法");
-        assert teacherId != null;
+        Map<String, List<String>> enableSelectDeptsList = request.getEnableSelectDeptsList();
+        ThrowUtils.throwIf(enableSelectDeptsList == null, CodeBindMessageEnums.PARAMS_ERROR, "配置不能为空");
+        assert enableSelectDeptsList != null;
 
-        Integer topicAmount = request.getTopicAmount();
-        ThrowUtils.throwIf(topicAmount == null || topicAmount < 0 || topicAmount > 20, CodeBindMessageEnums.PARAMS_ERROR, "题目上限数量必须在 0-20 之间");
-        assert topicAmount != null;
+        // 如果有开启跨系开关, 就把配置设置到 Redis 中进行缓存
+        boolean crossTopicSwitch = switchService.isEnabled(TopicConstant.CROSS_TOPIC_SWITCH);
+        if (crossTopicSwitch) {
+            // 清空配置
+            Set<String> keys = redisManager.getKeysByPattern(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":*");
+            redisManager.deleteKeys(keys);
 
-        // 获取教师信息
-        User teacher = userService.getById(teacherId);
-        ThrowUtils.throwIf(teacher == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "教师不存在");
-        assert teacher != null;
-        ThrowUtils.throwIf(!teacher.getUserRole().equals(UserRoleEnum.TEACHER.getCode()), CodeBindMessageEnums.PARAMS_ERROR, "该用户不是教师");
-
-        // 检查教师目前的题目数量, 如果目前的题目数量已经到上限, 则不允许改小
-        long currentTopicCount = topicService.count(new QueryWrapper<Topic>().eq("teacherName", teacher.getUserName()));
-        ThrowUtils.throwIf(topicAmount < currentTopicCount, CodeBindMessageEnums.PARAMS_ERROR, "不能将题目上限设置为小于当前已出题目数量(" + currentTopicCount + ")");
-
-        // 更新教师题目上限
-        synchronized (teacherId) { // 用教师 id 来加锁, 这样对同一个选题只能一个线程进行操作
-            return transactionTemplate.execute(transactionStatus -> {
-                teacher.setTopicAmount(topicAmount);
-                boolean result = userService.updateById(teacher);
-                ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "更新教师题目上限失败");
-                return TheResult.success(CodeBindMessageEnums.SUCCESS, true);
-            });
+            // 重新配置
+            for (Map.Entry<String, List<String>> entry : enableSelectDeptsList.entrySet()) {
+                String objectDeptName = entry.getKey();
+                List<String> enableSelectDepts = entry.getValue();
+                redisManager.setValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + objectDeptName, JSONUtil.toJsonStr(enableSelectDepts));
+            }
         }
+
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, crossTopicSwitch);
     }
 
     /**
@@ -2613,11 +2692,23 @@ public class UserController {
         return TheResult.success(CodeBindMessageEnums.SUCCESS, theSystemInfoVo);
     }
 
+    /**
+     * 格式化数据单位
+     */
     private String formatSize(long size) {
         if (size < 1024) return size + " B";
         int exp = (int) (Math.log(size) / Math.log(1024));
         char unit = "KMGTPE".charAt(exp - 1);
         return String.format("%.1f %sB", size / Math.pow(1024, exp), unit);
+    }
+
+    /**
+     * 是否允许该系部的学生跨选
+     */
+    private Boolean isStudentAllowedCrossSelect(String userDeptName, String objDeptName) {
+        String value = redisManager.getValue(TopicConstant.DEPT_CROSS_TOPIC_CONFIG + ":" + userDeptName);
+        List<Long> enableSelectDepts = JSONUtil.toList(value, Long.class);
+        return true;
     }
 
 }

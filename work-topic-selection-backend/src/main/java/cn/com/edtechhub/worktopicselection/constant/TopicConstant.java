@@ -27,4 +27,9 @@ public interface TopicConstant {
      */
     String SWITCH_SINGLE_CHOICE = "switch-single-choice";
 
+    /**
+     * 跨系选题配置缓存 Key
+     */
+    String DEPT_CROSS_TOPIC_CONFIG = "dept-cross-topic-config";
+
 }

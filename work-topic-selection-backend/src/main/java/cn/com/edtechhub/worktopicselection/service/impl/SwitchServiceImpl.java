@@ -21,6 +21,7 @@ public class SwitchServiceImpl implements SwitchService {
 
     /**
      * 所有读写操作共用一把锁, 保证管理员的设置会立刻影响所有学生是否允许跨选
+     * TODO: 不过实际上这是没有必要的, Redis 本身就是线程安全的, 不需要使用锁, 不过先先写着吧(而且这个锁也只是本地锁, 集群会出现问题)
      */
     private final ReentrantLock lock = new ReentrantLock();
 

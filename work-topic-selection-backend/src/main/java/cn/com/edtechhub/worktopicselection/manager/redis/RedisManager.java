@@ -4,7 +4,11 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Redis 管理类
@@ -61,6 +65,36 @@ public class RedisManager {
      */
     public void deleteKey(String key) {
         stringRedisTemplate.delete(redisConfig.getKeyPrefix() + key);
+    }
+
+    /**
+     * 批量获取所有匹配的键
+     *
+     * @param pattern 匹配模式
+     */
+    public Set<String> getKeysByPattern(String pattern) {
+        Set<String> keysWithPrefix = stringRedisTemplate.keys(redisConfig.getKeyPrefix() + pattern);
+        if (keysWithPrefix == null) {
+            return Collections.emptySet();
+        }
+        // 去掉前缀再返回
+        return keysWithPrefix
+                .stream()
+                .map(key -> key.replaceFirst(redisConfig.getKeyPrefix(), ""))
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * 批量删除所有要求的键
+     */
+    public void deleteKeys(Collection<String> keys) {
+        if (keys != null && !keys.isEmpty()) {
+            keys = keys
+                    .stream()
+                    .map(key -> redisConfig.getKeyPrefix() + key)
+                    .collect(Collectors.toSet());
+            stringRedisTemplate.delete(keys);
+        }
     }
 
     /**
