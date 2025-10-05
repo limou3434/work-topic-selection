@@ -123,7 +123,7 @@ const DeptCrossTopicConfig: React.FC = () => {
         {/* 选择系部下拉框和设置规则按钮 */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <span style={{ fontWeight: 500, width: 100 }}>配置跨选规则</span>
+            <span style={{ fontWeight: 500, width: 100 }}>配置跨选规则：</span>
             <Select
               style={{ width: 300 }}
               placeholder="请选择系部"
