@@ -58,14 +58,14 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
         }
         attributes.put("user", user);
 
-        // 设置 topicId 参数
-        String topicIdStr = servletRequest.getParameter("topicId");
-        if (topicIdStr != null && !topicIdStr.isEmpty()) {
+        // 设置 id 参数
+        String idStr = servletRequest.getParameter("id");
+        if (idStr != null && !idStr.isEmpty()) {
             try {
-                Long topicId = Long.parseLong(topicIdStr);
-                attributes.put("topicId", topicId);
+                Long id = Long.parseLong(idStr);
+                attributes.put("id", id);
             } catch (NumberFormatException e) {
-                log.debug("无效的 topicId 参数: {}", topicIdStr);
+                log.debug("无效的 id 参数: {}", idStr);
             }
         }
 

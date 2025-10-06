@@ -42,7 +42,10 @@ public class WebSocketEditHandler extends TextWebSocketHandler {
     private TopicService topicService;
 
     /**
-     * 保存所有连接的会话, 题目标识 -> 用户 ID, 用户会话集合
+     * 保存所有连接的会话, 唯一通话标识
+     *                          -> (用户1 ID, 用户会话)
+     *                          -> (用户2 ID, 用户会话)
+     *                          -> ...
      */
     private final Map<Long, ConcurrentHashMap<Long, WebSocketSession>> sessions = new ConcurrentHashMap<>();
 
@@ -54,13 +57,13 @@ public class WebSocketEditHandler extends TextWebSocketHandler {
         // 获取属性
         Map<String, Object> attributes = session.getAttributes();
         User user = (User) attributes.get("user");
-        Long topicId = (Long) attributes.get("topicId");
+        Long id = (Long) attributes.get("id");
 
         // 添加集合
-        if (topicId != null) {
-            sessions.putIfAbsent(topicId, new ConcurrentHashMap<>());
-            sessions.get(topicId).put(user.getId(), session);
-            log.debug("用户 {} 连接到 topicId {} 的 WebSocket 链接", user.getUserName(), topicId);
+        if (id != null) {
+            sessions.putIfAbsent(id, new ConcurrentHashMap<>());
+            sessions.get(id).put(user.getId(), session);
+            log.debug("用户 {} 连接到 id 为 {} 的 WebSocket 链接", user.getUserName(), id);
         }
     }
 
@@ -72,16 +75,16 @@ public class WebSocketEditHandler extends TextWebSocketHandler {
         // 获取属性
         Map<String, Object> attributes = session.getAttributes();
         User user = (User) attributes.get("user");
-        Long topicId = (Long) attributes.get("topicId");
+        Long id = (Long) attributes.get("id");
 
         // 移除集合
-        if (topicId != null && sessions.containsKey(topicId)) {
-            ConcurrentHashMap<Long, WebSocketSession> sessions = this.sessions.get(topicId);
+        if (id != null && sessions.containsKey(id)) {
+            ConcurrentHashMap<Long, WebSocketSession> sessions = this.sessions.get(id);
             sessions.remove(user.getId());
             if (sessions.isEmpty()) { // 如果集合为空, 直接删除集合
-                this.sessions.remove(topicId);
+                this.sessions.remove(id);
             }
-            log.debug("用户 {} 断开 topicId {} 的 WebSocket 连接", user.getUserName(), topicId);
+            log.debug("用户 {} 断开 id 为 {} 的 WebSocket 连接", user.getUserName(), id);
         }
     }
 
@@ -98,11 +101,11 @@ public class WebSocketEditHandler extends TextWebSocketHandler {
             // 获取会话属性
             Map<String, Object> attributes = webSocketSession.getAttributes();
 
-            // 从当前 session 提取 topicId
-            Long topicId = (Long) attributes.get("topicId");
-            ThrowUtils.throwIf(topicId == null, CodeBindMessageEnums.PARAMS_ERROR, "链接上下文中的题目标识不存在");
+            // 从当前 session 提取 id
+            Long id = (Long) attributes.get("id");
+            ThrowUtils.throwIf(id == null, CodeBindMessageEnums.PARAMS_ERROR, "链接上下文中的题目标识不存在");
 
-            // 从当前 session 提取 userVO
+            // 从当前 session 提取 user
             User user = (User) attributes.get("user");
             ThrowUtils.throwIf(user == null, CodeBindMessageEnums.PARAMS_ERROR, "链接上下文中的请求用户信息不存在");
 
@@ -123,7 +126,7 @@ public class WebSocketEditHandler extends TextWebSocketHandler {
             ThrowUtils.throwIf(StringUtils.isBlank(message), CodeBindMessageEnums.PARAMS_ERROR, "用户消息中, 消息内容为空");
 
             // 广播发送消息
-            ConcurrentHashMap<Long, WebSocketSession> sessions = this.sessions.get(topicId);
+            ConcurrentHashMap<Long, WebSocketSession> sessions = this.sessions.get(id);
             if (sessions != null) {
                 for (WebSocketSession s : sessions.values()) {
                     if (s.isOpen() && s != webSocketSession) { // 不给自己发

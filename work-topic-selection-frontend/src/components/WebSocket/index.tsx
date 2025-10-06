@@ -1,89 +1,86 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, notification, Input } from "antd";
-import {WebSocketMessage} from "@/type/WebSocketMessage";
-import {CheckCircleOutlined, CloseCircleOutlined, InfoCircleOutlined} from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined, InfoCircleOutlined } from "@ant-design/icons";
 
+/** WebSocket 消息类型（对应后端 Java WebSocketMessage） */
+interface WebSocketMessage {
+  typeCode: number;
+  message: string;
+  extend?: Record<string, any>;
+}
+
+/** 全局 WebSocket 单例 */
+let globalSocket: WebSocket | null = null;
+
+/** 获取（或初始化）WebSocket */
+function getSocket(): WebSocket {
+  if (!globalSocket || globalSocket.readyState === WebSocket.CLOSED) {
+    globalSocket = new WebSocket("ws://127.0.0.1:8000/global/message?id=1");
+    globalSocket.onopen = () => console.log("✅ WebSocket 已连接");
+    globalSocket.onclose = () => console.log("❎ WebSocket 已关闭");
+    globalSocket.onerror = (err) => console.error("⚠️ WebSocket 有错误", err);
+  }
+  return globalSocket;
+}
+
+/** 通知组件：监听消息并显示 Antd 通知 */
 const WebSocketNotification = () => {
-  const topicId = 0;
-
   useEffect(() => {
-    const socket = new WebSocket(`ws://127.0.0.1:8000/global/message`);
-
-    socket.onopen = () => console.log("WebSocket 已连接");
-    socket.onclose = () => console.log("WebSocket 已关闭");
-    socket.onerror = (err) => console.error("WebSocket 错误", err);
+    const socket = getSocket();
 
     socket.onmessage = (event) => {
       try {
         const msgObj: WebSocketMessage = JSON.parse(event.data);
-
         let title = "新消息通知";
-        let icon = <InfoCircleOutlined style={{ color: "#1890ff" }} />; // 默认信息图标
+        let icon = <InfoCircleOutlined style={{ color: "#1890ff" }} />;
 
         switch (msgObj.typeCode) {
-          case -1: // ERROR
+          case -1:
             title = "错误";
             icon = <CloseCircleOutlined style={{ color: "#ff4d4f" }} />;
             break;
-          case 0: // INFO
+          case 0:
             title = "消息";
             icon = <InfoCircleOutlined style={{ color: "#1890ff" }} />;
             break;
-          case 1: // TOPIC_STATUS_CHANGE
+          case 1:
             title = "变更";
             icon = <CheckCircleOutlined style={{ color: "#52c41a" }} />;
             break;
-          default:
-            title = "未知";
-            icon = <InfoCircleOutlined style={{ color: "#d9d9d9" }} />;
         }
 
         notification.open({
           message: title,
           description: msgObj.message,
           placement: "topRight",
-          duration: 0, // 不自动关闭
+          duration: 0,
           icon,
         });
       } catch (err) {
-        console.error("WebSocket 消息解析失败:", err, event.data);
+        console.error("消息解析失败:", err, event.data);
       }
     };
-
-    return () => socket.close();
-  }, [topicId]);
+  }, []);
 
   return null;
 };
 
+/** 发送组件：用于手动向服务端发消息 */
 const WebSocketSender = () => {
-  const topicId = 0;
-  const [ws, setWs] = useState<WebSocket | null>(null);
   const [msg, setMsg] = useState("");
 
-  useEffect(() => {
-    const socket = new WebSocket(`ws://127.0.0.1:8000/global/message`);
-    socket.onopen = () => console.log("WebSocket 已连接");
-    socket.onclose = () => console.log("WebSocket 已关闭");
-    socket.onerror = (err) => console.error("WebSocket 错误", err);
-    setWs(socket);
-    return () => socket.close();
-  }, [topicId]);
-
   const sendMessage = () => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      // 构造消息对象
+    const socket = getSocket();
+    if (socket.readyState === WebSocket.OPEN) {
       const payload: WebSocketMessage = {
-        typeCode: 0, // 可以根据需要设置类型，例如 0=INFO
+        typeCode: 0,
         message: msg || `Hello at ${new Date().toLocaleTimeString()}`,
-        extend: {}, // 可选扩展字段
+        extend: {},
       };
-
-      // 发送 JSON 字符串
-      ws.send(JSON.stringify(payload));
-
-      // 清空输入框
+      socket.send(JSON.stringify(payload));
       setMsg("");
+    } else {
+      console.warn("WebSocket 未连接，无法发送消息");
     }
   };
 
@@ -95,17 +92,17 @@ const WebSocketSender = () => {
         flexDirection: "row",
         alignItems: "center",
         gap: 10,
-        maxWidth: 700,       // 最大宽度
-        width: "80%",         // 屏幕宽度的 80%
+        maxWidth: 700,
+        width: "80%",
         margin: "0 auto",
-        flexWrap: "wrap",     // 小屏幕自动换行
+        flexWrap: "wrap",
       }}
     >
       <Input
-        placeholder="向在线用户发送全局消息..."
+        placeholder="向所有在线用户发送全局消息..."
         value={msg}
         onChange={(e) => setMsg(e.target.value)}
-        style={{ flex: 1, minWidth: 150 }} // 输入框占剩余空间
+        style={{ flex: 1, minWidth: 150 }}
       />
       <Button type="primary" onClick={sendMessage} style={{ flexShrink: 0 }}>
         发送消息
@@ -114,4 +111,4 @@ const WebSocketSender = () => {
   );
 };
 
-export {WebSocketNotification, WebSocketSender}
+export { WebSocketNotification, WebSocketSender };
