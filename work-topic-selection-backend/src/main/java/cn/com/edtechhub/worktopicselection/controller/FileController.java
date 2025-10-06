@@ -418,8 +418,8 @@ public class FileController {
                 "    CASE `status`\n" +
                 "        WHEN -2 THEN '被打回'\n" +
                 "        WHEN -1 THEN '待审核'\n" +
-                "        WHEN 0 THEN '已发布'\n" +
-                "        WHEN 1 THEN '没发布'\n" +
+                "        WHEN 0 THEN '没发布'\n" +
+                "        WHEN 1 THEN '已发布'\n" +
                 "        END AS 状态,\n" +
                 "    `reason` AS 打回理由\n" +
                 "    FROM `topic` WHERE `isDelete` = 0;";
