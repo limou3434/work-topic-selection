@@ -41,31 +41,36 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
     @Override
     public boolean beforeHandshake(@NotNull ServerHttpRequest request, @NotNull ServerHttpResponse response, @NotNull WebSocketHandler wsHandler, @NotNull Map<String, Object> attributes) {
         log.debug("WebSocket 握手开始前触发 beforeHandshake(), 其中 {} {} {}", request, response, wsHandler);
-        // 判断当前请求是不是一个基于 Servlet 的 HTTP 请求
-        if (request instanceof ServletServerHttpRequest) {
-            // 获取网络请求对象
-            HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
 
-            // 设置 userVO 参数
-            User user = userService.userGetCurrentLoginUser();
-            if (user == null) {
-                log.error("用户尚未登录, 拒绝握手");
-                return false;
-            }
-            UserVO userVO = userService.getUserVO(user);
-            attributes.put("userVO", userVO);
-            
-            // 设置 topicId 参数
-            String topicIdStr = servletRequest.getParameter("topicId");
-            if (topicIdStr != null && !topicIdStr.isEmpty()) {
-                try {
-                    Long topicId = Long.parseLong(topicIdStr);
-                    attributes.put("topicId", topicId);
-                } catch (NumberFormatException e) {
-                    log.debug("无效的 topicId 参数: {}", topicIdStr);
-                }
+        // 如果当前请求基于 Servlet 的 HTTP 请求
+        if (!(request instanceof ServletServerHttpRequest)) {
+            return false;
+        }
+
+        // 获取网络请求对象
+        HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
+
+        // 设置 userVO 参数
+        User user = userService.userGetCurrentLoginUser();
+        if (user == null) {
+            log.error("用户尚未登录, 拒绝握手");
+            return false;
+        }
+        UserVO userVO = userService.getUserVO(user);
+        attributes.put("userVO", userVO);
+
+        // 设置 topicId 参数
+        String topicIdStr = servletRequest.getParameter("topicId");
+        if (topicIdStr != null && !topicIdStr.isEmpty()) {
+            try {
+                Long topicId = Long.parseLong(topicIdStr);
+                attributes.put("topicId", topicId);
+            } catch (NumberFormatException e) {
+                log.debug("无效的 topicId 参数: {}", topicIdStr);
             }
         }
+
+        // 允许握手
         return true;
     }
 
