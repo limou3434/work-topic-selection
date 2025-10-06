@@ -10,7 +10,6 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * WebSocket 配置类
@@ -31,13 +30,13 @@ public class WebSocketConfig implements WebSocketConfigurer {
      * 引入 WebSocket 拦截器依赖
      */
     @Resource
-    private WsHandshakeInterceptor webSocketInterceptor;
+    private WebSocketHandshakeInterceptor webSocketInterceptor;
 
     /**
      * 引入 WebSocket 管理者依赖
      */
     @Resource
-    private EditHandler editHandler;
+    private WebSocketEditHandler webSocketEditHandler;
 
     /**
      * 注册 WebSocket 端点
@@ -45,7 +44,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry
-                .addHandler(editHandler, this.path) // 把自定义的消息处理器 editHandler 注册到 path 这个端点
+                .addHandler(webSocketEditHandler, this.path) // 把自定义的消息处理器 editHandler 注册到 path 这个端点
                 .addInterceptors(webSocketInterceptor) // 给这个 WebSocket 通信加一个握手拦截器, 用于连接前的校验或参数处理
                 .setAllowedOrigins(this.getCorsRule()) // 允许所有来源跨域连接(生产环境中最好改成具体域名)
         ;
@@ -71,6 +70,5 @@ public class WebSocketConfig implements WebSocketConfigurer {
         log.debug("[{}] path: {}", clazz.getSimpleName(), this.path);
         log.debug("[{}] getCorsRule: {}", clazz.getSimpleName(), this.getCorsRule());
     }
-
 
 }

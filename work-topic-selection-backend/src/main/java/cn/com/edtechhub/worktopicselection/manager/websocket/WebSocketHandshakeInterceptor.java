@@ -21,8 +21,11 @@ import java.util.Map;
  */
 @Component
 @Slf4j
-public class WsHandshakeInterceptor implements HandshakeInterceptor {
+public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
 
+    /**
+     * 注入用户服务
+     */
     @Resource
     UserService userService;
 
@@ -32,7 +35,7 @@ public class WsHandshakeInterceptor implements HandshakeInterceptor {
      * @param response   响应
      * @param wsHandler  处理器
      * @param attributes 属性, 方便后续使用 session.getAttributes() 获取属性
- }
+     *
      * @return 是否允许握手的布尔值
      */
     @Override
@@ -40,19 +43,28 @@ public class WsHandshakeInterceptor implements HandshakeInterceptor {
         log.debug("WebSocket 握手开始前触发 beforeHandshake(), 其中 {} {} {}", request, response, wsHandler);
         // 判断当前请求是不是一个基于 Servlet 的 HTTP 请求
         if (request instanceof ServletServerHttpRequest) {
-            // 获取请求对象
+            // 获取网络请求对象
             HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
 
-            // 获取请求参数
+            // 设置 userVO 参数
             User user = userService.userGetCurrentLoginUser();
             if (user == null) {
                 log.error("用户尚未登录, 拒绝握手");
                 return false;
             }
             UserVO userVO = userService.getUserVO(user);
-
-            // 设置 attributes
             attributes.put("userVO", userVO);
+            
+            // 设置 topicId 参数
+            String topicIdStr = servletRequest.getParameter("topicId");
+            if (topicIdStr != null && !topicIdStr.isEmpty()) {
+                try {
+                    Long topicId = Long.parseLong(topicIdStr);
+                    attributes.put("topicId", topicId);
+                } catch (NumberFormatException e) {
+                    log.debug("无效的 topicId 参数: {}", topicIdStr);
+                }
+            }
         }
         return true;
     }
