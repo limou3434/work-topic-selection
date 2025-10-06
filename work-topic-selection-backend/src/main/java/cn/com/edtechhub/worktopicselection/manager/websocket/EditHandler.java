@@ -37,7 +37,7 @@ public class EditHandler extends TextWebSocketHandler {
         // 保存会话到集合中
         Map<String, Object> attributes = session.getAttributes();
         UserVO userVO = (UserVO) attributes.get("userVO");
-//        pictureSessions.putIfAbsent(pictureId, ConcurrentHashMap.newKeySet());
+        pictureSessions.putIfAbsent(pictureId, ConcurrentHashMap.newKeySet());
 //        pictureSessions.get(pictureId).add(session);
 
         // 构造响应
