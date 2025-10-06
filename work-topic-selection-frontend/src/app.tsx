@@ -5,6 +5,8 @@ import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import { history, Link } from '@umijs/max';
 import { errorConfig } from './requestErrorConfig';
+import {WebSocketNotification} from "@/components/WebSocket";
+import React from "react";
 
 const env = {
   develop: 'http://127.0.0.1:8000',
@@ -104,6 +106,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
 
       return (
         <>
+          <WebSocketNotification/>
           {children}
           {isDev && (
             <SettingDrawer
