@@ -5,7 +5,6 @@ import React from 'react';
 import WarningNotification from "@/components/WarningNotification";
 import {Toc} from "@/pages/Toc";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {StatusPage} from "@/pages/StatusPage";
 
 const {Title, Paragraph, Text} = Typography;
 
@@ -166,7 +165,9 @@ const Welcome: React.FC = () => {
           <Divider/>
           <Typography>
             <Title level={2}>1.使用环境?</Title>
-            <Paragraph>理论上本站在任意浏览器都可以正常运行，但是在一些老版本的浏览器中可能会有兼容性问题，界面会产生退化，请尽可能使用最新的 <Text code>Chrome</Text> 或 <Text code>Edge</Text> 浏览器（避免使用 <Text code>360</Text> 等浏览器），正常的主页图片如下，如果您访问的主页和图片不一致，请更换浏览器。</Paragraph>
+            <Paragraph>理论上本站在任意浏览器都可以正常运行，但是在一些老版本的浏览器中可能会有兼容性问题，界面会产生退化，请尽可能使用最新的 <Text
+              code>Chrome</Text> 或 <Text code>Edge</Text> 浏览器（避免使用 <Text
+              code>360</Text> 等浏览器），正常的主页图片如下，如果您访问的主页和图片不一致，请更换浏览器。</Paragraph>
             <Image src="./home.png" style={{width: '100%', borderRadius: 8}}/>
             <Title level={2}>2.如何使用?</Title>
             <Tabs defaultActiveKey="1">
@@ -188,8 +189,10 @@ const Welcome: React.FC = () => {
                   </Text>
                 </Paragraph>
                 <Paragraph>
-                  学生应当 <Text underline>在学生单选模式时</Text>，预选自己心仪的 <Text code>毕业设计题目（后续简称"题目"）</Text>。而 <Text
-                  underline>在题目开放后</Text> 可以预选题目（最多预选 10 条）。当教师单选环节结束后，学生才能开始抢夺题目，每个学生只能选择一个题目，并且成功之后无法再次预选题目（除非取消已经提交的题目）。
+                  学生应当 <Text underline>在学生单选模式时</Text>，预选自己心仪的 <Text
+                  code>毕业设计题目（后续简称"题目"）</Text>。而 <Text
+                  underline>在题目开放后</Text> 可以预选题目（最多预选 10
+                  条）。当教师单选环节结束后，学生才能开始抢夺题目，每个学生只能选择一个题目，并且成功之后无法再次预选题目（除非取消已经提交的题目）。
                 </Paragraph>
                 <Paragraph>
                   本系统 <Text mark>提供退选题目的功能，但请慎重使用</Text>。若您发现无法取消当前已提交的题目，则需要联系题目所对应导师进行退选处理。
@@ -291,7 +294,8 @@ const Welcome: React.FC = () => {
                   </Text>
                 </Paragraph>
                 <Paragraph>
-                  教师应当 <Text underline>在教师单选模式时</Text>，预先提交所出的 <Text code>毕业设计题目（后续简称"题目"）</Text>。不同教师的出题上限不同，而且 <Text
+                  教师应当 <Text underline>在教师单选模式时</Text>，预先提交所出的 <Text
+                  code>毕业设计题目（后续简称"题目"）</Text>。不同教师的出题上限不同，而且 <Text
                   underline>在题目开放后</Text> 可以提起选择题目所对应的学生。当教师单选模式环节结束后，学生才能开始抢夺题目。
                 </Paragraph>
                 <Paragraph>
@@ -437,7 +441,8 @@ const Welcome: React.FC = () => {
                   </Text>
                 </Paragraph>
                 <Paragraph>
-                  主任应当 <Text underline>在开启双选之前</Text>，审核本系所提交的所有 <Text code>毕业设计题目（后续简称"题目"）</Text>。教师所出的题目如果被打回，后续再次修改后可以重新提交审核。
+                  主任应当 <Text underline>在开启双选之前</Text>，审核本系所提交的所有 <Text
+                  code>毕业设计题目（后续简称"题目"）</Text>。教师所出的题目如果被打回，后续再次修改后可以重新提交审核。
                 </Paragraph>
                 <Paragraph>
                   本系统 <Text mark>提供主任切换角色的特殊功能（满足主任也可以出题的条件），但使用有一些条件</Text>。若您发现无法快速切换身份，则需要联系管理员进行处理。
@@ -445,13 +450,14 @@ const Welcome: React.FC = () => {
                 <Paragraph>
                   <ol>
                     <li>
-                        使用主任帐号登录系统，在初始化帐号的时候，修改密码、绑定邮箱
+                      使用主任帐号登录系统，在初始化帐号的时候，修改密码、绑定邮箱
                     </li>
                     <li>
-                      使用另外一个管理员提供的教师帐号登录系统，<Text style={{color: 'red'}}>修改密码（需要保证和主任帐号相同）、绑定邮箱（需要保证和主任帐号相同）</Text>，否则将无法切换角色
+                      使用另外一个管理员提供的教师帐号登录系统，<Text
+                      style={{color: 'red'}}>修改密码（需要保证和主任帐号相同）、绑定邮箱（需要保证和主任帐号相同）</Text>，否则将无法切换角色
                     </li>
                     <li>
-                        然后就可以在对应的主任帐号或教师帐号中来回切换登陆（偶尔因为浏览器缓存的缘故需要刷新浏览器才生效，实在无法解决找管理员）
+                      然后就可以在对应的主任帐号或教师帐号中来回切换登陆（偶尔因为浏览器缓存的缘故需要刷新浏览器才生效，实在无法解决找管理员）
                     </li>
                   </ol>
                 </Paragraph>

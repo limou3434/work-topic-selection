@@ -24,7 +24,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     /**
      * 定义 WebSocket 服务端点（endpoint）的访问路径 Path
      */
-    String path = "/ws/message";
+    String path = "/global/message";
 
     /**
      * 引入 WebSocket 拦截器依赖

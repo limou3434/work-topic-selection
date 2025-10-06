@@ -9,24 +9,24 @@ import lombok.Getter;
 public enum WebSocketMessageTypeEnum {
 
     /**
-     * 信息通知
-     */
-    INFO("INFO", "信息通知"),
-
-    /**
      * 错误消息
      */
-    ERROR("ERROR", "错误消息"),
+    ERROR_MESSAGE(-1, "ERROR"),
 
     /**
-     * 选题状态变更
+     * 信息通知
      */
-    TOPIC_STATUS_CHANGE("TOPIC_STATUS_CHANGE", "选题状态变更");
+    INFO_MESSAGE(0, "INFO"),
+
+    /**
+     * 状态变更
+     */
+    CHANGE_MESSAGE(1, "STATUS_CHANGE");
 
     /**
      * 编码
      */
-    private final String code;
+    private final int code;
 
     /**
      * 描述
@@ -39,7 +39,7 @@ public enum WebSocketMessageTypeEnum {
      * @param code 编码
      * @param description 描述
      */
-    WebSocketMessageTypeEnum(String code, String description) {
+    WebSocketMessageTypeEnum(int code, String description) {
         this.code = code;
         this.description = description;
     }
@@ -49,9 +49,9 @@ public enum WebSocketMessageTypeEnum {
      *
      * @param code 编码
      */
-    public static WebSocketMessageTypeEnum getEnumByCode(String code) {
+    public static WebSocketMessageTypeEnum getEnumByCode(int code) {
         for (WebSocketMessageTypeEnum enumItem : WebSocketMessageTypeEnum.values()) {
-            if (enumItem.getCode().equals(code)) {
+            if (enumItem.getCode() == code) {
                 return enumItem;
             }
         }

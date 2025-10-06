@@ -16,6 +16,7 @@ import {ClockCircleOutlined, EyeOutlined, MinusOutlined, PlusOutlined} from "@an
 import {ModalForm} from "@ant-design/pro-form/lib";
 import {ProFormDateTimeRangePicker} from '@ant-design/pro-form';
 import { DeptCrossTopicConfig } from '@/components';
+import {WebSocketNotification, WebSocketSender} from "@/components/WebSocket";
 
 export type TableListItem = {
   id: number;
@@ -279,6 +280,15 @@ export default () => {
                       </span>
                     </div>
                   </div>
+                </div>
+                <div style={{
+                  background: '#ffffff',
+                  padding: '12px 16px',
+                  borderRadius: 6,
+                  marginBottom: 16,
+                  boxShadow: 'none',
+                }}>
+                  <WebSocketSender/>
                 </div>
                 {/* 跨系选题配置区域 */}
                 <DeptCrossTopicConfig />

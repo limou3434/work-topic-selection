@@ -56,8 +56,7 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
             log.error("用户尚未登录, 拒绝握手");
             return false;
         }
-        UserVO userVO = userService.getUserVO(user);
-        attributes.put("userVO", userVO);
+        attributes.put("user", user);
 
         // 设置 topicId 参数
         String topicIdStr = servletRequest.getParameter("topicId");
