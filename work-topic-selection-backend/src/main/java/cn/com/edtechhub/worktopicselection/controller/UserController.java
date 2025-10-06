@@ -193,7 +193,7 @@ public class UserController {
                 .eq("userName", userName)
                 .eq("userRole", userRole)
         );
-        ThrowUtils.throwIf(aUser != null, CodeBindMessageEnums.PARAMS_ERROR, "不允许添加同名的用户, 请不要重复添加, 请加上数字后缀避免相同");
+        ThrowUtils.throwIf(aUser != null, CodeBindMessageEnums.PARAMS_ERROR, "不允许添加相同角色的同名用户, 请不要重复添加, 请加上数字后缀避免相同");
 
         // 如果有选择专业则必须选择系部所属的专业
         String userProject = request.getProject();
