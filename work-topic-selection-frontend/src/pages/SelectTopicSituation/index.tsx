@@ -1,6 +1,6 @@
-import { exportStudentTopicListEnSelectUsingPost, exportStudentTopicListUnSelectUsingPost, exportTopicListUsingPost, exportUserListUsingPost } from '@/services/work-topic-selection/fileController';
+import { exportStudentTopicListEnSelectUsingPost, exportStudentTopicListUnSelectUsingPost, exportSurplusTopicListUsingPost, exportTopicListUsingPost, exportUserListUsingPost } from '@/services/work-topic-selection/fileController';
 import { getSelectTopicSituationUsingPost } from '@/services/work-topic-selection/userController';
-import { DownOutlined, FileTextOutlined, UserOutlined, BookOutlined, TeamOutlined, FileDoneOutlined } from '@ant-design/icons';
+import { DownOutlined, FileTextOutlined, UserOutlined, BookOutlined, TeamOutlined, FileDoneOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { StatisticCard } from '@ant-design/pro-components';
 import { Button, Dropdown, Menu, message } from 'antd';
 import ReactECharts from 'echarts-for-react';
@@ -57,7 +57,7 @@ const YourComponent = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = '已选题学生列表.csv';
+      a.download = '已选名单.csv';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -74,7 +74,7 @@ const YourComponent = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = '未选题学生列表.csv';
+      a.download = '未选名单.csv';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -118,6 +118,23 @@ const YourComponent = () => {
     }
   };
 
+  const exportSurplusTopicList = async () => {
+    try {
+      const response = await exportSurplusTopicListUsingPost();
+      const blob = new Blob([response], { type: 'text/csv;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '剩余选题.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      message.error('导出剩余选题列表失败，请稍后重试！');
+    }
+  };
+
   const menu = (
     <Menu>
       <Menu.Item key="1" icon={<TeamOutlined />} onClick={exportUserList}>
@@ -126,10 +143,13 @@ const YourComponent = () => {
       <Menu.Item key="2" icon={<BookOutlined />} onClick={exportTopicList}>
         导出题目列表
       </Menu.Item>
-      <Menu.Item key="3" icon={<FileDoneOutlined />} onClick={exportSelectedStudents}>
+      <Menu.Item key="3" icon={<UnorderedListOutlined />} onClick={exportSurplusTopicList}>
+        导出剩余选题
+      </Menu.Item>
+      <Menu.Item key="4" icon={<FileDoneOutlined />} onClick={exportSelectedStudents}>
         导出已选名单
       </Menu.Item>
-      <Menu.Item key="4" icon={<FileTextOutlined />} onClick={exportUnselectedStudents}>
+      <Menu.Item key="5" icon={<FileTextOutlined />} onClick={exportUnselectedStudents}>
         导出未选名单
       </Menu.Item>
     </Menu>
