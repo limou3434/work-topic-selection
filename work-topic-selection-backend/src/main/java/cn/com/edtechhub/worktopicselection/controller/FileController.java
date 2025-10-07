@@ -457,57 +457,6 @@ public class FileController {
     }
 
     /**
-     * 导出系统内剩余题目
-     */
-    @SaCheckLogin
-    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
-    @PostMapping("/export/surplus_topic_list")
-    public void exportSurplusTopicList(HttpServletResponse httpServletResponse) {
-        String fileName = "所有剩余的题目.csv";
-        String sql = "SELECT t.id, t.topic, t.teacherName, t.deptName\n" +
-                "FROM topic t\n" +
-                "WHERE t.id NOT IN (\n" +
-                "    SELECT topicId\n" +
-                "    FROM student_topic_selection\n" +
-                "    WHERE status = 2\n" +
-                "    AND isDelete = 0\n" +
-                ")\n" +
-                "  AND t.status = 1\n" +
-                "  AND t.isDelete = 0;\n";
-
-        // 调用 SQL 服务获取结果
-        List<Map<String, Object>> rows = sqlExportService.executeQuery(sql);
-
-        httpServletResponse.setContentType("text/csv");
-        String encodedFileName = null;
-        try {
-            encodedFileName = java.net.URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
-        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"" + encodedFileName);
-
-        try (ServletOutputStream outputStream = httpServletResponse.getOutputStream();
-             OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
-             CSVPrinter csvPrinter = new CSVPrinter(writer,
-                     CSVFormat.DEFAULT.withHeader(rows.isEmpty() ? new String[]{"无数据"} : rows.get(0).keySet().toArray(new String[0])))) {
-
-            // 遍历行写入 CSV
-            for (Map<String, Object> row : rows) {
-                List<Object> values = new ArrayList<>();
-                for (String key : row.keySet()) {
-                    values.add(row.get(key));
-                }
-                csvPrinter.printRecord(values);
-            }
-
-            csvPrinter.flush();
-        } catch (IOException e) {
-            ThrowUtils.throwIf(true, CodeBindMessageEnums.OPERATION_ERROR, "导出 CSV 失败");
-        }
-    }
-
-    /**
      * 导出系统内已选学生
      */
     @SaCheckLogin
@@ -594,6 +543,57 @@ public class FileController {
                 "        s.status = 2 AND\n" +
                 "        s.isDelete = 0\n" +
                 ");\n";
+
+        // 调用 SQL 服务获取结果
+        List<Map<String, Object>> rows = sqlExportService.executeQuery(sql);
+
+        httpServletResponse.setContentType("text/csv");
+        String encodedFileName = null;
+        try {
+            encodedFileName = java.net.URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"" + encodedFileName);
+
+        try (ServletOutputStream outputStream = httpServletResponse.getOutputStream();
+             OutputStreamWriter writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+             CSVPrinter csvPrinter = new CSVPrinter(writer,
+                     CSVFormat.DEFAULT.withHeader(rows.isEmpty() ? new String[]{"无数据"} : rows.get(0).keySet().toArray(new String[0])))) {
+
+            // 遍历行写入 CSV
+            for (Map<String, Object> row : rows) {
+                List<Object> values = new ArrayList<>();
+                for (String key : row.keySet()) {
+                    values.add(row.get(key));
+                }
+                csvPrinter.printRecord(values);
+            }
+
+            csvPrinter.flush();
+        } catch (IOException e) {
+            ThrowUtils.throwIf(true, CodeBindMessageEnums.OPERATION_ERROR, "导出 CSV 失败");
+        }
+    }
+
+    /**
+     * 导出系统内剩余选题
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/export/surplus_topic_list")
+    public void exportSurplusTopicList(HttpServletResponse httpServletResponse) {
+        String fileName = "所有剩余的题目.csv";
+        String sql = "SELECT t.id, t.topic, t.teacherName, t.deptName\n" +
+                "FROM topic t\n" +
+                "WHERE t.id NOT IN (\n" +
+                "    SELECT topicId\n" +
+                "    FROM student_topic_selection\n" +
+                "    WHERE status = 2\n" +
+                "    AND isDelete = 0\n" +
+                ")\n" +
+                "  AND t.status = 1\n" +
+                "  AND t.isDelete = 0;\n";
 
         // 调用 SQL 服务获取结果
         List<Map<String, Object>> rows = sqlExportService.executeQuery(sql);
