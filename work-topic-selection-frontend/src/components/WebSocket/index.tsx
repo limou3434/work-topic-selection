@@ -12,6 +12,24 @@ interface WebSocketMessage {
 /** 全局 WebSocket 单例 */
 let globalSocket: WebSocket | null = null;
 
+/** 音频初始化状态 */
+let audioInitialized = false;
+let audioContext: AudioContext | null = null;
+
+/** 初始化音频上下文 */
+const initAudioContext = () => {
+  if (!audioInitialized && typeof window !== 'undefined') {
+    try {
+      // 创建音频上下文
+      audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      audioInitialized = true;
+      console.log('🎵 音频上下文初始化成功');
+    } catch (error) {
+      console.warn('音频上下文初始化失败:', error);
+    }
+  }
+};
+
 /** 获取（或初始化）WebSocket */
 function getSocket(): WebSocket {
   if (!globalSocket || globalSocket.readyState === WebSocket.CLOSED) {
@@ -25,21 +43,86 @@ function getSocket(): WebSocket {
 }
 
 /** 播放通知音效 */
-const playNotificationSound = () => {
+const playNotificationSound = async () => {
+  // 初始化音频上下文
+  initAudioContext();
+
   try {
+    // 每次都创建新的音频实例，确保可以重复播放
     const audio = new Audio('/video/dingding.mp3');
-    audio.volume = 0.5; // 设置音量为 50%
-    audio.play().catch(error => {
-      console.warn('音频播放失败:', error);
-    });
+    audio.volume = 0.8; // 增加音量到 80%
+    audio.preload = 'auto'; // 预加载音频
+
+    // 重置音频到开始位置
+    audio.currentTime = 0;
+
+    // 如果音频上下文被挂起，尝试恢复
+    if (audioContext && audioContext.state === 'suspended') {
+      try {
+        await audioContext.resume();
+        console.log('🔄 音频上下文已恢复');
+      } catch (resumeError) {
+        console.warn('音频上下文恢复失败:', resumeError);
+      }
+    }
+
+    const playPromise = audio.play();
+
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          console.log('🔊 通知音效播放成功');
+        })
+        .catch(error => {
+          console.warn('⚠️ 音频播放失败:', error);
+          // 如果是用户交互策略问题，给出提示
+          if (error.name === 'NotAllowedError') {
+            console.warn('💡 需要用户先与页面交互才能播放音频（点击任意位置或按下任意按键）');
+
+            // 添加一次性的用户交互监听器
+            const enableAudio = () => {
+              audio.play().then(() => {
+                console.log('🎉 用户交互后音频播放成功');
+                document.removeEventListener('click', enableAudio, { once: true });
+                document.removeEventListener('keydown', enableAudio, { once: true });
+              }).catch(retryError => {
+                console.warn('重试播放仍然失败:', retryError);
+              });
+            };
+
+            document.addEventListener('click', enableAudio, { once: true });
+            document.addEventListener('keydown', enableAudio, { once: true });
+          }
+        });
+    }
   } catch (error) {
-    console.warn('音频初始化失败:', error);
+    console.warn('❌ 音频初始化失败:', error);
   }
 };
 
 /** 通知组件：监听消息并显示 Antd 通知 */
 const WebSocketNotification = () => {
   useEffect(() => {
+    // 初始化音频上下文
+    initAudioContext();
+
+    // 添加用户交互监听器来启用音频
+    const enableAudioOnInteraction = () => {
+      if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+          console.log('🎉 用户交互已启用音频');
+        });
+      }
+      // 移除监听器，只需要一次交互
+      document.removeEventListener('click', enableAudioOnInteraction);
+      document.removeEventListener('keydown', enableAudioOnInteraction);
+      document.removeEventListener('touchstart', enableAudioOnInteraction);
+    };
+
+    document.addEventListener('click', enableAudioOnInteraction, { once: true });
+    document.addEventListener('keydown', enableAudioOnInteraction, { once: true });
+    document.addEventListener('touchstart', enableAudioOnInteraction, { once: true });
+
     const socket = getSocket();
 
     socket.onmessage = (event) => {
@@ -76,6 +159,13 @@ const WebSocketNotification = () => {
       } catch (err) {
         console.error("消息解析失败:", err, event.data);
       }
+    };
+
+    // 清理函数
+    return () => {
+      document.removeEventListener('click', enableAudioOnInteraction);
+      document.removeEventListener('keydown', enableAudioOnInteraction);
+      document.removeEventListener('touchstart', enableAudioOnInteraction);
     };
   }, []);
 
