@@ -175,7 +175,7 @@ export default () => {
                 setDrawerVisible(true);
               }}
             >
-              智能寻题
+              智能问答（暂未开放）
             </Button>
           </ConfigProvider>,
         ]}
@@ -199,7 +199,7 @@ export default () => {
           setDrawerVisible(false);
           setCurrentRecord(null);
         }}
-        title="智能寻题"
+        title="智能问答（暂未开放）"
       />
     </>
   );
