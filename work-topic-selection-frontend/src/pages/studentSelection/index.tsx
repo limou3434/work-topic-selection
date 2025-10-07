@@ -47,6 +47,7 @@ export default () => {
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentRecord, setCurrentRecord] = useState<GithubIssueItem | null>(null);
   const { styles } = useStyle();
 
@@ -98,6 +99,7 @@ export default () => {
         columns={columns}
         actionRef={actionRef}
         cardBordered
+        // @ts-ignore
         request={async (params = {}) => {
           const currentPage = params.current || 1;
           const currentPageSize = params.pageSize || 10;
@@ -173,7 +175,7 @@ export default () => {
                 setDrawerVisible(true);
               }}
             >
-              AI 分析
+              智能寻题
             </Button>
           </ConfigProvider>,
         ]}
@@ -197,7 +199,7 @@ export default () => {
           setDrawerVisible(false);
           setCurrentRecord(null);
         }}
-        title="AI 找题"
+        title="智能寻题"
       />
     </>
   );

@@ -23,15 +23,9 @@ const CustomDrawer: React.FC<CustomDrawerProps> = ({
       width={600}
     >
       <div style={{ padding: '16px 0' }}>
-        <Title level={4}>欢迎使用自定义抽屉</Title>
+        <Title level={4}>欢迎使用智能寻题拓展功能</Title>
         <Paragraph>
-          这是一个独立封装的抽屉组件，您可以在这里进行后续开发。
-        </Paragraph>
-        <Paragraph>
-          抽屉已经准备就绪，可以添加您需要的任何内容和功能。
-        </Paragraph>
-        <Paragraph type="secondary">
-          这个组件是可复用的，您可以通过 props 传递不同的配置来自定义它的行为。
+          本组件暂未开放...
         </Paragraph>
       </div>
     </Drawer>
