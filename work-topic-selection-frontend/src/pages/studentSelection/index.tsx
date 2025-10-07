@@ -1,9 +1,12 @@
 import { getTeacherUsingPost } from '@/services/work-topic-selection/userController';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Modal } from 'antd';
+import { Button, ConfigProvider, Modal } from 'antd';
 import { useRef, useState } from 'react';
 import TopicTable from '@/components/TopicTable'; // ✅ 改成默认导入
 import QRCodeNotification from '@/components/QRCodeNotification';
+import CustomDrawer from '@/components/CustomDrawer';
+import { AntDesignOutlined } from '@ant-design/icons';
+import { createStyles } from 'antd-style';
 
 type GithubIssueItem = {
   topicAmount: number;
@@ -12,6 +15,30 @@ type GithubIssueItem = {
   index: number;
 };
 
+const useStyle = createStyles(({ prefixCls, css }) => ({
+  linearGradientButton: css`
+    &.${prefixCls}-btn-primary:not([disabled]):not(.${prefixCls}-btn-dangerous) {
+      > span {
+        position: relative;
+      }
+
+      &::before {
+        content: '';
+        background: linear-gradient(135deg, #6253e1, #04befe);
+        position: absolute;
+        inset: -1px;
+        opacity: 1;
+        transition: all 0.3s;
+        border-radius: inherit;
+      }
+
+      &:hover::before {
+        opacity: 0;
+      }
+    }
+  `,
+}));
+
 export default () => {
   const actionRef = useRef<ActionType>();
   const [modalVisible, setModalVisible] = useState(false);
@@ -19,6 +46,9 @@ export default () => {
   const [pageNum, setPageNum] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
+  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [currentRecord, setCurrentRecord] = useState<GithubIssueItem | null>(null);
+  const { styles } = useStyle();
 
   const columns: ProColumns<GithubIssueItem>[] = [
     {
@@ -129,6 +159,24 @@ export default () => {
           },
         }}
         headerTitle="预先选题（每位学生最多预选 10 条题目）"
+        toolBarRender={() => [
+          <ConfigProvider
+            key="aiAnalysisButton"
+            button={{
+              className: styles.linearGradientButton,
+            }}
+          >
+            <Button
+              type="primary"
+              icon={<AntDesignOutlined />}
+              onClick={() => {
+                setDrawerVisible(true);
+              }}
+            >
+              AI 分析
+            </Button>
+          </ConfigProvider>,
+        ]}
       />
 
       <Modal
@@ -142,6 +190,15 @@ export default () => {
       </Modal>
 
       <QRCodeNotification />
+
+      <CustomDrawer
+        visible={drawerVisible}
+        onClose={() => {
+          setDrawerVisible(false);
+          setCurrentRecord(null);
+        }}
+        title="AI 找题"
+      />
     </>
   );
 };
