@@ -1,11 +1,54 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Descriptions, message, Spin, Empty, Flex, Modal, Typography } from 'antd';
+import { Card, Button, Descriptions, message, Spin, Empty, Flex, Modal, Typography, Alert } from 'antd';
 import {
   getSelectTopicUsingPost,
   withdrawUsingPost,
 } from '@/services/work-topic-selection/userController';
 
 const { Title } = Typography;
+
+// 滚动公告组件
+const ScrollingNotice = () => {
+  return (
+    <div
+      style={{
+        backgroundColor: '#fff7e6',
+        border: '1px solid #ffd666',
+        borderRadius: '4px',
+        height: '40px',
+        overflow: 'hidden',
+        margin: '16px 0',
+        display: 'flex',
+        alignItems: 'center',
+      }}
+    >
+      <div
+        style={{
+          whiteSpace: 'nowrap',
+          animation: 'scroll-left 20s linear infinite',
+          fontSize: '14px',
+          color: '#d46b08',
+          fontWeight: '500',
+          paddingLeft: '100%', // 从右侧开始
+        }}
+      >
+        📧 请学生们务必绑定帐号邮箱，否则教师一旦退选您的题目将无法及时获取通知！
+      </div>
+      <style>
+        {`
+          @keyframes scroll-left {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(-100%);
+            }
+          }
+        `}
+      </style>
+    </div>
+  );
+};
 
 export default () => {
   const [loading, setLoading] = useState(true);
@@ -54,6 +97,7 @@ export default () => {
   return (
     <Spin spinning={loading}>
       <Title level={2} style={{ textAlign: 'center', margin: '16px 0' }}>我的选题</Title>
+      <ScrollingNotice />
       <Flex justify="center" align="center" style={{ minHeight: 300 }}>
         {topic ? (
           <Card
