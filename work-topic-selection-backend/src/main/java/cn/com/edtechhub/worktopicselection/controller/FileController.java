@@ -464,7 +464,7 @@ public class FileController {
     @PostMapping("/export/surplus_topic_list")
     public void exportSurplusTopicList(HttpServletResponse httpServletResponse) {
         String fileName = "所有剩余的题目.csv";
-        String sql = "SELECT t.id, t.topic, t.teacherName, t.deptName\n" +
+        String sql = "SELECT t.topic AS 题目名称, t.teacherName AS 指导老师, t.deptName AS 系部名称\n" +
                 "FROM topic t\n" +
                 "WHERE t.id NOT IN (\n" +
                 "    SELECT topicId\n" +
