@@ -1484,7 +1484,7 @@ public class UserController {
         User loginUser = userService.userGetCurrentLoginUser();
 
         // 处理预选操作
-        synchronized (topicId) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
+        synchronized (String.valueOf(topicId).intern()) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
             return transactionTemplate.execute(transactionStatus -> {
                 // 设置题目剩余数量操作数字
                 int opt = 0;
@@ -1595,7 +1595,7 @@ public class UserController {
         StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", topicId));
 
         // 处理选题操作
-        synchronized (topicId) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
+        synchronized (String.valueOf(topicId).intern()) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
             return transactionTemplate.execute(transactionStatus -> {
                 // 设置题目剩余数量操作数字
                 int opt = 0;
@@ -1747,7 +1747,7 @@ public class UserController {
         ThrowUtils.throwIf(now.before(startTime) || now.after(endTime), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前不在选题开放范围内, 请等待管理员开放选题");
 
         // 教师直接分配题目给学生
-        synchronized (topicId) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
+        synchronized (String.valueOf(topicId).intern()) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
             return transactionTemplate.execute(transactionStatus -> {
                 // 检查学生是否已经选择过课题
                 StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount).eq("topicId", topicId));
@@ -1799,7 +1799,7 @@ public class UserController {
         ThrowUtils.throwIf(topicId <= 0, CodeBindMessageEnums.PARAMS_ERROR, "id 必须是正整数");
 
         // 退选题目
-        synchronized (topicId) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
+        synchronized (String.valueOf(topicId).intern()) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
             return transactionTemplate.execute(transactionStatus -> {
                 // 根据 ID 获取课题
                 Topic topic = topicService.getById(topicId);
