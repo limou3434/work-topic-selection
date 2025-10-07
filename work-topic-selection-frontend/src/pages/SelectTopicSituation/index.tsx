@@ -125,13 +125,13 @@ const YourComponent = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = '剩余选题.csv';
+      a.download = '剩余题目.csv';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      message.error('导出剩余选题列表失败，请稍后重试！');
+      message.error('导出剩余题目列表失败，请稍后重试！');
     }
   };
 
@@ -144,7 +144,7 @@ const YourComponent = () => {
         导出题目列表
       </Menu.Item>
       <Menu.Item key="3" icon={<UnorderedListOutlined />} onClick={exportSurplusTopicList}>
-        导出剩余选题
+        导出剩余题目
       </Menu.Item>
       <Menu.Item key="4" icon={<FileDoneOutlined />} onClick={exportSelectedStudents}>
         导出已选名单
