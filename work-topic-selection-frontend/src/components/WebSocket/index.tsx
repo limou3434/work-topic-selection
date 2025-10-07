@@ -15,8 +15,8 @@ let globalSocket: WebSocket | null = null;
 /** 获取（或初始化）WebSocket */
 function getSocket(): WebSocket {
   if (!globalSocket || globalSocket.readyState === WebSocket.CLOSED) {
-    // globalSocket = new WebSocket("wss://wts.edtechhub.com.cn/work_topic_selection_api/global/message?id=1");
-    globalSocket = new WebSocket("ws://127.0.0.1:8000/global/message?id=1");
+    globalSocket = new WebSocket("wss://wts.edtechhub.com.cn/work_topic_selection_api/global/message?id=1");
+    // globalSocket = new WebSocket("ws://127.0.0.1:8000/global/message?id=1");
     globalSocket.onopen = () => console.log("✅ WebSocket 已连接");
     globalSocket.onclose = () => console.log("❎ WebSocket 已关闭");
     globalSocket.onerror = (err) => console.error("⚠️ WebSocket 有错误", err);
