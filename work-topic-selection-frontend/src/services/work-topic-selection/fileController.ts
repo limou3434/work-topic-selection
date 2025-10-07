@@ -18,6 +18,14 @@ export async function exportStudentTopicListUnSelectUsingPost(options?: { [key: 
   });
 }
 
+/** exportSurplusTopicList POST /file/export/surplus_topic_list */
+export async function exportSurplusTopicListUsingPost(options?: { [key: string]: any }) {
+  return request<any>('/file/export/surplus_topic_list', {
+    method: 'POST',
+    ...(options || {}),
+  });
+}
+
 /** exportTopicList POST /file/export/topic_list */
 export async function exportTopicListUsingPost(options?: { [key: string]: any }) {
   return request<any>('/file/export/topic_list', {

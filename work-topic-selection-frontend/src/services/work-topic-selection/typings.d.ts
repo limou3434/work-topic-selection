@@ -215,10 +215,10 @@ declare namespace API {
 
   type DeptTeacherQueryRequest = {
     current?: number;
+    deptName?: string;
     pageSize?: number;
     sortField?: string;
     sortOrder?: string;
-    teacherDept?: string;
     teacherName?: string;
   };
 
