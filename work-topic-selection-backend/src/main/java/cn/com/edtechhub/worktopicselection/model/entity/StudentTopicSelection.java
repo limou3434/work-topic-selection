@@ -47,7 +47,7 @@ public class StudentTopicSelection implements Serializable {
     private Integer isDelete;
 
     /**
-     * 选题状态: 0-预选, 1-抢到
+     * 选题状态: -1-取消预先选择, 0-确认预选选择, 1-取消确认选择, 2-确认确定选择
      */
     private Integer status;
 
