@@ -1526,7 +1526,11 @@ public class UserController {
                 // 取消预选题目
                 else if (studentTopicSelectionStatusEnum == StudentTopicSelectionStatusEnum.UN_PRESELECT) {
                     // 修改关联记录
-                    boolean remove = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", request.getId()));
+                    boolean remove = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>()
+                            .eq("userAccount", loginUser.getUserAccount())
+                            .eq("topicId", request.getId())
+                            .eq("status", StudentTopicSelectionStatusEnum.EN_PRESELECT.getCode())
+                    );
                     ThrowUtils.throwIf(!remove, CodeBindMessageEnums.NOT_FOUND_ERROR, "不存在需要取消预选的题目");
 
                     // 修改操作标志位
@@ -1750,7 +1754,11 @@ public class UserController {
         synchronized (String.valueOf(topicId).intern()) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
             return transactionTemplate.execute(transactionStatus -> {
                 // 检查学生是否已经选择过课题
-                StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", userAccount).eq("topicId", topicId));
+                StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>()
+                        .eq("userAccount", userAccount)
+                        .eq("topicId", topicId)
+                        .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())
+                );
                 ThrowUtils.throwIf(selection != null, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "该学生已经确定最终的题目, 请通知该学生提前退选");
 
                 // 判断是否有余量
@@ -1813,13 +1821,17 @@ public class UserController {
                 boolean updateSuccess = topicService.updateById(topic);
                 ThrowUtils.throwIf(!updateSuccess, CodeBindMessageEnums.OPERATION_ERROR, "无法退选");
 
-                // 先发送邮箱
+                // 先找到学生的最终选题记录
                 StudentTopicSelection selection = studentTopicSelectionService
                         .getOne(
                                 new QueryWrapper<StudentTopicSelection>()
                                         .eq("topicId", topicId)
-                                        .eq("status", 2)
+                                        .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode()) // 保证加锁正确的情况下是没有问题的
                         );
+                ThrowUtils.throwIf(selection == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "未找到对应的学生最终选题记录");
+                assert selection != null;
+
+                // 先发送邮箱
                 User user = userService.userIsExist(selection.getUserAccount());
                 String email = user.getEmail();
                 if (StringUtils.isNotBlank(email)) {
@@ -1827,10 +1839,11 @@ public class UserController {
                 }
 
                 // 删除学生的选题记录
-                boolean removeSuccess = studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>()
+                boolean removeSuccess = studentTopicSelectionService.removeById(selection.getId());
+                /*studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>()
                         .eq("topicId", topicId)
                         .eq("status", 2)
-                );
+                );*/
                 ThrowUtils.throwIf(!removeSuccess, CodeBindMessageEnums.OPERATION_ERROR, "删除学生选题记录失败");
 
                 // 返回成功信息
