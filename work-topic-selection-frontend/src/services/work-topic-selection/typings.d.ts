@@ -20,6 +20,10 @@ declare namespace API {
     level?: string;
   };
 
+  type AiSendRequest = {
+    content?: string;
+  };
+
   type BaseResponseAIResult_ = {
     code?: number;
     data?: AIResult;
