@@ -54,6 +54,13 @@ public class AIController {
         String content = request.getContent();
         ThrowUtils.throwIf(StringUtils.isBlank(content), CodeBindMessageEnums.PARAMS_ERROR, "请不要发送空消息");
 
+        // 模拟等待过程
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         return TheResult.success(CodeBindMessageEnums.SUCCESS, "关于 " + content + " 的问题, 本接口正在等待后续开放中...");
     }
 
