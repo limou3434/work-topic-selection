@@ -372,7 +372,7 @@ export default () => {
             title="批量添加题目"
             trigger={
               <Button type="primary">
-                <Tooltip title="默认最多导入 5 条，最高上限 30 条">
+                <Tooltip title="每位教师有不同出题上限">
                   <PlusOutlined/> 批量添加题目
                 </Tooltip>
               </Button>
@@ -418,7 +418,7 @@ export default () => {
             title="添加题目"
             trigger={
               <Button type="primary">
-                <Tooltip title="默认最多导入 5 条，最高上限 30 条">
+                <Tooltip title="每位教师有不同出题上限">
                   <PlusOutlined/> 添加题目
                 </Tooltip>
               </Button>
