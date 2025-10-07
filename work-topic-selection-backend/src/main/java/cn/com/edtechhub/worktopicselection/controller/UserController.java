@@ -1169,7 +1169,7 @@ public class UserController {
         User user = userService.userGetCurrentLoginUser();
 
         // 添加新的选题
-        synchronized (user.getId()) { // 用教师 id 来加锁, 这样对同一个教师只能一个线程进行操作
+        synchronized (String.valueOf(user.getId()).intern()) { // 用教师 id 来加锁, 这样对同一个教师只能一个线程进行操作
             return transactionTemplate.execute(transactionStatus -> {
                 // 如果教师的选题数量为 0 则不允许继续出题
                 User loginUser = userService.userGetCurrentLoginUser();
@@ -1216,7 +1216,7 @@ public class UserController {
         User user = userService.userGetCurrentLoginUser();
 
         // 删除选题的同时删除该选题对应的某位学生的最终选题关联记录
-        synchronized (user.getId()) { // 用教师 id 来加锁, 这样对同一个教师只能一个线程进行操作
+        synchronized (String.valueOf(user.getId()).intern()) { // 用教师 id 来加锁, 这样对同一个教师只能一个线程进行操作
             return transactionTemplate.execute(transactionStatus -> {
                 boolean topicRemoveResalt = topicService.removeById(id);
                 studentTopicSelectionService.remove(new QueryWrapper<StudentTopicSelection>().eq("topicId", id)); // 直接把对应题目删除即可, 不用管是那一个学生选择了这个题目
@@ -1297,7 +1297,7 @@ public class UserController {
         ThrowUtils.throwIf(topicAmount < currentTopicCount, CodeBindMessageEnums.PARAMS_ERROR, "不能将题目上限设置为小于当前已出题目数量(" + currentTopicCount + ")");
 
         // 更新教师题目上限
-        synchronized (teacherId) { // 用教师 id 来加锁, 这样对同一个选题只能一个线程进行操作
+        synchronized (String.valueOf(teacherId).intern()) { // 用教师 id 来加锁, 这样对同一个选题只能一个线程进行操作
             return transactionTemplate.execute(transactionStatus -> {
                 teacher.setTopicAmount(topicAmount);
                 boolean result = userService.updateById(teacher);
