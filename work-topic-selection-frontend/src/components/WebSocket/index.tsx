@@ -15,13 +15,27 @@ let globalSocket: WebSocket | null = null;
 /** 获取（或初始化）WebSocket */
 function getSocket(): WebSocket {
   if (!globalSocket || globalSocket.readyState === WebSocket.CLOSED) {
-    globalSocket = new WebSocket("wss://wts.edtechhub.com.cn/work_topic_selection_api/global/message?id=1");
+    // globalSocket = new WebSocket("wss://wts.edtechhub.com.cn/work_topic_selection_api/global/message?id=1");
+    globalSocket = new WebSocket("ws://127.0.0.1:8000/global/message?id=1");
     globalSocket.onopen = () => console.log("✅ WebSocket 已连接");
     globalSocket.onclose = () => console.log("❎ WebSocket 已关闭");
     globalSocket.onerror = (err) => console.error("⚠️ WebSocket 有错误", err);
   }
   return globalSocket;
 }
+
+/** 播放通知音效 */
+const playNotificationSound = () => {
+  try {
+    const audio = new Audio('/video/dingding.mp3');
+    audio.volume = 0.5; // 设置音量为 50%
+    audio.play().catch(error => {
+      console.warn('音频播放失败:', error);
+    });
+  } catch (error) {
+    console.warn('音频初始化失败:', error);
+  }
+};
 
 /** 通知组件：监听消息并显示 Antd 通知 */
 const WebSocketNotification = () => {
@@ -48,6 +62,9 @@ const WebSocketNotification = () => {
             icon = <CheckCircleOutlined style={{ color: "#52c41a" }} />;
             break;
         }
+
+        // 播放通知音效
+        playNotificationSound();
 
         notification.open({
           message: title,
