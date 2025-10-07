@@ -43,7 +43,7 @@ public class RequestLogAOP implements HandlerInterceptor {
     /**
      * 最多请求次数
      */
-    private static final int MAX_REQUESTS = 300;
+    private static final int MAX_REQUESTS = 350;
 
     /**
      * 统计窗口秒数
