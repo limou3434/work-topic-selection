@@ -518,6 +518,7 @@ declare namespace API {
     current?: number;
     deptName?: string;
     endTime?: string;
+    isNoOneSelectedTopic?: boolean;
     pageSize?: number;
     sortField?: string;
     sortOrder?: string;
