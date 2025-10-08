@@ -13,6 +13,7 @@ import lombok.Data;
 @TableName(value ="topic")
 @Data
 public class Topic implements Serializable {
+
     /**
      * id
      */

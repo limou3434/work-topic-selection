@@ -64,6 +64,7 @@ import java.util.stream.Collectors;
 
 /**
  * 用户控制层
+ * TODO: 管理端强制退选清除功能
  * TODO: 添加 AI 智能体阅读功能, 用于辅助教师和学生查重和寻找题目
  * TODO: 修复批量导入乱码功能
  * TODO: 修复按照当前逻辑修复选题使用教师名字的问题
@@ -1441,14 +1442,21 @@ public class UserController {
 
         // 遍历选题列表开始取消开放
         return transactionTemplate.execute(transactionStatus -> {
+            String message = "";
             for (Topic topic : request.getTopicList()) {
-                topic.setStatus(TopicStatusEnum.NOT_PUBLISHED.getCode());
-                topic.setStartTime(new Date(0)); // 这里是无法把时间置为 null 的
-                topic.setEndTime(new Date(0)); // 这里是无法把时间置为 null 的
-                boolean result = topicService.updateById(topic);
-                ThrowUtils.throwIf(!result, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "无法取消开放该选题, 请联系管理员 898738804@qq.com");
+                // 如果题目没有余量就意味着被学生选中了, 则不允许取消发布, 如果要取消请线下处理(这是做一个兜底)
+                if (topic.getSurplusQuantity() == 1) {
+                    topic.setStatus(TopicStatusEnum.NOT_PUBLISHED.getCode());
+                    topic.setStartTime(new Date(0)); // 这里是无法把时间置为 null 的
+                    topic.setEndTime(new Date(0)); // 这里是无法把时间置为 null 的
+                    boolean result = topicService.updateById(topic);
+                    ThrowUtils.throwIf(!result, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "无法取消开放该选题, 请联系管理员 898738804@qq.com");
+                } else {
+                    log.debug("教师 {} 出的题目 {} - {} 已经被学生选择, 不允许取消发布, 本次跳过取消发布", topic.getTeacherName(), topic.getId(), topic.getTopic());
+                    message = " " + message + topic.getTeacherName() + topic.getId() + topic.getTopic();
+                }
             }
-            return TheResult.success(CodeBindMessageEnums.SUCCESS, "成功取消发布!");
+            return TheResult.success(CodeBindMessageEnums.SUCCESS, "成功取消发布!" + (StringUtils.isNotBlank(message) ? message : ""));
         });
     }
 

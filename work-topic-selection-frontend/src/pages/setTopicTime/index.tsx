@@ -1,6 +1,6 @@
 import {ProColumns, ProTable} from '@ant-design/pro-components';
 import {Button, message, Space, Switch, Table, Tabs} from 'antd';
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {
   getCrossTopicStatusUsingGet,
   getSwitchSingleChoiceStatusUsingGet,
@@ -98,6 +98,12 @@ export default () => {
   const [pageNum1, setPageNum1] = useState(1);
   const [pageSize1, setPageSize1] = useState(10);
   const [total1, setTotal1] = useState(0);
+  
+  // 是否查询未选题目开关状态
+  const [noOneSelectedTopic, setNoOneSelectedTopic] = useState<boolean>(false);
+  
+  // 表格引用
+  const actionRef1 = useRef<any>();
 
   // 跨系开关状态
   const [crossTopicStatus, setCrossTopicStatus] = useState<boolean>(false);
@@ -490,6 +496,7 @@ export default () => {
             children: (
               <ProTable<TableListItem>
                 columns={columns}
+                actionRef={actionRef1}
                 rowSelection={{
                   selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
                   preserveSelectedRowKeys: true,
@@ -522,6 +529,7 @@ export default () => {
                       pageNumber: current,
                       pageSize: size,
                       status: 1,
+                      isNoOneSelectedTopic: noOneSelectedTopic,
                     });
 
                     // 隐藏加载提示
@@ -594,6 +602,28 @@ export default () => {
                 }}
                 rowKey="id"
                 headerTitle="查看已经发布的选题"
+                toolbar={{
+                  title: (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span>查看已经发布的选题</span>
+                      <Switch
+                        checked={noOneSelectedTopic}
+                        onChange={(checked) => {
+                          setNoOneSelectedTopic(checked);
+                          // 切换开关后重新加载数据
+                          setTimeout(() => {
+                            // @ts-ignore
+                            actionRef1?.current?.reload();
+                          }, 100);
+                        }}
+                        size="small"
+                      />
+                      <span style={{ fontSize: '12px', color: '#666' }}>
+                        仅显示未选题目
+                      </span>
+                    </div>
+                  ),
+                }}
               />
             ),
           },
