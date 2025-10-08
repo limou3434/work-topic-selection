@@ -444,6 +444,8 @@ declare namespace API {
   type setTopicLockUsingPOSTParams = {
     /** enabled */
     enabled: boolean;
+    /** timestamp */
+    timestamp?: string;
   };
 
   type setViewTopicStatusUsingPOSTParams = {

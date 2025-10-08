@@ -2606,7 +2606,7 @@ public class UserController {
     @SaCheckLogin
     @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
     @PostMapping("/topic_lock")
-    public BaseResponse<String> setTopicLock(@RequestParam boolean enabled) throws BlockException {
+    public BaseResponse<String> setTopicLock(@RequestParam boolean enabled, String timestamp) throws BlockException {
         // 流量控制
         String entryName = new Object() {
         }.getClass().getEnclosingMethod().getName();
@@ -2614,6 +2614,9 @@ public class UserController {
         SphU.entry(entryName);
 
         switchService.setEnabled(TopicConstant.TOPIC_LOCK, enabled);
+
+        redisManager.setValue(TopicConstant.TOPIC_LOCK_TIME, timestamp);
+
         return TheResult.success(CodeBindMessageEnums.SUCCESS, "当前是否退选加锁为" + (enabled ? "禁止退选题目" : "允许退选题目"));
     }
 
