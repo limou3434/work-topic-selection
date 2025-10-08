@@ -28,6 +28,11 @@ public interface TopicConstant {
     String SWITCH_SINGLE_CHOICE = "switch-single-choice";
 
     /**
+     * 是否退选加锁缓存 key
+     */
+    String TOPIC_LOCK = "topic-lock";
+
+    /**
      * 跨系选题配置缓存 Key
      */
     String DEPT_CROSS_TOPIC_CONFIG = "dept-cross-topic-config";

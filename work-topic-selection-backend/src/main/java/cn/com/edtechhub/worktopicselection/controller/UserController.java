@@ -2574,7 +2574,7 @@ public class UserController {
      * 查询是否退选加锁状态
      */
     @SaCheckLogin
-    @SaCheckRole(value = {"admin", "student"}, mode = SaMode.OR)
+    @SaCheckRole(value = {"admin", "teacher", "student"}, mode = SaMode.OR)
     @GetMapping("/topic_lock")
     public BaseResponse<Boolean> getTopicLock() throws BlockException {
         // 流量控制
