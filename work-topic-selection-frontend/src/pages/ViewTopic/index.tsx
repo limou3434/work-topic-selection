@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Button, Descriptions, message, Spin, Empty, Flex, Modal, Typography, Alert } from 'antd';
+import { LockOutlined, UnlockOutlined } from '@ant-design/icons';
 import {
   getSelectTopicUsingPost,
   withdrawUsingPost,
+  getTopicLockUsingGet,
 } from '@/services/work-topic-selection/userController';
 
 const { Title } = Typography;
@@ -17,11 +19,11 @@ const ScrollingNotice = () => {
         borderRadius: '4px',
         height: '40px',
         overflow: 'hidden',
-        margin: '16px 0',
         display: 'flex',
         alignItems: 'center',
-        width: 800, // 与卡片最大宽度保持一致
-        margin: '16px auto', // 居中显示
+        maxWidth: 800,
+        width: 'calc(100% - 32px)', // 减去左右margin
+        margin: '16px auto',
       }}
     >
       <div
@@ -31,7 +33,7 @@ const ScrollingNotice = () => {
           fontSize: '14px',
           color: '#d46b08',
           fontWeight: '500',
-          paddingLeft: '100%', // 从右侧开始
+          paddingLeft: '100%',
         }}
       >
         📧 请学生们务必绑定帐号邮箱，否则教师一旦退选您的题目将无法及时获取通知！
@@ -46,6 +48,33 @@ const ScrollingNotice = () => {
               transform: translateX(-100%);
             }
           }
+
+          /* 移动端响应式处理 */
+          @media (max-width: 768px) {
+            div[style*="height: 40px"] {
+              height: auto;
+              min-height: 40px;
+            }
+
+            div[style*="whiteSpace: 'nowrap'"] {
+              whiteSpace: normal;
+              animation: none;
+              padding: 8px 12px;
+              paddingLeft: 0;
+            }
+          }
+
+          /* 小屏幕设备进一步优化 */
+          @media (max-width: 480px) {
+            div[style*="height: 40px"] {
+              height: auto;
+              min-height: 50px;
+            }
+
+            div[style*="fontSize: '14px'"] {
+              fontSize: '12px';
+            }
+          }
         `}
       </style>
     </div>
@@ -55,6 +84,7 @@ const ScrollingNotice = () => {
 export default () => {
   const [loading, setLoading] = useState(true);
   const [topic, setTopic] = useState<API.Topic | null>(null);
+  const [topicLocked, setTopicLocked] = useState<boolean>(false);
 
   const fetchTopic = async () => {
     setLoading(true);
@@ -65,10 +95,21 @@ export default () => {
       } else {
         setTopic(null);
       }
-    } catch (e) {
-      message.error(res.message);
+    } catch (e: any) {
+      message.error(e.message || '获取选题信息失败');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTopicLockStatus = async () => {
+    try {
+      const res = await getTopicLockUsingGet();
+      if (res.code === 0) {
+        setTopicLocked(res.data || false);
+      }
+    } catch (e: any) {
+      console.error('获取选题锁定状态失败:', e);
     }
   };
 
@@ -94,20 +135,50 @@ export default () => {
 
   useEffect(() => {
     fetchTopic();
+    fetchTopicLockStatus();
   }, []);
 
   return (
     <Spin spinning={loading}>
-      <Title level={2} style={{ textAlign: 'center', margin: '16px 0' }}>我的选题</Title>
+      <Title level={2} style={{
+        textAlign: 'center',
+        margin: '16px 0',
+        padding: '0 16px',
+        wordBreak: 'break-word'
+      }}>我的选题</Title>
       <ScrollingNotice />
-      <Flex justify="center" align="center" style={{ minHeight: 300 }}>
+      <Flex justify="center" align="center" style={{
+        minHeight: 300,
+        width: '100%',
+        padding: '0 16px'
+      }}>
         {topic ? (
           <Card
             title={topic.topic}
-            style={{ width: 800 }}
-            extra={<Button danger onClick={handleWithdraw}>退选</Button>}
+            style={{
+              width: '100%',
+              maxWidth: 800,
+            }}
+            extra={
+              <Button
+                danger={!topicLocked}
+                disabled={topicLocked}
+                onClick={handleWithdraw}
+                icon={topicLocked ? <LockOutlined /> : <UnlockOutlined />}
+              >
+                {topicLocked ? '锁定' : '退选'}
+              </Button>
+            }
           >
-            <Descriptions column={1} bordered size="small">
+            <Descriptions
+              column={1}
+              bordered
+              size="small"
+              style={{
+                maxWidth: '100%',
+                wordBreak: 'break-word'
+              }}
+            >
               <Descriptions.Item label="题目类型">{topic.type}</Descriptions.Item>
               <Descriptions.Item label="题目描述">{topic.description}</Descriptions.Item>
               <Descriptions.Item label="学生要求">{topic.requirement}</Descriptions.Item>
