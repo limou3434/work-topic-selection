@@ -5,18 +5,20 @@ import {
   getCrossTopicStatusUsingGet,
   getSwitchSingleChoiceStatusUsingGet,
   getTopicListUsingPost,
+  getTopicLockUsingGet,
   getViewTopicStatusUsingGet,
   setCrossTopicStatusUsingPost,
   setSwitchSingleChoiceStatusUsingPost,
-  setViewTopicStatusUsingPost,
   setTimeByIdUsingPost,
+  setTopicLockUsingPost,
+  setViewTopicStatusUsingPost,
   unsetTimeByIdUsingPost
 } from "@/services/work-topic-selection/userController";
 import {ClockCircleOutlined, EyeOutlined, MinusOutlined, PlusOutlined} from "@ant-design/icons";
 import {ModalForm} from "@ant-design/pro-form/lib";
 import {ProFormDateTimeRangePicker} from '@ant-design/pro-form';
-import { DeptCrossTopicConfig } from '@/components';
-import {WebSocketNotification, WebSocketSender} from "@/components/WebSocket";
+import {DeptCrossTopicConfig} from '@/components';
+import {WebSocketSender} from "@/components/WebSocket";
 
 export type TableListItem = {
   id: number;
@@ -103,6 +105,8 @@ export default () => {
   const [singleChoiceStatus, setSingleChoiceStatus] = useState<boolean>(false);
   // 查看查看选题开关状态
   const [viewTopicStatus, setViewTopicStatus] = useState<boolean>(false);
+  // 选题锁定开关状态
+  const [topicLockStatus, setTopicLockStatus] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
   // 获取开关状态
@@ -120,6 +124,10 @@ export default () => {
         // 获取查看选题开关状态
         const viewRes = await getViewTopicStatusUsingGet();
         setViewTopicStatus(viewRes.data || false);
+
+        // 获取选题锁定开关状态
+        const lockRes = await getTopicLockUsingGet();
+        setTopicLockStatus(lockRes.data || false);
       } catch (error) {
         console.error("获取开关状态失败:", error);
       } finally {
@@ -177,6 +185,23 @@ export default () => {
       message.error("操作失败，请重试");
       // 恢复开关状态
       setViewTopicStatus(!checked);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 更新选题锁定开关状态
+  const handleTopicLockStatusChange = async (checked: boolean) => {
+    try {
+      setLoading(true);
+      const res = await setTopicLockUsingPost({enabled: checked});
+      setTopicLockStatus(checked);
+      message.success(res.data);
+    } catch (error) {
+      console.error("更新选题锁定开关状态失败:", error);
+      message.error("操作失败，请重试");
+      // 恢复开关状态
+      setTopicLockStatus(!checked);
     } finally {
       setLoading(false);
     }
@@ -260,6 +285,32 @@ export default () => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    marginBottom: '12px'
+                  }}>
+                    <span style={{fontWeight: 500}}>是否退选加锁：</span>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                      <Switch
+                        checked={topicLockStatus}
+                        onChange={handleTopicLockStatusChange}
+                        loading={loading}
+                      />
+                      <span style={{
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        backgroundColor: topicLockStatus ? '#e6ffec' : '#fff0f0',
+                        color: topicLockStatus ? '#3c8618' : '#ff4d4f'
+                      }}>
+                        {topicLockStatus ? '已加锁' : '未加锁'}
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '12px'
                   }}>
                     <span style={{fontWeight: 500}}>单选模式切换：</span>
                     <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
@@ -291,7 +342,7 @@ export default () => {
                   <WebSocketSender/>
                 </div>
                 {/* 跨系选题配置区域 */}
-                <DeptCrossTopicConfig />
+                <DeptCrossTopicConfig/>
                 <ProTable<TableListItem>
                   columns={unpublishedColumns}
                   rowSelection={{
@@ -299,7 +350,8 @@ export default () => {
                     preserveSelectedRowKeys: true,
                     onChange: (selectedRowKeys) => {
                       if (selectedRowKeys.length >= 500) {
-                        message.loading(`正在处理${selectedRowKeys.length}条数据的选中状态，请稍候...`, 0).then(() => {});
+                        message.loading(`正在处理${selectedRowKeys.length}条数据的选中状态，请稍候...`, 0).then(() => {
+                        });
                         // 使用setTimeout确保提示显示后立即清除
                         setTimeout(() => {
                           message.destroy();
@@ -443,7 +495,8 @@ export default () => {
                   preserveSelectedRowKeys: true,
                   onChange: (selectedRowKeys) => {
                     if (selectedRowKeys.length >= 500) {
-                      message.loading(`正在处理${selectedRowKeys.length}条数据的选中状态，请稍候...`, 0).then(() => {});
+                      message.loading(`正在处理${selectedRowKeys.length}条数据的选中状态，请稍候...`, 0).then(() => {
+                      });
                       // 使用setTimeout确保提示显示后立即清除
                       setTimeout(() => {
                         message.destroy();
