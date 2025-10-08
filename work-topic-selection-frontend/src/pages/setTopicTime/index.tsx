@@ -1,6 +1,7 @@
 import {ProColumns, ProTable} from '@ant-design/pro-components';
-import {Button, message, Space, Switch, Table, Tabs} from 'antd';
+import {Button, DatePicker, message, Space, Switch, Table, Tabs} from 'antd';
 import React, {useEffect, useRef, useState} from "react";
+import moment from 'moment';
 import {
   getCrossTopicStatusUsingGet,
   getSwitchSingleChoiceStatusUsingGet,
@@ -98,10 +99,10 @@ export default () => {
   const [pageNum1, setPageNum1] = useState(1);
   const [pageSize1, setPageSize1] = useState(10);
   const [total1, setTotal1] = useState(0);
-  
+
   // 是否查询未选题目开关状态
   const [noOneSelectedTopic, setNoOneSelectedTopic] = useState<boolean>(false);
-  
+
   // 表格引用
   const actionRef1 = useRef<any>();
 
@@ -113,6 +114,8 @@ export default () => {
   const [viewTopicStatus, setViewTopicStatus] = useState<boolean>(false);
   // 选题锁定开关状态
   const [topicLockStatus, setTopicLockStatus] = useState<boolean>(false);
+  // 退选加锁时间状态
+  const [withdrawLockTime, setWithdrawLockTime] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(true);
 
   // 获取开关状态
@@ -200,7 +203,14 @@ export default () => {
   const handleTopicLockStatusChange = async (checked: boolean) => {
     try {
       setLoading(true);
-      const res = await setTopicLockUsingPost({enabled: checked});
+      // 只有在加锁时才传递时间戳参数
+      const params: API.setTopicLockUsingPOSTParams = { enabled: checked };
+      if (checked && withdrawLockTime) {
+        // 将时间转换为时间戳（秒）
+        params.timestamp = moment(withdrawLockTime).unix().toString();
+      }
+      
+      const res = await setTopicLockUsingPost(params);
       setTopicLockStatus(checked);
       message.success(res.data);
     } catch (error) {
@@ -295,21 +305,40 @@ export default () => {
                   }}>
                     <span style={{fontWeight: 500}}>是否退选加锁：</span>
                     <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                      <Switch
-                        checked={topicLockStatus}
-                        onChange={handleTopicLockStatusChange}
-                        loading={loading}
-                      />
-                      <span style={{
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        fontWeight: 500,
-                        backgroundColor: topicLockStatus ? '#e6ffec' : '#fff0f0',
-                        color: topicLockStatus ? '#3c8618' : '#ff4d4f'
-                      }}>
-                        {topicLockStatus ? '已加锁' : '未加锁'}
-                      </span>
+                      <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px'}}>
+                        <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                          {!topicLockStatus || !withdrawLockTime ? (
+                            <DatePicker
+                              showTime={{ format: 'HH:mm:ss' }}
+                              format="YYYY-MM-DD HH:mm:ss"
+                              placeholder={!topicLockStatus ? "请选择加锁时间" : "加锁后未设置时间"}
+                              onChange={(date, dateString) => setWithdrawLockTime(Array.isArray(dateString) ? dateString[0] : dateString)}
+                              value={withdrawLockTime ? moment(withdrawLockTime) : null}
+                              style={{ width: 200 }}
+                              disabled={topicLockStatus && !withdrawLockTime}
+                            />
+                          ) : null}
+                          <Switch
+                            checked={topicLockStatus}
+                            onChange={handleTopicLockStatusChange}
+                            loading={loading}
+                          />
+                          <span style={{
+                            padding: '2px 8px',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            fontWeight: 500,
+                            backgroundColor: topicLockStatus ? '#e6ffec' : '#fff0f0',
+                            color: topicLockStatus ? '#3c8618' : '#ff4d4f'
+                          }}>
+                            {topicLockStatus
+                              ? withdrawLockTime
+                                ? `已加锁，锁定时间：${moment(withdrawLockTime).format('YYYY-MM-DD HH:mm:ss')}`
+                                : '已加锁'
+                              : '未加锁'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div style={{

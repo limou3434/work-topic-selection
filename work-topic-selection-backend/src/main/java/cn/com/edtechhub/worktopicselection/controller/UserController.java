@@ -1814,9 +1814,6 @@ public class UserController {
         ThrowUtils.throwIf(topicId == null, CodeBindMessageEnums.PARAMS_ERROR, "id 不能为空");
         ThrowUtils.throwIf(topicId <= 0, CodeBindMessageEnums.PARAMS_ERROR, "id 必须是正整数");
 
-        // 如果是锁题功能已启用, 则不允许老师与学生进行退选操作
-        ThrowUtils.throwIf(switchService.isEnabled(TopicConstant.TOPIC_LOCK), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "管理员已设置教师无法退选学生和学生无法退选题目, 如需要退选请通知管理员");
-
         // 退选题目
         synchronized (String.valueOf(topicId).intern()) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
             return transactionTemplate.execute(transactionStatus -> {
@@ -1824,6 +1821,18 @@ public class UserController {
                 Topic topic = topicService.getById(topicId);
                 ThrowUtils.throwIf(topic == null, CodeBindMessageEnums.NOT_FOUND_ERROR, "未找到对应的课题, 无需退选");
                 assert topic != null;
+
+                // 如果是锁题功能已启用, 并且过了时间, 则不允许老师与学生进行退选操作
+                boolean isLock = switchService.isEnabled(TopicConstant.TOPIC_LOCK);
+                String lockTimestampStr = redisManager.getValue(TopicConstant.TOPIC_LOCK_TIME);
+                long lockTimestamp = Long.parseLong(lockTimestampStr) * 1000;
+                Date topicTime = topic.getUpdateTime();
+                long topicTimestamp = topicTime.getTime();
+                ThrowUtils.throwIf(
+                        isLock && topicTimestamp < lockTimestamp,
+                        CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR,
+                        "管理员已设置教师无法退选学生、学生无法退选题目功能, 如需要退选请通知管理员"
+                );
 
                 // 更新课题的剩余数量
                 ThrowUtils.throwIf(topic.getSurplusQuantity().equals(1), CodeBindMessageEnums.OPERATION_ERROR, "该课题无人选过无需退选");
@@ -2615,7 +2624,12 @@ public class UserController {
 
         switchService.setEnabled(TopicConstant.TOPIC_LOCK, enabled);
 
-        redisManager.setValue(TopicConstant.TOPIC_LOCK_TIME, timestamp);
+        if (enabled) {
+            redisManager.setValue(TopicConstant.TOPIC_LOCK_TIME, timestamp);
+            ThrowUtils.throwIf(StringUtils.isBlank(timestamp), CodeBindMessageEnums.PARAMS_ERROR, "请设置需要加锁的时间");
+        } else {
+            redisManager.deleteKey(TopicConstant.TOPIC_LOCK_TIME);
+        }
 
         return TheResult.success(CodeBindMessageEnums.SUCCESS, "当前是否退选加锁为" + (enabled ? "禁止退选题目" : "允许退选题目"));
     }
