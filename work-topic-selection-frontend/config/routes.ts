@@ -166,5 +166,10 @@
     component: './SelectTopicSituation/topic',
     access: 'canAccessNotStudentAndTeacher',
   },
+  {
+    path: '/view-teacher-topics',
+    component: './ViewTeacherTopics',
+    access: 'canAccessStudent',
+  },
   { path: '*', redirect: '/home' }, // 通配符路径重定向到主页
 ];

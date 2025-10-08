@@ -182,7 +182,24 @@ export default () => {
       />
 
       <Modal
-        title={`教师 ${currentTeacher} 的题目列表`}
+        title={
+          <div>
+            教师 {currentTeacher} 的题目列表{' '}
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // 将教师姓名存储到本地存储
+                localStorage.setItem('selectedTeacherForView', currentTeacher);
+                // 打开新窗口跳转到全新的根路径
+                window.open('/view-teacher-topics', '_blank');
+              }}
+            >
+              （在新页面中打开）
+            </a>
+          </div>
+        }
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
