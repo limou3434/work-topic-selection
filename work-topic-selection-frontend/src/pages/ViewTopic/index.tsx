@@ -20,6 +20,8 @@ const ScrollingNotice = () => {
         margin: '16px 0',
         display: 'flex',
         alignItems: 'center',
+        width: 800, // 与卡片最大宽度保持一致
+        margin: '16px auto', // 居中显示
       }}
     >
       <div
