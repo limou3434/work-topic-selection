@@ -52,6 +52,11 @@ public class TopicQueryRequest extends PageRequest implements Serializable {
      */
     private Integer status;
 
+    /**
+     * 是否获取没人选的题目
+     */
+    private Boolean isNoOneSelectedTopic;
+
     /// 序列化字段 ///
     private static final long serialVersionUID = 1L;
 

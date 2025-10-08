@@ -1923,7 +1923,13 @@ public class UserController {
 
         // 获取查询条件
         QueryWrapper<Topic> queryWrapper = topicService.getQueryWrapper(request);
+
+        // 如果是管理员, 则支持获取没有任何人选中的题目
         Integer userRole = loginUser.getUserRole();
+        if (userRole == 3) {
+            Boolean isNoOneSelectedTopic = request.getIsNoOneSelectedTopic();
+            queryWrapper.eq(isNoOneSelectedTopic != null, "surplusQuantity", Boolean.TRUE.equals(isNoOneSelectedTopic) ? 1 : 0);
+        }
         if (userRole == 2) {
             // 如果是主任只看到本系部的选题
             queryWrapper.eq(StringUtils.isNotBlank(loginUser.getDept()), "deptName", loginUser.getDept());
