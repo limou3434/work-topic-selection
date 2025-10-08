@@ -74,7 +74,7 @@ export default () => {
             if (topicLocked) {
               return;
             }
-            
+
             // 执行退选前检查锁定状态
             let currentLocked = topicLocked;
             Modal.confirm({
@@ -87,6 +87,7 @@ export default () => {
                 try {
                   const lockRes = await getTopicLockUsingGet();
                   if (lockRes && lockRes.code === 0) {
+                    // @ts-ignore
                     currentLocked = lockRes.data || false;
                     // 更新状态
                     setTopicLocked(currentLocked);
@@ -94,11 +95,11 @@ export default () => {
                 } catch (error) {
                   console.error('获取选题锁定状态失败:', error);
                 }
-                
+
                 if (currentLocked) {
                   return false; // 阻止对话框关闭
                 }
-                
+
                 // 执行退选操作
                 try {
                   //@ts-ignore
@@ -115,8 +116,8 @@ export default () => {
               },
             });
           }}
-          style={{ 
-            color: topicLocked ? '#ccc' : 'inherit', 
+          style={{
+            color: topicLocked ? '#ccc' : 'inherit',
             cursor: topicLocked ? 'not-allowed' : 'pointer',
             textDecoration: topicLocked ? 'line-through' : 'none'
           }}
