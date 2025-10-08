@@ -441,6 +441,11 @@ declare namespace API {
     topicList?: Topic[];
   };
 
+  type setTopicLockUsingPOSTParams = {
+    /** enabled */
+    enabled: boolean;
+  };
+
   type setViewTopicStatusUsingPOSTParams = {
     /** enabled */
     enabled: boolean;

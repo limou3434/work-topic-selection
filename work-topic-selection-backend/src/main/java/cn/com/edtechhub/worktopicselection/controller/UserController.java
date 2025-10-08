@@ -1806,6 +1806,9 @@ public class UserController {
         ThrowUtils.throwIf(topicId == null, CodeBindMessageEnums.PARAMS_ERROR, "id 不能为空");
         ThrowUtils.throwIf(topicId <= 0, CodeBindMessageEnums.PARAMS_ERROR, "id 必须是正整数");
 
+        // 如果是锁题功能已启用, 则不允许老师与学生进行退选操作
+        ThrowUtils.throwIf(switchService.isEnabled(TopicConstant.TOPIC_LOCK), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "管理员已设置教师无法退选学生和学生无法退选题目, 如需要退选请通知管理员");
+
         // 退选题目
         synchronized (String.valueOf(topicId).intern()) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
             return transactionTemplate.execute(transactionStatus -> {
@@ -1835,7 +1838,8 @@ public class UserController {
                 User user = userService.userIsExist(selection.getUserAccount());
                 String email = user.getEmail();
                 if (StringUtils.isNotBlank(email)) {
-                    mailService.sendTopicMail(email, "广州南方学院毕业设计选题系统", "您被退选题目 [" + topic.getTopic() + "], " + "操作人为 " + userService.userGetCurrentLoginUser().getUserName() + ", 请前往系统查看");
+                    User loginUser = userService.userGetCurrentLoginUser();
+                    mailService.sendTopicMail(email, "广州南方学院毕业设计选题系统", "您被退选题目 [" + topic.getTopic() + "], " + "操作人为 " + loginUser.getUserName() + ", 请前往系统查看");
                 }
 
                 // 删除学生的选题记录
@@ -2564,6 +2568,39 @@ public class UserController {
 
         switchService.setEnabled(TopicConstant.SWITCH_SINGLE_CHOICE, enabled);
         return TheResult.success(CodeBindMessageEnums.SUCCESS, "当前单选模式切换为" + (enabled ? "学生单选模式" : "教师单选模式"));
+    }
+
+    /**
+     * 查询是否退选加锁状态
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin", "student"}, mode = SaMode.OR)
+    @GetMapping("/topic_lock")
+    public BaseResponse<Boolean> getTopicLock() throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, switchService.isEnabled(TopicConstant.TOPIC_LOCK));
+    }
+
+    /**
+     * 设置是否退选加锁开关
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"admin"}, mode = SaMode.OR)
+    @PostMapping("/topic_lock")
+    public BaseResponse<String> setTopicLock(@RequestParam boolean enabled) throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
+        switchService.setEnabled(TopicConstant.TOPIC_LOCK, enabled);
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, "当前是否退选加锁为" + (enabled ? "禁止退选题目" : "允许退选题目"));
     }
 
     /**
