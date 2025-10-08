@@ -1446,7 +1446,7 @@ public class UserController {
                 topic.setStartTime(new Date(0)); // 这里是无法把时间置为 null 的
                 topic.setEndTime(new Date(0)); // 这里是无法把时间置为 null 的
                 boolean result = topicService.updateById(topic);
-                ThrowUtils.throwIf(!result, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "无法开放该选题, 请联系管理员 898738804@qq.com");
+                ThrowUtils.throwIf(!result, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "无法取消开放该选题, 请联系管理员 898738804@qq.com");
             }
             return TheResult.success(CodeBindMessageEnums.SUCCESS, "成功取消发布!");
         });
@@ -1740,15 +1740,15 @@ public class UserController {
         // 如果课题处于还没有处于发布状态, 则无法选择学生
         ThrowUtils.throwIf(topic.getStatus() != TopicStatusEnum.PUBLISHED.getCode(), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "该课题尚未发布, 暂时无法选择学生");
 
-        // 如果当前时间没有处于发布时间段内, 则无法选择学生
-        Date startTime = topic.getStartTime();
-        ThrowUtils.throwIf(startTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有设置开始时间");
+//        // 如果当前时间没有处于发布时间段内, 则无法选择学生
+//        Date startTime = topic.getStartTime();
+//        ThrowUtils.throwIf(startTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有设置开始时间");
+//
+//        Date endTime = topic.getEndTime();
+//        ThrowUtils.throwIf(endTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有设置结束时间");
 
-        Date endTime = topic.getEndTime();
-        ThrowUtils.throwIf(endTime == null, CodeBindMessageEnums.PARAMS_ERROR, "没有设置结束时间");
-
-        Date now = new Date();
-        ThrowUtils.throwIf(now.before(startTime) || now.after(endTime), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前不在选题开放范围内, 请等待管理员开放选题");
+//        Date now = new Date();
+//        ThrowUtils.throwIf(now.before(startTime) || now.after(endTime), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "当前不在选题开放范围内, 请等待管理员开放选题");
 
         // 教师直接分配题目给学生
         synchronized (String.valueOf(topicId).intern()) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
