@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Card, Typography, Spin, Alert, Button } from 'antd';
-// @ts-ignore
 import { history } from 'umi';
 import { getTopicListUsingPost } from '@/services/work-topic-selection/userController';
 import { ArrowLeftOutlined } from '@ant-design/icons';
@@ -38,21 +37,24 @@ const formatDateTime = (dateString?: string) => {
   }
 };
 
-// 计算剩余天数
-const getRemainingDays = (endTime?: string) => {
+// 计算剩余小时数
+const getRemainingHours = (endTime?: string) => {
   if (!endTime) return '';
   try {
     const end = new Date(endTime);
     const now = new Date();
     const diffTime = end.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) {
+    
+    if (diffTime < 0) {
       return <span style={{ color: '#ff4d4f' }}>已结束</span>;
-    } else if (diffDays === 0) {
-      return <span style={{ color: '#faad14' }}>今天截止</span>;
+    }
+    
+    const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+    
+    if (diffHours < 1) {
+      return <span style={{ color: '#faad14' }}>即将截止</span>;
     } else {
-      return <span style={{ color: '#52c41a' }}>{diffDays}天后</span>;
+      return <span style={{ color: '#52c41a' }}>{diffHours}小时后</span>;
     }
   } catch (e) {
     return '';
@@ -64,7 +66,7 @@ const ViewTeacherTopics: React.FC = () => {
   const [topics, setTopics] = useState<TopicItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [teacherName, setTeacherName] = useState<string>('');
-
+  
   // 从本地存储获取教师姓名
   useEffect(() => {
     const storedTeacherName = localStorage.getItem('selectedTeacherForView');
@@ -79,22 +81,20 @@ const ViewTeacherTopics: React.FC = () => {
   // 获取题目数据
   const fetchTopics = async () => {
     if (!teacherName) return;
-
+    
     setLoading(true);
     setError(null);
     try {
       const response = await getTopicListUsingPost({
-        // @ts-ignore
         status: '0',
         teacherName: teacherName,
       });
-
+      
       if (response.code === 0) {
         // 确保只显示当前教师的题目
         const filteredTopics = response.data?.records?.filter(
           item => item.teacherName === teacherName
         ) || [];
-        // @ts-ignore
         setTopics(filteredTopics);
       } else {
         setError(response.message || '获取题目数据失败');
@@ -143,7 +143,7 @@ const ViewTeacherTopics: React.FC = () => {
       width: 100,
       sorter: (a: TopicItem, b: TopicItem) => a.surplusQuantity - b.surplusQuantity,
       render: (text: number) => (
-        <span style={{
+        <span style={{ 
           color: text === 0 ? '#ff4d4f' : '#52c41a',
           fontWeight: text === 0 ? 'bold' : 'normal'
         }}>
@@ -185,58 +185,57 @@ const ViewTeacherTopics: React.FC = () => {
       render: (text: string) => (
         <div>
           <div>{formatDateTime(text)}</div>
-          <div>{getRemainingDays(text)}</div>
+          <div>{getRemainingHours(text)}</div>
         </div>
       )
     },
   ];
 
   return (
-    <div style={{
-      padding: '16px',
-      backgroundColor: '#f0f2f5',
+    <div style={{ 
+      padding: '16px', 
+      backgroundColor: '#f0f2f5', 
       minHeight: '100vh'
     }}>
-      <Card
-        style={{
+      <Card 
+        style={{ 
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           borderRadius: '4px',
           border: '1px solid #e8e8e8'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
-          <Button
-            type="primary"
-            icon={<ArrowLeftOutlined />}
+          <Button 
+            type="primary" 
+            icon={<ArrowLeftOutlined />} 
             onClick={() => window.close()}
             style={{ marginRight: '16px' }}
           >
             返回
           </Button>
-          <Title level={3} style={{
-            textAlign: 'center',
-            marginBottom: 0,
+          <Title level={3} style={{ 
+            textAlign: 'center', 
+            marginBottom: 0, 
             color: '#1890ff',
             flex: 1
           }}>
             教师 {teacherName} 的题目列表
           </Title>
         </div>
-
+        
         {error && (
-          <Alert
-            message="错误"
-            description={error}
-            type="error"
-            showIcon
+          <Alert 
+            message="错误" 
+            description={error} 
+            type="error" 
+            showIcon 
             style={{ marginBottom: '16px' }}
           />
         )}
-
+        
         <Spin spinning={loading} size="large">
           <Table
             dataSource={topics}
-            // @ts-ignore
             columns={columns}
             rowKey="id"
             scroll={{ x: 'max-content' }}
