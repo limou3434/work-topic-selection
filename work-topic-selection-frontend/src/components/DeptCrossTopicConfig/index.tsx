@@ -171,12 +171,13 @@ const DeptCrossTopicConfig: React.FC = () => {
               alignItems: 'center', 
               gap: 16,
               flex: 1,
-              minWidth: 0
+              minWidth: 0,
+              flexWrap: 'wrap'
             }}>
               <span style={{ 
                 fontWeight: 500, 
-                width: 100,
-                flexShrink: 0
+                flexShrink: 0,
+                whiteSpace: 'nowrap'
               }}>配置跨选规则：</span>
               <Select
                 style={{ 
@@ -194,22 +195,21 @@ const DeptCrossTopicConfig: React.FC = () => {
             </div>
             <div style={{ 
               display: 'flex', 
-              alignItems: 'center',
-              gap: 16,
-              justifyContent: 'space-between'
+              flexDirection: 'column',
+              gap: 8,
+              width: '100%'
             }}>
               <div style={{ 
                 color: '#888888', 
                 fontSize: '12px',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis'
               }}>
                 <span style={{ color: '#8B0000' }}>*</span> 对一个系部配置空规则相当于允许该系部跨选所有专业
               </div>
               <div style={{ 
                 display: 'flex', 
-                gap: 16
+                justifyContent: 'flex-end',
+                gap: 16,
+                flexWrap: 'wrap'
               }}>
                 <Button type="primary" onClick={handleSetRules}>
                   设置规则
