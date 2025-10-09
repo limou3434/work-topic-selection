@@ -531,7 +531,7 @@ export default () => {
                         fontSize: '12px',
                         marginTop: 20
                       }}>
-                        <span style={{color: '#8B0000'}}>* </span>注意教师只要题目发布就可以选择学生</div>
+                        <span style={{color: '#8B0000'}}>* </span>注意教师只要题目审核通过就可以选择学生</div>
                     </div>
                   }
                 />
