@@ -1,8 +1,6 @@
 import {
   getSelectTopicByIdUsingPost, withdrawUsingPost,
-  getTopicLockUsingGet,
 } from '@/services/work-topic-selection/userController';
-import { LockOutlined, UnlockOutlined } from '@ant-design/icons';
 import {ActionType, ProColumns} from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import React, { useEffect, useRef, useState } from 'react';
@@ -20,23 +18,6 @@ type GithubIssueItem = {
 export default () => {
   const actionRef = useRef<ActionType>();
   const {id } = useParams();
-  const [topicLocked, setTopicLocked] = useState<boolean>(false);
-
-  // 页面加载时获取初始锁定状态
-  useEffect(() => {
-    const fetchInitialLockStatus = async () => {
-      try {
-        const res = await getTopicLockUsingGet();
-        if (res && res.code === 0) {
-          setTopicLocked(res.data || false);
-        }
-      } catch (error) {
-        console.error('获取初始选题锁定状态失败:', error);
-      }
-    };
-
-    fetchInitialLockStatus();
-  }, []);
 
   const columns: ProColumns<GithubIssueItem>[] = [
     {
@@ -69,37 +50,14 @@ export default () => {
       key: 'option',
       render: (text, record, _,action) => [
         <a
-          key="select"
+          key="withdraw"
           onClick={() => {
-            if (topicLocked) {
-              return;
-            }
-
-            // 执行退选前检查锁定状态
-            let currentLocked = topicLocked;
             Modal.confirm({
               title: '确认退选',
               content: '确定要退选吗？此操作不可恢复。',
               okText: '确认',
               cancelText: '取消',
               onOk: async () => {
-                // 执行退选前再次检查锁定状态
-                try {
-                  const lockRes = await getTopicLockUsingGet();
-                  if (lockRes && lockRes.code === 0) {
-                    // @ts-ignore
-                    currentLocked = lockRes.data || false;
-                    // 更新状态
-                    setTopicLocked(currentLocked);
-                  }
-                } catch (error) {
-                  console.error('获取选题锁定状态失败:', error);
-                }
-
-                if (currentLocked) {
-                  return false; // 阻止对话框关闭
-                }
-
                 // 执行退选操作
                 try {
                   //@ts-ignore
@@ -116,21 +74,8 @@ export default () => {
               },
             });
           }}
-          style={{
-            color: topicLocked ? '#ccc' : 'inherit',
-            cursor: topicLocked ? 'not-allowed' : 'pointer',
-            textDecoration: topicLocked ? 'line-through' : 'none'
-          }}
         >
-          {topicLocked ? (
-            <>
-              <LockOutlined /> 锁定
-            </>
-          ) : (
-            <>
-              <UnlockOutlined /> 退选
-            </>
-          )}
+          退选
         </a>,
       ],
     },

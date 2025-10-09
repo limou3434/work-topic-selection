@@ -1831,7 +1831,6 @@ public class UserController {
                     StudentTopicSelection studentTopicSelection = studentTopicSelectionService
                             .getOne(new QueryWrapper<StudentTopicSelection>()
                                     .eq("topicId", topicId)
-                                    .eq("userAccount", userService.userGetCurrentLoginUser().getUserAccount())
                                     .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())
                             );
                     Date topicTime = studentTopicSelection.getUpdateTime();
