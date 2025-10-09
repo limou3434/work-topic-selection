@@ -203,7 +203,7 @@ const DeptCrossTopicConfig: React.FC = () => {
                 color: '#888888',
                 fontSize: '12px',
               }}>
-                <span style={{ color: '#8B0000' }}>*</span> 对一个系部配置空规则相当于允许该系部跨选所有专业，并且注意教师是不受跨选限制的
+                <span style={{ color: '#8B0000' }}>*</span> 注意对一个系部配置空规则相当于允许该系部跨选所有专业，并且教师是不受跨选限制的
               </div>
               <div style={{
                 display: 'flex',

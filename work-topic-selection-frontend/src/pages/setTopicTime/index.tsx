@@ -217,7 +217,7 @@ export default () => {
     try {
       setLoading(true);
       // 只有在加锁时才传递时间戳参数
-      const params: API.setTopicLockUsingPOSTParams = { enabled: checked };
+      const params: API.setTopicLockUsingPOSTParams = {enabled: checked};
       if (checked && withdrawLockTime) {
         // 将时间转换为时间戳（秒）
         params.timestamp = moment(withdrawLockTime).unix().toString();
@@ -322,12 +322,12 @@ export default () => {
                         <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
                           {!topicLockStatus || !withdrawLockTime ? (
                             <DatePicker
-                              showTime={{ format: 'HH:mm:ss' }}
+                              showTime={{format: 'HH:mm:ss'}}
                               format="YYYY-MM-DD HH:mm:ss"
                               placeholder={!topicLockStatus ? "请选择加锁时间" : "加锁后未设置时间"}
                               onChange={(date, dateString) => setWithdrawLockTime(Array.isArray(dateString) ? dateString[0] : dateString)}
                               value={withdrawLockTime ? moment(withdrawLockTime) : null}
-                              style={{ width: 200 }}
+                              style={{width: 200}}
                               disabled={topicLockStatus && !withdrawLockTime}
                             />
                           ) : null}
@@ -523,7 +523,17 @@ export default () => {
                     },
                   }}
                   rowKey="id"
-                  headerTitle="设置选题的开放时间"
+                  headerTitle={
+                    <div>
+                      设置选题的开放时间
+                      <div style={{
+                        color: '#888888',
+                        fontSize: '12px',
+                        marginTop: 20
+                      }}>
+                        <span style={{color: '#8B0000'}}>* </span>注意教师只要题目发布就可以选择学生</div>
+                    </div>
+                  }
                 />
               </>),
           },
@@ -646,7 +656,7 @@ export default () => {
                 headerTitle="查看已经发布的选题"
                 toolbar={{
                   title: (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
                       <span>查看已经发布的选题</span>
                       <Switch
                         checked={noOneSelectedTopic}
@@ -660,7 +670,7 @@ export default () => {
                         }}
                         size="small"
                       />
-                      <span style={{ fontSize: '12px', color: '#666' }}>
+                      <span style={{fontSize: '12px', color: '#666'}}>
                         仅显示未选题目
                       </span>
                     </div>
