@@ -161,26 +161,26 @@ const DeptCrossTopicConfig: React.FC = () => {
           boxShadow: 'none',
           border: '1px solid #f0f0f0',
         }}>
-          <div style={{ 
-            display: 'flex', 
+          <div style={{
+            display: 'flex',
             flexDirection: 'column',
             gap: '12px'
           }}>
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
               gap: 16,
               flex: 1,
               minWidth: 0,
               flexWrap: 'wrap'
             }}>
-              <span style={{ 
-                fontWeight: 500, 
+              <span style={{
+                fontWeight: 500,
                 flexShrink: 0,
                 whiteSpace: 'nowrap'
               }}>配置跨选规则：</span>
               <Select
-                style={{ 
+                style={{
                   flex: 1,
                   minWidth: 150
                 }}
@@ -193,20 +193,20 @@ const DeptCrossTopicConfig: React.FC = () => {
                 }))}
               />
             </div>
-            <div style={{ 
-              display: 'flex', 
+            <div style={{
+              display: 'flex',
               flexDirection: 'column',
               gap: 8,
               width: '100%'
             }}>
-              <div style={{ 
-                color: '#888888', 
+              <div style={{
+                color: '#888888',
                 fontSize: '12px',
               }}>
-                <span style={{ color: '#8B0000' }}>*</span> 对一个系部配置空规则相当于允许该系部跨选所有专业
+                <span style={{ color: '#8B0000' }}>*</span> 对一个系部配置空规则相当于允许该系部跨选所有专业，并且注意教师是不受跨选限制的
               </div>
-              <div style={{ 
-                display: 'flex', 
+              <div style={{
+                display: 'flex',
                 justifyContent: 'flex-end',
                 gap: 16,
                 flexWrap: 'wrap'
@@ -224,10 +224,10 @@ const DeptCrossTopicConfig: React.FC = () => {
 
         {/* 穿梭框 */}
         {selectedDept && (
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            gap: 16 
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16
           }}>
             <div style={{ fontWeight: 500 }}>
               配置 {selectedDept} 系可选其他系部:
