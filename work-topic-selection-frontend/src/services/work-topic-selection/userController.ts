@@ -724,7 +724,7 @@ export async function userToggleLoginUsingPost(
 
 /** getTopicLock GET /user/topic_lock */
 export async function getTopicLockUsingGet(options?: { [key: string]: any }) {
-  return request<API.BaseResponseBoolean_>('/user/topic_lock', {
+  return request<API.BaseResponseTopicLockVO_>('/user/topic_lock', {
     method: 'GET',
     ...(options || {}),
   });

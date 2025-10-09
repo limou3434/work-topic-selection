@@ -150,6 +150,12 @@ declare namespace API {
     message?: string;
   };
 
+  type BaseResponseTopicLockVO_ = {
+    code?: number;
+    data?: TopicLockVO;
+    message?: string;
+  };
+
   type BaseResponseUser_ = {
     code?: number;
     data?: User;
@@ -501,6 +507,11 @@ declare namespace API {
     topic?: string;
     type?: string;
     updateTime?: string;
+  };
+
+  type TopicLockVO = {
+    islock?: boolean;
+    lockTime?: string;
   };
 
   type TopicQueryByAdminRequest = {
