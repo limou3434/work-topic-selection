@@ -136,7 +136,20 @@ export default () => {
 
         // 获取选题锁定开关状态
         const lockRes = await getTopicLockUsingGet();
-        setTopicLockStatus(lockRes.data || false);
+        // 根据后端返回的 TopicLockVO 设置锁定状态和锁定时间
+        if (lockRes.data) {
+          setTopicLockStatus(lockRes.data.islock || false);
+          // 如果有锁定时间，则设置锁定时间
+          if (lockRes.data.lockTime) {
+            // 后端返回的是秒级时间戳，需要转换为毫秒级
+            const timestampInMs = parseInt(lockRes.data.lockTime) * 1000;
+            // 转换为标准日期格式字符串
+            const formattedTime = moment(timestampInMs).format('YYYY-MM-DD HH:mm:ss');
+            setWithdrawLockTime(formattedTime);
+          }
+        } else {
+          setTopicLockStatus(false);
+        }
       } catch (error) {
         console.error("获取开关状态失败:", error);
       } finally {
@@ -209,7 +222,7 @@ export default () => {
         // 将时间转换为时间戳（秒）
         params.timestamp = moment(withdrawLockTime).unix().toString();
       }
-      
+
       const res = await setTopicLockUsingPost(params);
       setTopicLockStatus(checked);
       message.success(res.data);
@@ -333,7 +346,7 @@ export default () => {
                           }}>
                             {topicLockStatus
                               ? withdrawLockTime
-                                ? `已加锁，锁定时间：${moment(withdrawLockTime).format('YYYY-MM-DD HH:mm:ss')}`
+                                ? `已加锁 - 锁定时间：${moment(withdrawLockTime).format('YYYY-MM-DD HH:mm:ss')}`
                                 : '已加锁'
                               : '未加锁'}
                           </span>
