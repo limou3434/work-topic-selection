@@ -2599,14 +2599,18 @@ public class UserController {
     @SaCheckLogin
     @SaCheckRole(value = {"admin", "teacher", "student"}, mode = SaMode.OR)
     @GetMapping("/topic_lock")
-    public BaseResponse<Boolean> getTopicLock() throws BlockException {
+    public BaseResponse<TopicLockVO> getTopicLock() throws BlockException {
         // 流量控制
         String entryName = new Object() {
         }.getClass().getEnclosingMethod().getName();
         sentineManager.initFlowRules(entryName);
         SphU.entry(entryName);
 
-        return TheResult.success(CodeBindMessageEnums.SUCCESS, switchService.isEnabled(TopicConstant.TOPIC_LOCK));
+        TopicLockVO topicLockVO = new TopicLockVO();
+        topicLockVO.setIslock(switchService.isEnabled(TopicConstant.TOPIC_LOCK));
+        topicLockVO.setLockTime(redisManager.getValue(TopicConstant.TOPIC_LOCK_TIME));
+
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, topicLockVO);
     }
 
     /**
