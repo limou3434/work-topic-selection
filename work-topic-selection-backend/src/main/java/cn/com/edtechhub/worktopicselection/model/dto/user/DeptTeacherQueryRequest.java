@@ -3,6 +3,7 @@ package cn.com.edtechhub.worktopicselection.model.dto.user;
 import cn.com.edtechhub.worktopicselection.model.dto.PageRequest;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
@@ -11,6 +12,7 @@ import java.io.Serializable;
  *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class DeptTeacherQueryRequest extends PageRequest implements Serializable {
 
