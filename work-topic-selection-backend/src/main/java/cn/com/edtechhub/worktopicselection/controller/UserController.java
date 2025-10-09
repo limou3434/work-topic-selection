@@ -1824,23 +1824,24 @@ public class UserController {
 
                 // 如果是锁题功能已启用, 并且过了时间, 则不允许老师与学生进行退选操作
                 boolean isLock = switchService.isEnabled(TopicConstant.TOPIC_LOCK); // 先看是不是锁题功能已启用
+                if (isLock) {
+                    String lockTimestampStr = redisManager.getValue(TopicConstant.TOPIC_LOCK_TIME); // 再获取锁题时间戳
+                    long lockTimestamp = Long.parseLong(lockTimestampStr) * 1000;
 
-                String lockTimestampStr = redisManager.getValue(TopicConstant.TOPIC_LOCK_TIME); // 再获取锁题时间戳
-                long lockTimestamp = Long.parseLong(lockTimestampStr) * 1000;
-
-                StudentTopicSelection studentTopicSelection = studentTopicSelectionService
-                        .getOne(new QueryWrapper<StudentTopicSelection>()
-                                .eq("topicId", topicId)
-                                .eq("userAccount", userService.userGetCurrentLoginUser().getUserAccount())
-                                .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())
-                        );
-                Date topicTime = studentTopicSelection.getUpdateTime();
-                long topicTimestamp = topicTime.getTime();
-                ThrowUtils.throwIf(
-                        isLock && topicTimestamp < lockTimestamp,
-                        CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR,
-                        "管理员已设置部分教师无法退选学生、学生无法退选题目功能, 如需要退选请通知管理员"
-                );
+                    StudentTopicSelection studentTopicSelection = studentTopicSelectionService
+                            .getOne(new QueryWrapper<StudentTopicSelection>()
+                                    .eq("topicId", topicId)
+                                    .eq("userAccount", userService.userGetCurrentLoginUser().getUserAccount())
+                                    .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())
+                            );
+                    Date topicTime = studentTopicSelection.getUpdateTime();
+                    long topicTimestamp = topicTime.getTime();
+                    ThrowUtils.throwIf(
+                            isLock && topicTimestamp < lockTimestamp,
+                            CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR,
+                            "管理员已设置部分教师无法退选学生、学生无法退选题目功能, 如需要退选请通知管理员"
+                    );
+                }
 
                 // 更新课题的剩余数量
                 ThrowUtils.throwIf(topic.getSurplusQuantity().equals(1), CodeBindMessageEnums.OPERATION_ERROR, "该课题无人选过无需退选");

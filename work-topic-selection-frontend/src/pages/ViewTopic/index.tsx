@@ -224,7 +224,7 @@ export default () => {
       {/* 锁定时间提示 */}
       {topicLocked && lockTime && shouldDisableWithdraw() && (
         <Alert
-          message="退选时间已过期"
+          message="当前禁止您自主退选"
           description={`系统设置的退选截止时间：${formatLockTime()}`}
           type="error"
           showIcon
@@ -238,7 +238,7 @@ export default () => {
       {/* 时间过期提示 */}
       {topicLocked && lockTime && !shouldDisableWithdraw() && (
         <Alert
-          message="之前已选的学生已被锁定退选"
+          message="当前允许您自主退选"
           description={`系统设置的退选截止时间：${formatLockTime()}`}
           type="warning"
           showIcon
