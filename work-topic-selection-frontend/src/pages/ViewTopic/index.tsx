@@ -5,6 +5,7 @@ import {
   getSelectTopicUsingPost,
   withdrawUsingPost,
   getTopicLockUsingGet,
+  getSelectTopicTimeUsingPost,
 } from '@/services/work-topic-selection/userController';
 
 const { Title } = Typography;
@@ -85,13 +86,26 @@ export default () => {
   const [loading, setLoading] = useState(true);
   const [topic, setTopic] = useState<API.Topic | null>(null);
   const [topicLocked, setTopicLocked] = useState<boolean>(false);
+  const [lockTime, setLockTime] = useState<string | null>(null); // 存储锁定时间
+  const [selectTime, setSelectTime] = useState<string | null>(null); // 存储选题时间
 
   const fetchTopic = async () => {
     setLoading(true);
     try {
       const res = await getSelectTopicUsingPost();
       if (res.code === 0 && res.data && res.data.length > 0) {
-        setTopic(res.data[0]); // 只显示第一个选题
+        const selectedTopic = res.data[0]; // 只显示第一个选题
+        setTopic(selectedTopic); // 设置选题信息
+
+        // 获取选题时间
+        try {
+          const timeRes = await getSelectTopicTimeUsingPost({ topicId: selectedTopic.id });
+          if (timeRes.code === 0 && timeRes.data) {
+            setSelectTime(timeRes.data);
+          }
+        } catch (timeError) {
+          console.error('获取选题时间失败:', timeError);
+        }
       } else {
         setTopic(null);
       }
@@ -105,8 +119,12 @@ export default () => {
   const fetchTopicLockStatus = async () => {
     try {
       const res = await getTopicLockUsingGet();
-      if (res.code === 0) {
-        setTopicLocked(res.data || false);
+      if (res.code === 0 && res.data) {
+        setTopicLocked(res.data.islock || false);
+        // 存储锁定时间
+        if (res.data.lockTime) {
+          setLockTime(res.data.lockTime);
+        }
       }
     } catch (e: any) {
       console.error('获取选题锁定状态失败:', e);
@@ -138,6 +156,62 @@ export default () => {
     fetchTopicLockStatus();
   }, []);
 
+  // 判断是否应该禁用退选按钮
+  const shouldDisableWithdraw = () => {
+    // 如果没有锁定或者没有锁定时间，则不禁用
+    if (!topicLocked || !lockTime || !selectTime) {
+      return false;
+    }
+
+    // 将锁定时间转换为数字
+    const lockTimestamp = parseInt(lockTime);
+
+    // 将选题时间转换为数字
+    const selectTimestamp = parseInt(selectTime);
+
+    // 确保两个时间戳都是有效的数字
+    if (isNaN(lockTimestamp) || isNaN(selectTimestamp)) {
+      return false;
+    }
+
+    // 如果学生选题时间早于系统设置的退选截止时间，则禁用退选按钮（锁定状态）
+    return selectTimestamp < lockTimestamp;
+  };
+
+  // 格式化锁定时间为可读格式
+  const formatLockTime = () => {
+    if (!lockTime) return '';
+    const lockTimestamp = parseInt(lockTime);
+    // 将秒级时间戳转换为毫秒级
+    const lockDate = new Date(lockTimestamp * 1000);
+    return lockDate.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+  };
+
+  // 格式化选题时间为可读格式
+  const formatSelectTime = () => {
+    if (!selectTime) return '';
+    const selectTimestamp = parseInt(selectTime);
+    // 将秒级时间戳转换为毫秒级
+    const selectDate = new Date(selectTimestamp * 1000);
+    return selectDate.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+  };
+
   return (
     <Spin spinning={loading}>
       <Title level={2} style={{
@@ -147,6 +221,34 @@ export default () => {
         wordBreak: 'break-word'
       }}>我的选题</Title>
       <ScrollingNotice />
+      {/* 锁定时间提示 */}
+      {topicLocked && lockTime && shouldDisableWithdraw() && (
+        <Alert
+          message="退选时间已过期"
+          description={`系统设置的退选截止时间：${formatLockTime()}`}
+          type="error"
+          showIcon
+          style={{
+            maxWidth: 800,
+            width: 'calc(100% - 32px)',
+            margin: '16px auto',
+          }}
+        />
+      )}
+      {/* 时间过期提示 */}
+      {topicLocked && lockTime && !shouldDisableWithdraw() && (
+        <Alert
+          message="之前已选的学生已被锁定退选"
+          description={`系统设置的退选截止时间：${formatLockTime()}`}
+          type="warning"
+          showIcon
+          style={{
+            maxWidth: 800,
+            width: 'calc(100% - 32px)',
+            margin: '16px auto',
+          }}
+        />
+      )}
       <Flex justify="center" align="center" style={{
         minHeight: 300,
         width: '100%',
@@ -161,13 +263,13 @@ export default () => {
             }}
             extra={
               <Button
-                danger={!topicLocked}
-                disabled={topicLocked}
-                onClick={handleWithdraw}
-                icon={topicLocked ? <LockOutlined /> : <UnlockOutlined />}
-              >
-                {topicLocked ? '锁定' : '退选'}
-              </Button>
+              danger={!(topicLocked && shouldDisableWithdraw())}
+              disabled={topicLocked && shouldDisableWithdraw()}
+              onClick={handleWithdraw}
+              icon={topicLocked && shouldDisableWithdraw() ? <LockOutlined /> : <UnlockOutlined />}
+            >
+              {topicLocked && shouldDisableWithdraw() ? '锁定' : '退选'}
+            </Button>
             }
           >
             <Descriptions
@@ -184,6 +286,11 @@ export default () => {
               <Descriptions.Item label="学生要求">{topic.requirement}</Descriptions.Item>
               <Descriptions.Item label="指导老师">{topic.teacherName}</Descriptions.Item>
               <Descriptions.Item label="所属学院">{topic.deptName}</Descriptions.Item>
+              {selectTime && (
+                <Descriptions.Item label="选题时间">
+                  {formatSelectTime()}
+                </Descriptions.Item>
+              )}
             </Descriptions>
           </Card>
         ) : (

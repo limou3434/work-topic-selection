@@ -1823,15 +1823,23 @@ public class UserController {
                 assert topic != null;
 
                 // 如果是锁题功能已启用, 并且过了时间, 则不允许老师与学生进行退选操作
-                boolean isLock = switchService.isEnabled(TopicConstant.TOPIC_LOCK);
-                String lockTimestampStr = redisManager.getValue(TopicConstant.TOPIC_LOCK_TIME);
+                boolean isLock = switchService.isEnabled(TopicConstant.TOPIC_LOCK); // 先看是不是锁题功能已启用
+
+                String lockTimestampStr = redisManager.getValue(TopicConstant.TOPIC_LOCK_TIME); // 再获取锁题时间戳
                 long lockTimestamp = Long.parseLong(lockTimestampStr) * 1000;
-                Date topicTime = topic.getUpdateTime();
+
+                StudentTopicSelection studentTopicSelection = studentTopicSelectionService
+                        .getOne(new QueryWrapper<StudentTopicSelection>()
+                                .eq("topicId", topicId)
+                                .eq("userAccount", userService.userGetCurrentLoginUser().getUserAccount())
+                                .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())
+                        );
+                Date topicTime = studentTopicSelection.getUpdateTime();
                 long topicTimestamp = topicTime.getTime();
                 ThrowUtils.throwIf(
                         isLock && topicTimestamp < lockTimestamp,
                         CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR,
-                        "管理员已设置教师无法退选学生、学生无法退选题目功能, 如需要退选请通知管理员"
+                        "管理员已设置部分教师无法退选学生、学生无法退选题目功能, 如需要退选请通知管理员"
                 );
 
                 // 更新课题的剩余数量
@@ -2213,6 +2221,12 @@ public class UserController {
     @SaCheckRole(value = {"student"}, mode = SaMode.OR)
     @PostMapping("/get/select/topic/choice_time")
     public BaseResponse<String> getSelectTopicTime(@RequestBody GetSelectTopicRequest request) throws BlockException {
+        // 流量控制
+        String entryName = new Object() {
+        }.getClass().getEnclosingMethod().getName();
+        sentineManager.initFlowRules(entryName);
+        SphU.entry(entryName);
+
         // 检查参数
         ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
         assert request != null;
