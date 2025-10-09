@@ -344,6 +344,21 @@ export async function getSelectTopicByIdUsingPost(
   });
 }
 
+/** getSelectTopicTime POST /user/get/select/topic/choice_time */
+export async function getSelectTopicTimeUsingPost(
+  body: API.GetSelectTopicRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseString_>('/user/get/select/topic/choice_time', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** getSelectTopicSituation POST /user/get/select/topic/situation */
 export async function getSelectTopicSituationUsingPost(options?: { [key: string]: any }) {
   return request<API.BaseResponseSituationVO_>('/user/get/select/topic/situation', {

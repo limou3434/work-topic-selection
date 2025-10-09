@@ -249,6 +249,10 @@ declare namespace API {
     id?: number;
   };
 
+  type GetSelectTopicRequest = {
+    topicId?: number;
+  };
+
   type GetStudentByTopicId = {
     id?: number;
   };

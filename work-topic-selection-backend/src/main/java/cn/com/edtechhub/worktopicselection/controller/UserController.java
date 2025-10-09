@@ -2207,6 +2207,39 @@ public class UserController {
     }
 
     /**
+     * 获取最终选题记录的选中时间
+     */
+    @SaCheckLogin
+    @SaCheckRole(value = {"student"}, mode = SaMode.OR)
+    @PostMapping("/get/select/topic/choice_time")
+    public BaseResponse<String> getSelectTopicTime(@RequestBody GetSelectTopicRequest request) throws BlockException {
+        // 检查参数
+        ThrowUtils.throwIf(request == null, CodeBindMessageEnums.PARAMS_ERROR, "请求体不能为空");
+        assert request != null;
+
+        Long topicId = request.getTopicId();
+        ThrowUtils.throwIf(topicId == null, CodeBindMessageEnums.PARAMS_ERROR, "id 不能为空");
+        assert topicId != null;
+        ThrowUtils.throwIf(topicId <= 0, CodeBindMessageEnums.PARAMS_ERROR, "id 必须是正整数");
+
+        // 获取当前登陆用户
+        User loginUser = userService.userGetCurrentLoginUser();
+
+        // 获取题目关联记录
+        StudentTopicSelection studentTopicSelection = studentTopicSelectionService
+                .getOne(new QueryWrapper<StudentTopicSelection>()
+                        .eq("topicId", topicId)
+                        .eq("userAccount", loginUser.getUserAccount())
+                        .eq("status", StudentTopicSelectionStatusEnum.EN_SELECT.getCode())
+                );
+
+        long topicTimestamp = studentTopicSelection.getUpdateTime().getTime() / 1000;
+        log.debug("获取关联题目最终选择时间: {}", topicTimestamp);
+
+        return TheResult.success(CodeBindMessageEnums.SUCCESS, String.valueOf(topicTimestamp));
+    }
+
+    /**
      * 获取和当前登陆用户同系的没有选题的学生
      */
     @SaCheckLogin
