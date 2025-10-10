@@ -1607,7 +1607,7 @@ public class UserController {
         StudentTopicSelection selection = studentTopicSelectionService.getOne(new QueryWrapper<StudentTopicSelection>().eq("userAccount", loginUser.getUserAccount()).eq("topicId", topicId));
 
         // 处理选题操作
-        synchronized (String.valueOf(topicId).intern()) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作
+        synchronized ((topicId + ":" + loginUser.getId() + ":" + loginUser.getUserAccount()).intern()) { // 用选题 id 来加锁, 这样对同一个选题只能一个线程进行操作, 还需要避免用户自己多选得到多个题目的结果
             return transactionTemplate.execute(transactionStatus -> {
                 // 设置题目剩余数量操作数字
                 int opt = 0;
