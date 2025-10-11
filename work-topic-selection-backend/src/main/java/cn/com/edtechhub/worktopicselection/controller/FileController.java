@@ -415,6 +415,8 @@ public class FileController {
                 "    `requirement` AS 要求,\n" +
                 "    `deptName` AS 系部,\n" +
                 "    `deptTeacher` AS 系部主任,\n" +
+                "    `createTime` AS 创建时间,\n" +
+                "    `updateTime` AS 更新时间,\n" +
                 "    CASE `status`\n" +
                 "        WHEN -2 THEN '被打回'\n" +
                 "        WHEN -1 THEN '待审核'\n" +
@@ -521,7 +523,7 @@ public class FileController {
                 "    u.`dept` AS `系部`,\n" +
                 "    u.`project` AS `专业`,\n" +
                 "    u.`email` AS `邮箱`,\n" +
-                "    s.`createTime` AS `确认时间`,\n" +
+                "    s.`updateTime` AS `选择时间`,\n" +
                 "    t.`teacherName` AS `指导教师`,\n" +
                 "    t.`topic`       AS `题目标题`,\n" +
                 "    t.`description` AS `题目内容`,\n" +
