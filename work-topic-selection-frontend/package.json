@@ -83,6 +83,7 @@
     "@umijs/fabric": "^2.14.1",
     "@umijs/lint": "^4.1.1",
     "@umijs/max": "^4.1.1",
+    "@umijs/mfsu": "^4.6.5",
     "add": "^2.0.6",
     "cross-env": "^7.0.3",
     "eslint": "^8.56.0",
