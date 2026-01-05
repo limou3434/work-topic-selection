@@ -14,7 +14,7 @@ const env = {
   production: 'https://wts.edtechhub.com.cn/work_topic_selection_api',
 };
 
-const host = env['production'];
+const host = env['develop'];
 
 const isDev = false;
 
