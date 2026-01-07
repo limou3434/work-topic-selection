@@ -72,6 +72,7 @@ import java.util.stream.Collectors;
  * TODO: 修复按照当前逻辑修复选题使用教师名字的问题
  * TODO: 重构 Service 层, 该迁移就迁移
  * TODO: 重构接口层, 提高可维护性, 按道理来说, 切割接口层的影响不大, 有 IDEA 兜底
+ * TODO：发现了一个小 bug 无法直接创建管理员
  *
  * @author <a href="https://github.com/limou3434">limou3434</a>
  */
