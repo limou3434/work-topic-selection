@@ -1,4 +1,4 @@
-package cn.com.edtechhub.worktopicselection.utils;
+package cn.com.edtechhub.worktopicselection.aop;
 
 
 import cn.hutool.core.lang.TypeReference;

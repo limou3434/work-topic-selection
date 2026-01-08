@@ -9,7 +9,6 @@ import cn.com.edtechhub.worktopicselection.model.enums.UserRoleEnum;
 import cn.com.edtechhub.worktopicselection.response.BaseResponse;
 import cn.com.edtechhub.worktopicselection.response.TheResult;
 import cn.com.edtechhub.worktopicselection.service.UserService;
-import cn.com.edtechhub.worktopicselection.utils.TypeBuilder;
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
