@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ThrowUtils {
 
     /**
-     * 条件成立则抛异常, 并且打印消息日志
+     * 条件成立则抛异常，并且打印消息日志
      */
     public static void throwIf(boolean condition, CodeBindMessageEnums codeBindMessageEnums, String message) {
         if (condition) {

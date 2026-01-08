@@ -27,6 +27,7 @@ public class BusinessException extends RuntimeException { /* RuntimeException �
      * @param exceptionMessage 详细信息
      */
     public BusinessException(CodeBindMessageEnums codeBindMessageEnums, String exceptionMessage) {
+        super(exceptionMessage);
         this.codeBindMessageEnums = codeBindMessageEnums;
         this.exceptionMessage = exceptionMessage;
     }
