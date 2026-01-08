@@ -1,0 +1,23 @@
+spring:
+  # 1. 明确指定配置环境名称（可选，但规范）
+  profiles:
+    active: test
+  # 2. 数据源配置（核心，已兼容 MySQL）
+  datasource:
+    driver-class-name: org.h2.Driver
+    # 关键优化：补充 CHARSET=UTF8 避免中文乱码；多语句执行用 \; 分隔
+    url: jdbc:h2:mem:test_db;MODE=MYSQL;DATABASE_TO_LOWER=TRUE;CHARSET=UTF8;INIT=RUNSCRIPT FROM 'classpath:sql/init.sql'
+    username: sa
+    password: ''
+  # 3. H2 控制台配置（测试环境开启，方便调试）
+  h2:
+    console:
+      enabled: true
+      path: /h2-console  # 补充控制台访问路径（默认就是这个，显式写更清晰）
+      settings:
+        web-allow-others: false  # 禁止外部访问（测试环境也别开放，仅本机用）
+  # 4. 补充 MyBatisPlus 配置（和生产一致，避免测试时字段映射问题）
+  mybatis-plus:
+    configuration:
+      map-underscore-to-camel-case: true  # 开启下划线转驼峰（测试和生产保持一致）
+      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 测试环境开启 SQL 日志，方便调试

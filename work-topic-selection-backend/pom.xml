@@ -89,6 +89,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- H2 -->
+        <dependency>
+            <!-- 嵌入式数据库，方便在内存中测试数据库相关的代码 -->
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- MySQL: https://www.mysql.com/ -->
         <dependency>
             <!-- 对 JDBC 接口的具体实现-->
