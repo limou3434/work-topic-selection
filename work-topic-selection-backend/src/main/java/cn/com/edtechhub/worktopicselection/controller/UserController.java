@@ -234,7 +234,7 @@ public class UserController {
             user.setStatus(null);
             user.setUserPassword(DigestUtils.md5DigestAsHex((UserConstant.SALT + UserConstant.DEFAULT_PASSWD).getBytes()));
 
-            boolean result = userService.save(user);
+            boolean result = userService.save(user); // TODO：这里有个逻辑字段重复删除失败的问题以后解决
             ThrowUtils.throwIf(!result, CodeBindMessageEnums.OPERATION_ERROR, "添加新的用户失败");
             return TheResult.success(CodeBindMessageEnums.SUCCESS, user.getId());
         });
