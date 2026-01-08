@@ -188,8 +188,11 @@ public class UserController {
         UserRoleEnum userRoleEnum = UserRoleEnum.getEnums(userRole);
         ThrowUtils.throwIf(userRoleEnum == null, CodeBindMessageEnums.PARAMS_ERROR, "本系统不存在该用户角色");
 
+        // 除了管理员帐号都需要系部和专业信息来注册帐号
         String userDeptName = request.getDeptName();
-        ThrowUtils.throwIf(StringUtils.isBlank(userDeptName), CodeBindMessageEnums.PARAMS_ERROR, "缺少系部名称");
+        if (!Objects.equals(userRoleEnum, UserRoleEnum.ADMIN)) {
+            ThrowUtils.throwIf(StringUtils.isBlank(userDeptName), CodeBindMessageEnums.PARAMS_ERROR, "缺少系部名称");
+        }
 
         // 不允许添加相同角色并且名字相同的用户
         User aUser = userService.getOne(new QueryWrapper<User>()
@@ -641,7 +644,7 @@ public class UserController {
         assert user != null;
 
         // 禁止对超级管理员进行操作
-        ThrowUtils.throwIf(user.getUserRole().equals(UserRoleEnum.ADMIN.getCode()), CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "禁止对超级管理员进行该操作");
+        ThrowUtils.throwIf(user.getId() == 1L, CodeBindMessageEnums.ILLEGAL_OPERATION_ERROR, "禁止对超级管理员进行该操作");
 
         // 获取新的初始化密码
         return transactionTemplate.execute(transactionStatus -> {
