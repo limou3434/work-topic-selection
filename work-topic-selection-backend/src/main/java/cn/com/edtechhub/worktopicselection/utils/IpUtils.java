@@ -20,6 +20,7 @@ public class IpUtils {
     public static String getIpAddress(HttpServletRequest request) {
         String ip = request.getHeader("x-forwarded-for");
 
+        // 处理真实用户的情况
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("Proxy-Client-IP");
         }
@@ -28,7 +29,7 @@ public class IpUtils {
         }
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
-            if (ip.equals("127.0.0.1")) {
+            if (ip != null && ip.equals("127.0.0.1")) {
                 // 根据网卡取本机配置的 IP
                 InetAddress inet = null;
                 try {
@@ -41,12 +42,16 @@ public class IpUtils {
                 }
             }
         }
-        // 多个代理的情况，第一个 IP 为客户端真实 IP, 多个 IP 按照 ',' 分割
+
+        // 处理多个代理的情况
         if (ip != null && ip.length() > 15) {
+            // 第一个 IP 为客户端真实 IP，后面多个 IP 则按照 ',' 分割
             if (ip.indexOf(",") > 0) {
                 ip = ip.substring(0, ip.indexOf(","));
             }
         }
+
+        // 处理本地测试的情况
         if (ip == null) {
             return "127.0.0.1";
         }
