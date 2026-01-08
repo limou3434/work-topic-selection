@@ -10,9 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
-/**
- * IpUtils 单元测试（结构化命名风格）
- */
 @ExtendWith(MockitoExtension.class)
 class IpUtilsTest {
 
@@ -158,4 +155,5 @@ class IpUtilsTest {
         // 验证返回 Proxy-Client-IP 的 IP
         assertEquals(proxyClientIp, ip);
     }
+
 }

@@ -20,7 +20,7 @@ public class SpringContextUtils implements ApplicationContextAware {
     private static ApplicationContext applicationContext;
 
     /**
-     * 设置 Spring 上下文
+     * 重写设置应用上下问的方法，方便我们设置 Spring 上下文以操作 Bean
      */
     @Override
     public void setApplicationContext(@NotNull ApplicationContext applicationContext) throws BeansException {
