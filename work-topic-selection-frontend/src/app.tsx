@@ -8,13 +8,27 @@ import { errorConfig } from './requestErrorConfig';
 import {WebSocketNotification} from "@/components/WebSocket";
 import React from "react";
 
-const env = {
-  develop: 'http://127.0.0.1:8000',
-  release: 'http://10.10.174.232:80/work_topic_selection_api',
-  production: 'https://wts.edtechhub.com.cn/work_topic_selection_api',
-};
+// 获取浏览器地址栏的完整域名（如：127.0.0.1:8000、localhost:8080、wts.edtechhub.com.cn）
+// const env = {
+//   develop: 'http://127.0.0.1:8000',
+//   release: 'http://10.10.174.232:80/work_topic_selection_api',
+//   production: 'https://wts.edtechhub.com.cn/work_topic_selection_api',
+// };
+// const host = env['develop'];
 
-const host = env['develop'];
+const pureDomainUrl = `${window.location.protocol}//${window.location.hostname}`;
+
+// 2. 动态拼接 host（解决重复声明+作用域问题）
+let host; // 统一声明，避免重复
+if (pureDomainUrl !== 'http://127.0.0.1') { // 注意：pureDomainUrl 包含协议，需完整对比
+  host = `${pureDomainUrl}/work_topic_selection_api`;
+} else {
+  host = `${pureDomainUrl}:8000`;
+}
+
+console.log(host); // 测试输出：
+// - 非本地：https://test.wts.edtechhub.com.cn/work_topic_selection_api
+// - 本地：http://127.0.0.1:8000
 
 const isDev = false;
 
